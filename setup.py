@@ -1,0 +1,33 @@
+import os
+
+from setuptools import setup
+
+here = os.path.abspath(os.path.dirname(__file__))
+README = open(os.path.join(here, 'README.txt')).read()
+CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
+
+setup(name='wheel',
+      version='0.1',
+      description='A built-package installer for Python.',
+      long_description=README + '\n\n' +  CHANGES,
+      classifiers=[
+        "Development Status :: 1 - ",
+        "Intended Audience :: Developers",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python",
+        ],
+      author='Daniel Holth',
+      author_email='dholth@fastmail.fm',
+      url='http://bitbucket.org/dholth/wheel/',
+      keywords='wheel packaging',
+      license='MIT',
+      packages=['wheel'],
+      install_requires=['distribute'],
+      include_package_data=True,
+      zip_safe=False,
+      test_suite = 'nose.collector',
+      entry_points = open(os.path.join(here, 'entry_points.txt')).read()
+      )
+

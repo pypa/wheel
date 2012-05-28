@@ -1,0 +1,14 @@
+syntax: glob
+*~
+*.swp
+*.orig
+*.egg
+*.so
+*.pyc
+.*project
+.coverage
+.hgignore
+*.egg-info
+*.dist-info
+build
+dist
