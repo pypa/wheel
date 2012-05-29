@@ -14,6 +14,7 @@ from distutils.util import get_platform
 from distutils.core import Command
 
 from distutils import log as logger
+import shutil
 
 class bdist_wheel(Command):
 
@@ -234,5 +235,4 @@ class bdist_wheel(Command):
         with open(os.path.join(dist_info_path, 'METADATA'), 'w') as metadata:
             metadata.write(pkg_info.as_string())
 
-            
-            
+        shutil.rmtree(egginfo_path)
