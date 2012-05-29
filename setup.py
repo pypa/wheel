@@ -8,15 +8,14 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 setup(name='wheel',
       version='0.1',
-      description='A built-package installer for Python.',
+      description='A built-package format for Python.',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
-        "Development Status :: 1 - ",
+        "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python",
         ],
       author='Daniel Holth',
       author_email='dholth@fastmail.fm',

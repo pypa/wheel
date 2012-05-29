@@ -6,13 +6,14 @@ A wheel is a built archive that decouples the build and install process.
 import os
 import sys
 import sysconfig
+import pkg_resources
 from shutil import rmtree
+from email.parser import Parser
 
 from distutils.util import get_platform
 from distutils.core import Command
 
-import logging
-logger = logging.getLogger(__name__)
+from distutils import log as logger
 
 class bdist_wheel(Command):
 
@@ -51,6 +52,7 @@ class bdist_wheel(Command):
         self.keep_temp = False
         self.dist_dir = None
         self.distinfo_dir = None
+        self.egginfo_dir = None
         self.root_is_purelib = None
         self.skip_build = None
         self.relative = False
@@ -106,8 +108,6 @@ class bdist_wheel(Command):
         if not self.skip_build:
             self.run_command('build')
 
-#        import pdb; pdb.set_trace()
-#        import bdist_wininst
         install = self.reinitialize_command('install',
                                             reinit_subcommands=True)
         install.root = self.bdist_dir
@@ -150,11 +150,14 @@ class bdist_wheel(Command):
             archive_root = os.path.join(
                 self.bdist_dir,
                 self._ensure_relative(install.install_base))
-                                
-        if False:
-            self.set_undefined_options('install_distinfo',
-                                       'distinfo_dir')
-            self.write_wheelfile(self.distinfo_dir)
+
+        self.set_undefined_options('install_egg_info', ('target', 'egginfo_dir'))
+        self.distinfo_dir = os.path.join(self.bdist_dir, 
+                                         '%s.dist-info' % self.distribution.get_fullname())
+        self.egg2dist(self.egginfo_dir, 
+                      self.distinfo_dir)
+
+        self.write_wheelfile(self.distinfo_dir)
 
         # Make the archive
         filename = self.make_archive(pseudoinstall_root,
@@ -177,11 +180,12 @@ class bdist_wheel(Command):
         msg['Root-Is-Purelib'] = str(self.root_is_purelib).lower()
         wheelfile_path = os.path.join(wheelfile_base, 'WHEEL')
         logger.info('creating %s', wheelfile_path)
-        with open(wheelfile_path, 'w', encoding='utf-8') as f:
+        with open(wheelfile_path, 'w') as f:
             f.write(msg.as_string())
                 
     def fixup_data_files(self):
-        """Put all resources in a .data directory"""        
+        """Put all resources in a .data directory"""
+        # (only useful in the packaging/distutils2 version of bdist_wheel)
         data_files = {}
         for k, v in self.distribution.data_files.items():
             # {dist-info} is already in our directory tree
@@ -197,3 +201,38 @@ class bdist_wheel(Command):
         if path[0:1] == os.sep:
             path = drive + path[1:]
         return path
+    
+    def _to_requires_dist(self, requirement):
+        requires_dist = []        
+        for op, ver in requirement.specs:
+            if op == '==':
+                op = ''
+            requires_dist.append(op + ver)
+        return "(%s)" % ','.join(requires_dist)
+    
+    def _pkginfo_to_metadata(self, egg_info_path, pkginfo_path):
+        # XXX Parser() doesn't preserve \n in field values
+        pkg_info = Parser().parse(open(pkginfo_path))
+        requires = open(os.path.join(egg_info_path, 'requires.txt')).read()        
+        for extra, reqs in pkg_resources.split_sections(requires):
+            if extra:
+                continue # XXX no extras
+            for req in reqs:
+                parsed_requirement = pkg_resources.Requirement.parse(req)
+                spec = self._to_requires_dist(parsed_requirement)
+                pkg_info['Requires-Dist'] = parsed_requirement.key + " " + spec
+        return pkg_info
+    
+    def egg2dist(self, egginfo_path, dist_info_path):
+        """Convert an .egg-info directory into a .dist-info directory"""
+        pkginfo_path = os.path.join(egginfo_path, 'PKG-INFO')
+        pkg_info = self._pkginfo_to_metadata(egginfo_path, pkginfo_path)
+        
+        if not os.path.exists(dist_info_path):
+            os.mkdir(dist_info_path)
+            
+        with open(os.path.join(dist_info_path, 'METADATA'), 'w') as metadata:
+            metadata.write(pkg_info.as_string())
+
+            
+            

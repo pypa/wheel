@@ -1,4 +1,6 @@
+
 wheel
 =====
 
-A binary package format and installer for Python.
+A binary package format for Python.
+
