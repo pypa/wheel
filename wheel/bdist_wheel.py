@@ -3,12 +3,16 @@
 A wheel is a built archive that decouples the build and install process. 
 """
 
+import csv
+import hashlib
 import os
 import sys
 import sysconfig
 import pkg_resources
+
 from shutil import rmtree
 from email.parser import Parser
+from StringIO import StringIO
 
 from distutils.util import get_platform
 from distutils.core import Command
@@ -90,14 +94,15 @@ class bdist_wheel(Command):
     def get_archive_basename(self):
         """Return archive name without extension"""
         purity = self.distribution.is_pure()
+        abi_tag = sysconfig.get_config_var("py_version_nodot")
         if purity:
             plat_name = 'noarch'
-            impl_name = 'py'
-            abi_tag = sysconfig.get_config_var("py_version_nodot")
+            impl_name = 'py'            
         else:
             plat_name = self.plat_name.replace('-', '_').replace('.', '_')
             impl_name = self.get_abbr_impl()
-            abi_tag = sysconfig.get_config_var('SOABI').rsplit('-', 1)[-1]
+            abi_tag = sysconfig.get_config_vars().get('SOABI', abi_tag) # PEP 3149
+            abi_tag = abi_tag.rsplit('-', 1)[-1]
         archive_basename = "%s-%s%s-%s" % (
                 self.distribution.get_fullname(),
                 impl_name,
@@ -159,6 +164,8 @@ class bdist_wheel(Command):
                       self.distinfo_dir)
 
         self.write_wheelfile(self.distinfo_dir)
+        
+        self.write_record(self.bdist_dir, self.distinfo_dir)            
 
         # Make the archive
         filename = self.make_archive(pseudoinstall_root,
@@ -209,30 +216,70 @@ class bdist_wheel(Command):
             if op == '==':
                 op = ''
             requires_dist.append(op + ver)
+        if not requires_dist:
+            return ''
         return "(%s)" % ','.join(requires_dist)
     
     def _pkginfo_to_metadata(self, egg_info_path, pkginfo_path):
-        # XXX Parser() doesn't preserve \n in field values
+        # XXX Parser() doesn't preserve \n in field values                    
+        # XXX does Requires: become Requires-Dist: ?
+        # (very few source packages include Requires: (644) or 
+        # Requires-Dist: (5) in PKG-INFO)
         pkg_info = Parser().parse(open(pkginfo_path))
-        requires = open(os.path.join(egg_info_path, 'requires.txt')).read()        
-        for extra, reqs in pkg_resources.split_sections(requires):
-            if extra:
-                continue # XXX no extras
-            for req in reqs:
-                parsed_requirement = pkg_resources.Requirement.parse(req)
-                spec = self._to_requires_dist(parsed_requirement)
-                pkg_info['Requires-Dist'] = parsed_requirement.key + " " + spec
+        requires_path = os.path.join(egg_info_path, 'requires.txt')
+        if os.path.exists(requires_path):
+            requires = open(requires_path).read()
+            for extra, reqs in pkg_resources.split_sections(requires):
+                if extra:
+                    continue # XXX no extras
+                for req in reqs:
+                    parsed_requirement = pkg_resources.Requirement.parse(req)
+                    spec = self._to_requires_dist(parsed_requirement)
+                    pkg_info['Requires-Dist'] = parsed_requirement.key + " " + spec
         return pkg_info
     
-    def egg2dist(self, egginfo_path, dist_info_path):
+    def egg2dist(self, egginfo_path, distinfo_path):
         """Convert an .egg-info directory into a .dist-info directory"""
         pkginfo_path = os.path.join(egginfo_path, 'PKG-INFO')
         pkg_info = self._pkginfo_to_metadata(egginfo_path, pkginfo_path)
         
-        if not os.path.exists(dist_info_path):
-            os.mkdir(dist_info_path)
+        # 'safer delete'?
+        if os.path.exists(distinfo_path) and not os.path.islink(distinfo_path):
+            shutil.rmtree(distinfo_path)
+        elif os.path.exists(distinfo_path):
+            os.unlink(distinfo_path)
             
-        with open(os.path.join(dist_info_path, 'METADATA'), 'w') as metadata:
+        shutil.copytree(egginfo_path, distinfo_path, 
+                        ignore=lambda x, y: set(('PKG-INFO', 'requires.txt')))
+            
+        with open(os.path.join(distinfo_path, 'METADATA'), 'w') as metadata:
             metadata.write(pkg_info.as_string())
 
         shutil.rmtree(egginfo_path)
+        
+    def write_record(self, bdist_dir, distinfo_dir):
+        record_path = os.path.join(distinfo_dir, 'RECORD')
+        record_relpath = os.path.relpath(record_path, bdist_dir)
+        
+        def walk():
+            for dir, dirs, files in os.walk(bdist_dir):
+                for f in files:
+                    yield os.path.join(dir, f)
+                    
+        def skip(path):
+            return (path.endswith('.pyc') \
+                or path.endswith('.pyo') or path == record_relpath)
+                
+        writer = csv.writer(file(record_path, 'w+'))
+        for path in walk():
+            relpath = os.path.relpath(path, bdist_dir)
+            if skip(relpath):
+                hash = ''
+                size = ''
+            else:
+                data = open(path, 'rb').read()
+                hash = hashlib.md5(data).hexdigest()
+                size = len(data)
+            record_path = os.path.relpath(path, bdist_dir).replace(os.path.sep, '/')
+            writer.writerow((record_path, hash, size))
+        
