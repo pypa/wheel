@@ -1,1 +1,1 @@
-import setuptools.command.bdist_egg
+#

@@ -1,6 +1,6 @@
 """Create a wheel (.whl) distribution.
 
-A wheel is a built archive that decouples the build and install process. 
+A wheel is a built archive format that is simple to install. 
 """
 
 import csv
@@ -145,11 +145,6 @@ class bdist_wheel(Command):
 
         archive_basename = self.get_archive_basename()
 
-        # OS/2 objects to any ":" characters in a filename (such as when
-        # a timestamp is used in a version) so change them to hyphens.
-        if os.name == "os2":
-            archive_basename = archive_basename.replace(":", "-")
-
         pseudoinstall_root = os.path.join(self.dist_dir, archive_basename)
         if not self.relative:
             archive_root = self.bdist_dir
@@ -221,12 +216,12 @@ class bdist_wheel(Command):
             return ''
         return "(%s)" % ','.join(requires_dist)
     
-    def _pkginfo_to_metadata(self, egg_info_path, pkginfo_path):
-        # XXX Parser() doesn't preserve \n in field values                    
+    def _pkginfo_to_metadata(self, egg_info_path, pkginfo_path):                    
         # XXX does Requires: become Requires-Dist: ?
         # (very few source packages include Requires: (644) or 
         # Requires-Dist: (5) in PKG-INFO)
         pkg_info = Parser().parse(open(pkginfo_path))
+        pkg_info.replace_header('Metadata-Version', '1.2')
         requires_path = os.path.join(egg_info_path, 'requires.txt')
         if os.path.exists(requires_path):
             requires = open(requires_path).read()
@@ -271,7 +266,7 @@ class bdist_wheel(Command):
             return (path.endswith('.pyc') \
                 or path.endswith('.pyo') or path == record_relpath)
                 
-        writer = csv.writer(file(record_path, 'w+'))
+        writer = csv.writer(open(record_path, 'w+'))
         for path in walk():
             relpath = os.path.relpath(path, bdist_dir)
             if skip(relpath):
