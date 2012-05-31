@@ -12,6 +12,7 @@ import pkg_resources
 
 from shutil import rmtree
 from email.parser import Parser
+from email.generator import Generator
 from StringIO import StringIO
 
 from distutils.util import get_platform
@@ -189,7 +190,7 @@ class bdist_wheel(Command):
         wheelfile_path = os.path.join(wheelfile_base, 'WHEEL')
         logger.info('creating %s', wheelfile_path)
         with open(wheelfile_path, 'w') as f:
-            f.write(msg.as_string())
+            Generator(f, maxheaderlen=0).flatten(msg)
                 
     def fixup_data_files(self):
         """Put all resources in a .data directory"""
@@ -253,7 +254,7 @@ class bdist_wheel(Command):
                         ignore=lambda x, y: set(('PKG-INFO', 'requires.txt')))
             
         with open(os.path.join(distinfo_path, 'METADATA'), 'w') as metadata:
-            metadata.write(pkg_info.as_string())
+            Generator(metadata, maxheaderlen=0).flatten(pkg_info)
 
         shutil.rmtree(egginfo_path)
         
