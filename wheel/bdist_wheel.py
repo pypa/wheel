@@ -13,7 +13,6 @@ import pkg_resources
 from shutil import rmtree
 from email.parser import Parser
 from email.generator import Generator
-from StringIO import StringIO
 
 from distutils.util import get_platform
 from distutils.core import Command
@@ -214,7 +213,7 @@ class bdist_wheel(Command):
             requires_dist.append(op + ver)
         if not requires_dist:
             return ''
-        return "(%s)" % ','.join(requires_dist)
+        return " (%s)" % ','.join(requires_dist)
     
     def _pkginfo_to_metadata(self, egg_info_path, pkginfo_path):                    
         # XXX does Requires: become Requires-Dist: ?
@@ -226,12 +225,13 @@ class bdist_wheel(Command):
         if os.path.exists(requires_path):
             requires = open(requires_path).read()
             for extra, reqs in pkg_resources.split_sections(requires):
+                condition = ''
                 if extra:
-                    continue # XXX no extras
+                    condition = '; extra == %s' % repr(extra)
                 for req in reqs:
                     parsed_requirement = pkg_resources.Requirement.parse(req)
                     spec = self._to_requires_dist(parsed_requirement)
-                    pkg_info['Requires-Dist'] = parsed_requirement.key + " " + spec
+                    pkg_info['Requires-Dist'] = parsed_requirement.key + spec + condition
         return pkg_info
     
     def egg2dist(self, egginfo_path, distinfo_path):
