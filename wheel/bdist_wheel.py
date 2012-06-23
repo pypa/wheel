@@ -1,6 +1,6 @@
 """Create a wheel (.whl) distribution.
 
-A wheel is a built archive format that is simple to install. 
+A wheel is a built archive format. 
 """
 
 import csv
@@ -227,6 +227,7 @@ class bdist_wheel(Command):
             for extra, reqs in pkg_resources.split_sections(requires):
                 condition = ''
                 if extra:
+                    pkg_info['Provides-Extra'] = extra
                     condition = '; extra == %s' % repr(extra)
                 for req in reqs:
                     parsed_requirement = pkg_resources.Requirement.parse(req)
