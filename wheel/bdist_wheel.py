@@ -69,8 +69,7 @@ class bdist_wheel(Command):
             bdist_base = self.get_finalized_command('bdist').bdist_base
             self.bdist_dir = os.path.join(bdist_base, 'wheel')
              
-        self.data_dir = os.path.join(self.bdist_dir, 
-                                     self.distribution.get_fullname() + '.data')
+        self.data_dir = self.distribution.get_fullname() + '.data'
         
         need_options = ('dist_dir', 'plat_name', 'skip_build')
         
