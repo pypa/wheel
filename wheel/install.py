@@ -77,6 +77,6 @@ def install(wheel_path):
     try:
         sys.real_prefix
     except AttributeError:
-        raise Exception("This version of wheel will only install into a virtualenv")
+        raise Exception("This alpha version of wheel will only install into a virtualenv")
     wf = WheelFile(wheel_path)
     
