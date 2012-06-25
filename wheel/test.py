@@ -1,6 +1,6 @@
 import os
 
-from nose.tools import assert_true, assert_false, raises
+from nose.tools import assert_true, assert_false, assert_equal, raises
 from .install import WheelFile
 
 def test_findable():
@@ -13,7 +13,7 @@ def test_wheel():
         print filename
         
 def test_markers():
-    from .markers import interpret, default_environment
+    from .markers import interpret, default_environment, as_function
     
     os_name = os.name
     
@@ -49,3 +49,7 @@ def test_markers():
         interpret("(x for x in (4,))")
         
     raises_syntaxError()
+    
+    statement = "python_version == '5'"
+    assert_equal(as_function(statement).__doc__, statement)
+    

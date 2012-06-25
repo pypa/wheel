@@ -35,28 +35,28 @@ _VARS = {'sys.platform': sys.platform,
          'extra': None # wheel extension
         }
 
-
 def default_environment():
-    """Return default globals dictionary for PEP 345 environment markers."""
-    return _VARS
+    """Return copy of default PEP 385 globals dictionary."""
+    return dict(_VARS)
 
 class ASTWhitelist(NodeTransformer):
-    def __init__(self, marker):
-        self.marker = marker
+    def __init__(self, statement):
+        self.statement = statement # for error messages
     
-    """Make sure marker only contains allowed statements."""
-    ALLOWED = (ast.Compare, ast.BoolOp, ast.Or, ast.And, 
-               ast.Attribute, ast.Name, ast.Load, 
-               ast.Str, ast.cmpop)
+    ALLOWED = (ast.Compare, ast.BoolOp, ast.Attribute, ast.Name, ast.Load,
+        ast.Str, ast.cmpop, ast.boolop)
     
     def visit(self, node):
+        """Ensure statement only contains allowed nodes."""
         if not isinstance(node, self.ALLOWED):
-            raise SyntaxError('%s not allowed in environment markers\n%s\n%s' %
-                              (node.__class__, self.marker, (' ' * node.col_offset) + '^'))
+            raise SyntaxError('%s not allowed\n%s\n%s' %
+                              (node.__class__, 
+                               self.statement, 
+                               (' ' * node.col_offset) + '^'))
         return NodeTransformer.visit(self, node)
     
     def visit_Attribute(self, node):
-        """Flatten attribute access."""
+        """Flatten one level of attribute access."""
         new_node = ast.Name("%s.%s" % (node.value.id, node.attr), node.ctx)
         return ast.copy_location(new_node, node)
 
@@ -66,7 +66,8 @@ def parse_marker(marker):
     return new_tree
 
 def compile_marker(parsed_marker):
-    return compile(parsed_marker, '<environment marker>', 'eval', dont_inherit=True)
+    return compile(parsed_marker, '<environment marker>', 'eval',
+                   dont_inherit=True)
 
 def as_function(marker):
     """Return compiled marker as a function accepting an environment dict.""" 
