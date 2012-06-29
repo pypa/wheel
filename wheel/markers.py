@@ -70,11 +70,20 @@ def compile_marker(parsed_marker):
                    dont_inherit=True)
 
 def as_function(marker):
-    """Return compiled marker as a function accepting an environment dict.""" 
+    """Return compiled marker as a function accepting an environment dict."""
+    if not marker.strip():
+        def dummy_marker(environment=None, override=None):
+            """"""
+            return True
+        return dummy_marker        
     compiled_marker = compile_marker(parse_marker(marker))
-    def marker_fn(environment=None):
+    def marker_fn(environment=None, override=None):
+        """Extra updates environment"""
+        if override is None:
+            override = {}
         if environment is None:
             environment = default_environment()
+        environment.update(override)
         return eval(compiled_marker, environment)
     marker_fn.__doc__ = marker
     return marker_fn
