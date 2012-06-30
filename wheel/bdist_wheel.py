@@ -207,6 +207,7 @@ class bdist_wheel(Command):
     def _to_requires_dist(self, requirement):
         requires_dist = []        
         for op, ver in requirement.specs:
+            # PEP 345 specifies but does not use == as part of a version spec
             if op == '==':
                 op = ''
             requires_dist.append(op + ver)
