@@ -1,5 +1,6 @@
 """Install a wheel
 """
+# XXX see patched pip
 
 """
 setup.cfg categories
