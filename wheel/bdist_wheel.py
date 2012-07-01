@@ -100,10 +100,10 @@ class bdist_wheel(Command):
         if not purity:
             plat_name = self.plat_name.replace('-', '_').replace('.', '_')
             impl_name = self.get_abbr_impl()
-             # PEP 3149 -- no SOABI in Py 2
-             # For PyPy?
-             # "pp%s%s" % (sys.pypy_version_info.major, 
-             # sys.pypy_version_info.minor)
+            # PEP 3149 -- no SOABI in Py 2
+            # For PyPy?
+            # "pp%s%s" % (sys.pypy_version_info.major, 
+            # sys.pypy_version_info.minor)
             abi_tag = sysconfig.get_config_vars().get('SOABI', abi_tag)
             abi_tag = abi_tag.rsplit('-', 1)[-1]
         archive_basename = "%s-%s%s-%s-%s" % (

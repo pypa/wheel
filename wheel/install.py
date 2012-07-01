@@ -33,7 +33,9 @@ from .decorator import reify
 VERSION_TOO_HIGH = NormalizedVersion("1.0")
 
 WHEEL_NAME = re.compile(
-    r"(?P<namever>(?P<name>.+)-(?P<ver>.+))(-(?P<pyver>.+)-(?P<plat>.+)\.whl|\.dist-info)$"
+    r"""(?P<namever>(?P<name>.+)-(?P<ver>.+))
+    (-(?P<pyver>.+)-(?P<abi>.+)-(?P<plat>.+)\.whl|\.dist-info)$""",
+    re.VERBOSE
 ).match
 
 class WheelFile(object):
