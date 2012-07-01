@@ -93,18 +93,23 @@ class bdist_wheel(Command):
     def get_archive_basename(self):
         """Return archive name without extension"""
         purity = self.distribution.is_pure()
-        abi_tag = sysconfig.get_config_var("py_version_nodot")
-        if purity:
-            plat_name = 'noarch'
-            impl_name = 'py'            
-        else:
+        impl_ver = sysconfig.get_config_var("py_version_nodot")
+        plat_name = 'noarch'
+        abi_tag = 'noabi'
+        impl_name = 'py'
+        if not purity:
             plat_name = self.plat_name.replace('-', '_').replace('.', '_')
             impl_name = self.get_abbr_impl()
-            abi_tag = sysconfig.get_config_vars().get('SOABI', abi_tag) # PEP 3149
+             # PEP 3149 -- no SOABI in Py 2
+             # For PyPy?
+             # "pp%s%s" % (sys.pypy_version_info.major, 
+             # sys.pypy_version_info.minor)
+            abi_tag = sysconfig.get_config_vars().get('SOABI', abi_tag)
             abi_tag = abi_tag.rsplit('-', 1)[-1]
-        archive_basename = "%s-%s%s-%s" % (
+        archive_basename = "%s-%s%s-%s-%s" % (
                 self.distribution.get_fullname(),
                 impl_name,
+                impl_ver,
                 abi_tag,
                 plat_name)
         return archive_basename
@@ -215,10 +220,10 @@ class bdist_wheel(Command):
             return ''
         return " (%s)" % ','.join(requires_dist)
     
-    def _pkginfo_to_metadata(self, egg_info_path, pkginfo_path):                    
+    def _pkginfo_to_metadata(self, egg_info_path, pkginfo_path):
         # XXX does Requires: become Requires-Dist: ?
         # (very few source packages include Requires: (644) or 
-        # Requires-Dist: (5) in PKG-INFO)
+        # Requires-Dist: (5) in PKG-INFO); packaging treats both identically
         pkg_info = Parser().parse(open(pkginfo_path))
         pkg_info.replace_header('Metadata-Version', '1.2')
         requires_path = os.path.join(egg_info_path, 'requires.txt')
@@ -255,6 +260,8 @@ class bdist_wheel(Command):
         shutil.rmtree(egginfo_path)
         
     def write_record(self, bdist_dir, distinfo_dir):
+        from base64 import urlsafe_b64encode
+        
         record_path = os.path.join(distinfo_dir, 'RECORD')
         record_relpath = os.path.relpath(record_path, bdist_dir)
         
@@ -271,12 +278,14 @@ class bdist_wheel(Command):
         for path in walk():
             relpath = os.path.relpath(path, bdist_dir)
             if skip(relpath):
+                md5 = ''
                 hash = ''
                 size = ''
             else:
                 data = open(path, 'rb').read()
-                hash = hashlib.md5(data).hexdigest()
+                md5 = hashlib.md5(data).hexdigest()
+                digest = hashlib.sha256(data).digest()
+                hash = 'sha256:%s' % urlsafe_b64encode(digest)
                 size = len(data)
             record_path = os.path.relpath(path, bdist_dir).replace(os.path.sep, '/')
-            writer.writerow((record_path, hash, size))
-        
+            writer.writerow((record_path, md5, size, hash))
