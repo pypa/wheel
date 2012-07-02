@@ -168,8 +168,7 @@ class bdist_wheel(Command):
 
         # Make the archive
         filename = self.make_archive(pseudoinstall_root,
-                                     self.format, root_dir=archive_root,
-                                     owner=self.owner, group=self.group)
+                                     self.format, root_dir=archive_root)
         
         os.rename(filename, filename[:-3] + 'whl')
 
