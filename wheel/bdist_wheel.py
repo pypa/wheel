@@ -115,6 +115,9 @@ class bdist_wheel(Command):
         return archive_basename
 
     def run(self):
+        build_scripts = self.reinitialize_command('build_scripts')
+        build_scripts.executable = 'python'
+
         if not self.skip_build:
             self.run_command('build')
 
@@ -284,7 +287,7 @@ class bdist_wheel(Command):
                 data = open(path, 'rb').read()
                 md5 = hashlib.md5(data).hexdigest()
                 digest = hashlib.sha256(data).digest()
-                hash = 'sha256:%s' % urlsafe_b64encode(digest)
+                hash = 'sha256:%s' % urlsafe_b64encode(digest).decode('latin1')
                 size = len(data)
             record_path = os.path.relpath(path, bdist_dir).replace(os.path.sep, '/')
             writer.writerow((record_path, md5, size, hash))
