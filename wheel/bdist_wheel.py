@@ -184,8 +184,8 @@ class bdist_wheel(Command):
     def write_wheelfile(self, wheelfile_base):
         from email.message import Message
         msg = Message()
-        msg['Wheel-Version'] = '0.1'
-        msg['Packager'] = 'packaging'
+        msg['Wheel-Version'] = '0.1' # of the spec
+        msg['Packager'] = 'bdist_wheel'
         msg['Root-Is-Purelib'] = str(self.root_is_purelib).lower()
         wheelfile_path = os.path.join(wheelfile_base, 'WHEEL')
         logger.info('creating %s', wheelfile_path)
