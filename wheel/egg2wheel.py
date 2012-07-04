@@ -23,7 +23,7 @@ if __name__ == "__main__":
     arch = (egg_info['arch'] or 'noarch').replace('.', '_').replace('-', '_')
     if arch != 'noarch':
         # assume all binary eggs are for CPython
-        pyver = 'cp' + arch[2:]
+        pyver = 'cp' + pyver[2:]
     wheel_name = '-'.join((
             dist_info,
             pyver,
