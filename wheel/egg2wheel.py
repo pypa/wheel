@@ -17,12 +17,18 @@ if __name__ == "__main__":
     egg = zipfile.ZipFile(sys.argv[1])
     dir = tempfile.mkdtemp(suffix="_e2w")
     egg.extractall(dir)
-    abi = 'noabi'
     dist_info = "%s-%s" % (egg_info['name'], egg_info['ver'])
+    abi = 'noabi'
+    pyver = egg_info['pyver'].replace('.', '')
+    arch = (egg_info['arch'] or 'noarch').replace('.', '_').replace('-', '_')
+    if arch != 'noarch':
+        # assume all binary eggs are for CPython
+        pyver = 'cp' + arch[2:]
     wheel_name = '-'.join((
             dist_info,
-            egg_info['pyver'].replace('.', ''),
-            (egg_info['arch'] or 'noarch').replace('.', '_').replace('-', '_')
+            pyver,
+            abi,
+            arch
             ))
     bw = wheel.bdist_wheel.bdist_wheel(distutils.dist.Distribution())
     bw.root_is_purelib = egg_info['arch'] is None
