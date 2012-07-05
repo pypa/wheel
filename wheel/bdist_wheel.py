@@ -285,9 +285,9 @@ class bdist_wheel(Command):
                 size = ''
             else:
                 data = open(path, 'rb').read()
-                md5 = hashlib.md5(data).hexdigest()
                 digest = hashlib.sha256(data).digest()
                 hash = 'sha256=%s' % urlsafe_b64encode(digest).decode('latin1')
                 size = len(data)
             record_path = os.path.relpath(path, bdist_dir).replace(os.path.sep, '/')
-            writer.writerow((record_path, md5, size, hash))
+            writer.writerow((record_path, hash, size))
+
