@@ -5,10 +5,10 @@ virtualenv /tmp/wheeldemo
 cd /tmp/wheeldemo
 
 # Install wheel and patched pip, distribute
-bin/pip install -e hg+file:///home/dholth/prog/wheel#egg=wheel -e hg+https://bitbucket.org/dholth/distribute#egg=distribute -e git+https://github.com/dholth/pip.git#egg=pip
+bin/pip install -e hg+https://bitbucket.org/dholth/wheel#egg=wheel hg+https://bitbucket.org/dholth/distribute#egg=distribute -e git+https://github.com/dholth/pip.git#egg=pip
 
 # Download an unpack a package and its dependencies into build/
-bin/pip install --no-install pyramid
+bin/pip install --build build --no-install --ignore-installed pyramid
 cd build
 
 # Make wheels for each package
