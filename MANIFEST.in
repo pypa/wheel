@@ -1,1 +1,1 @@
-include *.txt *.sh
+include wheel/*.txt *.txt *.sh
