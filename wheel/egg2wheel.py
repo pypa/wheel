@@ -7,6 +7,7 @@ import zipfile
 import wheel.bdist_wheel
 import distutils.dist
 from distutils.archive_util import make_archive
+from shutil import rmtree
 
 egg_info_re = re.compile(r'''(?P<name>.+?)-(?P<ver>.+?)
     (-(?P<pyver>.+?))?(-(?P<arch>.+?))?.egg''', re.VERBOSE)
@@ -35,8 +36,9 @@ if __name__ == "__main__":
     dist_info_dir = os.path.join(dir, '%s.dist-info' % dist_info)
     bw.egg2dist(os.path.join(dir, 'EGG-INFO'),
                 dist_info_dir)
-    bw.write_wheelfile(dist_info_dir)
+    bw.write_wheelfile(dist_info_dir, packager='egg2wheel')
     bw.write_record(dir, dist_info_dir)
     filename = make_archive(wheel_name, 'zip', root_dir=dir)
     os.rename(filename, filename[:-3] + 'whl')
+    rmtree(dir)
 

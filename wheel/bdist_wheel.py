@@ -181,11 +181,11 @@ class bdist_wheel(Command):
             else:
                 rmtree(self.bdist_dir)
                 
-    def write_wheelfile(self, wheelfile_base):
+    def write_wheelfile(self, wheelfile_base, packager='bdist_wheel'):
         from email.message import Message
         msg = Message()
         msg['Wheel-Version'] = '0.1' # of the spec
-        msg['Packager'] = 'bdist_wheel'
+        msg['Packager'] = packager
         msg['Root-Is-Purelib'] = str(self.root_is_purelib).lower()
         wheelfile_path = os.path.join(wheelfile_base, 'WHEEL')
         logger.info('creating %s', wheelfile_path)
@@ -287,7 +287,7 @@ class bdist_wheel(Command):
                 data = open(path, 'rb').read()
                 md5 = hashlib.md5(data).hexdigest()
                 digest = hashlib.sha256(data).digest()
-                hash = 'sha256:%s' % urlsafe_b64encode(digest).decode('latin1')
+                hash = 'sha256=%s' % urlsafe_b64encode(digest).decode('latin1')
                 size = len(data)
             record_path = os.path.relpath(path, bdist_dir).replace(os.path.sep, '/')
             writer.writerow((record_path, md5, size, hash))
