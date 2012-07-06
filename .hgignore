@@ -12,3 +12,4 @@ syntax: glob
 *.dist-info
 build
 dist
+.tox
