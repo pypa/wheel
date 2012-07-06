@@ -17,3 +17,14 @@ def test_egg_re():
         line = line.strip()
         if not line: continue
         assert egg2wheel.egg_info_re.match(line), line
+
+def test_compatibility_tags():
+    wf = WheelFile("package-1.0.0-cp32.cp33-noabi-noarch.whl")
+    assert_equal(list(wf.compatibility_tags),
+                 [('cp32', 'noabi', 'noarch'), ('cp33', 'noabi', 'noarch')])
+    assert_equal(wf.arity, 2)
+    
+    wf2 = WheelFile("package-1.0.0-1st-cp33-noabi-noarch.whl")
+    wf2_info = wf2.parsed_filename.groupdict()
+    assert wf2_info['build'] == '1st', wf2_info
+    
