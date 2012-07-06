@@ -7,7 +7,13 @@ import csv
 import hashlib
 import os
 import sys
-import sysconfig
+
+try:
+    import sysconfig
+except ImportError:
+    # Python < 2.7
+    import distutils.sysconfig as sysconfig
+
 import pkg_resources
 
 from shutil import rmtree
