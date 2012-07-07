@@ -140,15 +140,23 @@ class bdist_wheel(Command):
             setattr(install,
                     'install_' + key,
                     os.path.join(self.data_dir, key))
-                        
+    
+        basedir_observed = ''
+    
+        if os.name == 'nt':
+            # win32 barfs if any of these are ''; could be '.'?
+            # (distutils.command.install:change_roots bug)
+            basedir_observed = os.path.join(self.data_dir, '..')
+            self.install_libbase = self.install_lib = basedir_observed
+
         if self.root_is_purelib:
             setattr(install,
                    'install_purelib',
-                   '')
+                   basedir_observed)
         else:
             setattr(install,
                     'install_platlib',
-                    '')
+                    basedir_observed)
 
         logger.info("installing to %s", self.bdist_dir)
         if False:
