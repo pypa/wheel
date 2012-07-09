@@ -294,7 +294,6 @@ class bdist_wheel(Command):
         for path in walk():
             relpath = os.path.relpath(path, bdist_dir)
             if skip(relpath):
-                md5 = ''
                 hash = ''
                 size = ''
             else:
