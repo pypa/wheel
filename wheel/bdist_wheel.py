@@ -100,6 +100,8 @@ class bdist_wheel(Command):
         """Return archive name without extension"""
         purity = self.distribution.is_pure()
         impl_ver = sysconfig.get_config_var("py_version_nodot")
+        if not impl_ver:
+            impl_ver = ''.join(map(str, sys.version_info[:2]))
         plat_name = 'noarch'
         abi_tag = 'noabi'
         impl_name = 'py'
