@@ -22,6 +22,7 @@ from email.generator import Generator
 
 from distutils.util import get_platform
 from distutils.core import Command
+from distutils.sysconfig import get_python_version
 
 from distutils import log as logger
 import shutil
@@ -188,8 +189,13 @@ class bdist_wheel(Command):
         # Make the archive
         filename = self.make_archive(pseudoinstall_root,
                                      self.format, root_dir=archive_root)
-        
+       
+        wheel_name = filename[:-3] + 'whl'
         os.rename(filename, filename[:-3] + 'whl')
+
+        # Add to 'Distribution.dist_files' so that the "upload" command works
+        getattr(self.distribution,'dist_files',[]).append(
+            ('bdist_wheel', get_python_version(), wheel_name))
 
         if not self.keep_temp:
             if self.dry_run:
