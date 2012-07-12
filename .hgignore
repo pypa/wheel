@@ -13,3 +13,4 @@ syntax: glob
 build
 dist
 .tox
+docs/_build
