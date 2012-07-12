@@ -14,7 +14,7 @@ Work on the spec is at https://docs.google.com/document/d/1mWPyvoeiqCrAy4UPNnvaz
 Why not egg?
 ============
 
-Python's egg format predates the packging related standards we have today,
+Python's egg format predates the packaging related standards we have today,
 the most important being PEP 376 "Database of Installed Python Distributions"
 which specifies the .dist-info directory (instead of .egg-info) and PEP 345 
 "Metadata for Python Software Packages 1.2" which specifies how to express

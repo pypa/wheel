@@ -24,7 +24,7 @@ with a patched `pip` from https://github.com/dholth/pip.
 Why not egg?
 ------------
 
-Python's egg format predates the packging related standards we have today,
+Python's egg format predates the packaging related standards we have today,
 the most important being PEP 376 "Database of Installed Python Distributions"
 which specifies the .dist-info directory (instead of .egg-info) and PEP 345 
 "Metadata for Python Software Packages 1.2" which specifies how to express
@@ -123,7 +123,7 @@ The ABI tag is an abbreviated SOABI “cp33m”, or, for “pure Python” packa
 The platform tag is distutils.util.get_platform() with all periods and hyphens replaced with underscore, or the string ‘noarch’.
 
 Wheels within wheels XXX work in progress
---------------------
+-----------------------------------------
 
 A wheel filename can contain multiple implementation, platform, and
 architecture tags separated by a `.` to indicate compatibility.
