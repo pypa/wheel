@@ -15,6 +15,7 @@ except ImportError: # pragma nocover
     import distutils.sysconfig as sysconfig
 
 import pkg_resources
+from pkg_resources import safe_name, safe_version
 
 from shutil import rmtree
 from email.parser import Parser
@@ -100,7 +101,8 @@ class bdist_wheel(Command):
     @property
     def wheel_dist_name(self):
         """Return distribution full name with - replaced with _"""
-        return self.distribution.get_fullname().replace('-', '_')
+        return '-'.join((safe_name(self.distribution.get_name()),
+                safe_version(self.distribution.get_version())))
     
     def get_archive_basename(self):
         """Return archive name without extension"""

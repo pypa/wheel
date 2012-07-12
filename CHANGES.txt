@@ -1,3 +1,7 @@
+0.4.2
+=====
+- hyphenated name fix
+
 0.4
 ===
 - improve test coverage
