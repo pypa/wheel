@@ -28,6 +28,12 @@ from distutils.sysconfig import get_python_version
 from distutils import log as logger
 import shutil
 
+def safer_name(name):
+    return safe_name(name).replace('-', '_')
+
+def safer_version(version):
+    return safe_version(version).replace('-', '_')
+
 class bdist_wheel(Command):
 
     description = 'create a wheel distribution'
@@ -77,7 +83,7 @@ class bdist_wheel(Command):
             bdist_base = self.get_finalized_command('bdist').bdist_base
             self.bdist_dir = os.path.join(bdist_base, 'wheel')
              
-        self.data_dir = self.distribution.get_fullname() + '.data'
+        self.data_dir = self.wheel_dist_name + '.data'
         
         need_options = ('dist_dir', 'plat_name', 'skip_build')
         
@@ -101,8 +107,8 @@ class bdist_wheel(Command):
     @property
     def wheel_dist_name(self):
         """Return distribution full name with - replaced with _"""
-        return '-'.join((safe_name(self.distribution.get_name()),
-                safe_version(self.distribution.get_version())))
+        return '-'.join((safer_name(self.distribution.get_name()),
+                safer_version(self.distribution.get_version())))
     
     def get_archive_basename(self):
         """Return archive name without extension"""
@@ -185,7 +191,7 @@ class bdist_wheel(Command):
 
         self.set_undefined_options('install_egg_info', ('target', 'egginfo_dir'))
         self.distinfo_dir = os.path.join(self.bdist_dir, 
-                                         '%s.dist-info' % self.distribution.get_fullname())
+                                         '%s.dist-info' % self.wheel_dist_name)
         self.egg2dist(self.egginfo_dir, 
                       self.distinfo_dir)
 
