@@ -1,3 +1,10 @@
+0.4
+===
+- improve test coverage
+- improve Windows compatibility
+- include tox.ini courtesy of Marc Abramowitz
+- draft hmac sha-256 signing function
+
 0.3
 ===
 - prototype egg2wheel conversion script

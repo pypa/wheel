@@ -1,34 +1,20 @@
 """Install a wheel
 """
-# XXX see patched pip
-
-"""
-setup.cfg categories
-
-    config
-    appdata
-    appdata.arch
-    appdata.persistent
-    appdata.disposable
-    help
-    icon
-    scripts
-    doc
-    info
-    man    
-    
-    plus purelib, platlib, ...
-"""
+# XXX see patched pip to install
 
 import sys
 import os.path
 import re
 import zipfile
+import json
+import hmac
+import hashlib
 from email.parser import Parser
 
 from verlib import NormalizedVersion
 
 from .decorator import reify
+from .util import urlsafe_b64encode, utf8, to_json
 
 # The next major version after this version of the 'wheel' tool:
 VERSION_TOO_HIGH = NormalizedVersion("1.0")
@@ -98,7 +84,37 @@ class WheelFile(object):
     def check_version(self):
         version = self.parsed_wheel_info['Wheel-Version']
         assert NormalizedVersion(version) < VERSION_TOO_HIGH, "Wheel version is too high"
-
+        
+    def sign(self, key, alg="HS256"):
+        """Sign the wheel file's RECORD using `key` and algorithm `alg`. Alg 
+        values are from JSON Web Signatures; only HS256 is supported at this
+        time."""
+        if alg != 'HS256':
+            # python-jws (not in pypi) supports other algorithms 
+            raise ValueError("Unsupported algorithm")
+        sig = self.sign_hs256(key)
+        self.zipfile.writestr('/'.join((self.distinfo_name, 'RECORD.JWT')),
+                              sig)
+        
+    def sign_hs256(self, key):
+        record = self.zipfile.read('/'.join((self.distinfo_name, 'RECORD')))        
+        record_digest = urlsafe_b64encode(hashlib.sha256(record).digest())
+        header = utf8(to_json(dict(alg="HS256", typ="JWT")))
+        payload = utf8(to_json(dict(hash="sha256="+record_digest)))
+        protected = b'.'.join((urlsafe_b64encode(header), 
+                               urlsafe_b64encode(payload)))
+        mac = hmac.HMAC(key, protected, hashlib.sha256).digest()
+        sig = b'.'.join((protected, urlsafe_b64encode(mac)))
+        return sig
+    
+    def verify_hs256(self, key):
+        signature = self.zipfile.read('/'.join((self.distinfo_name, 
+                                                'RECORD.JWT')))
+        verify = self.sign_hs256(key)
+        if verify != signature:
+            return False
+        return True
+        
 def install(wheel_path):
     """Install a single wheel (.whl) file without regard for dependencies."""
     try:

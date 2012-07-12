@@ -10,7 +10,7 @@ import sys
 
 try:
     import sysconfig
-except ImportError:
+except ImportError: # pragma nocover
     # Python < 2.7
     import distutils.sysconfig as sysconfig
 
@@ -96,7 +96,12 @@ class bdist_wheel(Command):
         else:
             pyimpl = 'cp'
         return pyimpl
-
+    
+    @property
+    def wheel_dist_name(self):
+        """Return distribution full name with - replaced with _"""
+        return self.distribution.get_fullname().replace('-', '_')
+    
     def get_archive_basename(self):
         """Return archive name without extension"""
         purity = self.distribution.is_pure()
@@ -116,7 +121,7 @@ class bdist_wheel(Command):
             abi_tag = sysconfig.get_config_vars().get('SOABI', abi_tag)
             abi_tag = abi_tag.rsplit('-', 1)[-1]
         archive_basename = "%s-%s%s-%s-%s" % (
-                self.distribution.get_fullname(),
+                self.wheel_dist_name,
                 impl_name,
                 impl_ver,
                 abi_tag,
