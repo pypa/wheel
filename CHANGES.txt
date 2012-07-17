@@ -1,3 +1,7 @@
+0.5
+===
+- working pretty well
+
 0.4.2
 =====
 - hyphenated name fix
