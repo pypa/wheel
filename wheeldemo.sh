@@ -10,9 +10,9 @@ cd /tmp/wheeldemo
 # Install wheel and patched pip, distribute
 bin/pip install --upgrade --ignore-installed --no-index hg+https://bitbucket.org/dholth/distribute#egg=distribute \
 	git+https://github.com/dholth/pip.git#egg=pip
-
 bin/pip install hg+https://bitbucket.org/dholth/wheel#egg=wheel
 
+# Make sure it worked
 bin/python -c "import pkg_resources; pkg_resources.DistInfoDistribution"
 
 # Download an unpack a package and its dependencies into build/

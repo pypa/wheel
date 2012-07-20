@@ -44,37 +44,50 @@ Usage
 The current version of wheel can be used to speed up repeated
 installations by reducing the number of times you have to compile your
 software. When you are creating a virtualenv for each new version of your
-software, as in some web deployment schemes, the savings can be dramatic::
+software, as in some web deployment schemes, the savings can be
+dramatic. This script from the wheel source code builds a virtualenv
+that can build and understand wheels, packages pyramid and all its
+dependencies as wheels, and then installs pyramid from the built packages.
+
+wheeldemo.sh::
 
         #!/bin/sh
+        set -e
+
         # bdist_wheel demo
+
         # Create environment
-        virtualenv /tmp/wheeldemo
+        virtualenv --distribute /tmp/wheeldemo
         cd /tmp/wheeldemo
-        source bin/activate
 
         # Install wheel and patched pip, distribute
-        bin/pip install -e hg+https://bitbucket.org/dholth/wheel#egg=wheel \
-                hg+https://bitbucket.org/dholth/distribute#egg=distribute \                
-                -e git+https://github.com/dholth/pip.git#egg=pip
+        bin/pip install --upgrade --ignore-installed --no-index hg+https://bitbucket.org/dholth/distribute#egg=distribute \
+                git+https://github.com/dholth/pip.git#egg=pip
+        bin/pip install hg+https://bitbucket.org/dholth/wheel#egg=wheel
 
-        # Download and unpack a package and its dependencies into build/
+        # Make sure it worked
+        bin/python -c "import pkg_resources; pkg_resources.DistInfoDistribution"
+
+        # Download an unpack a package and its dependencies into build/
         bin/pip install --build build --no-install --ignore-installed pyramid
+        cd build
 
         # Make wheels for each package
-        for i in build/*; do (cd $i; python setup.py bdist_wheel); done
+        for i in `find . -maxdepth 1 -mindepth 1 -type d`; do
+                (cd $i; ../../bin/python -c "import setuptools, sys; sys.argv = ['', 'bdist_wheel']; __file__ = 'setup.py'; exec(compile(open('setup.py').read(), 'setup.py', 'exec'))")
+        done
 
         # Copy them into a repository
-        mkdir ../wheelbase
+        mkdir -p ../wheelbase
         find . -name *.whl -exec mv {} ../wheelbase \;
         cd ..
 
         # Remove build dir or pip will look there first
         rm -rf build
 
-
         # Install from saved wheels
-        bin/pip install -f file:///tmp/wheeldoc/wheelbase pyramid
+        bin/pip install --no-index --find-links=file://$PWD/wheelbase pyramid
+
 
 File name convention
 --------------------
@@ -97,7 +110,8 @@ Wheel files contain a folder `{distribution}-{version}.dist-info/` with the PEP 
 
 The root of a .whl is either purelib or platlib.
 
-If a .whl contains scripts, both purelib and platlib, or any other files that are not installed on sys.path, they are found in `{distribution}-{version}.data/{key}`.
+If a .whl contains scripts, both purelib and platlib, or any other files that 
+are not installed on sys.path, they are found in `{distribution}-{version}.data/{key}`.
 
 Wheel files contain metadata about the wheel format itself in `{distribution}-{version}/WHEEL` ::
 
@@ -120,7 +134,8 @@ concatenated with py_version_nodot “27”.
 
 The ABI tag is an abbreviated SOABI “cp33m”, or, for “pure Python” packages, “noabi”
 
-The platform tag is distutils.util.get_platform() with all periods and hyphens replaced with underscore, or the string ‘noarch’.
+The platform tag is distutils.util.get_platform() with all periods and hyphens 
+replaced with underscore, or the string ‘noarch’.
 
 Wheels within wheels XXX work in progress
 -----------------------------------------
@@ -172,14 +187,14 @@ but not RECORD. For example::
 
         file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT_pNh2yI,3144
 
-The signature is a JSON Web Signature token stored in a file
-RECORD.JWT in the .dist-info directory adjacent to RECORD. The JSON Web
+The signature is one or more JSON Web Signature JSON Serialization (JWS-JS)
+signatures stored in a file
+RECORD.jws in the .dist-info directory adjacent to RECORD. The JSON Web
 Signature payload is an object with one key “hash” with a value
 of a hash of RECORD stored in the same format as entries in RECORD:
 digestname=urlsafe_b64encode_nopad(digest), but need not use the same hash
 function as RECORD. The signing algorithm ‘JWS using HMAC SHA-256’
-must be supported. *May switch to json web signature serialization format
-to support multiple signatures.*
+must be supported.
 
 To verify, first verify the signature, then hash RECORD with the hashing
 algorithm used in the signed payload and check for equality with the
@@ -197,7 +212,7 @@ https://-protected URL. Within an organization, wheel files could be
 signed with a private key using HMAC and distribute the private key
 over ssh.
 
-See http://self-issued.info/docs/draft-ietf-jose-json-web-signature.html
+See http://self-issued.info/docs/draft-ietf-jose-json-web-signature.html, http://self-issued.info/docs/draft-jones-json-web-signature-json-serialization-01.html
 
 Slogans
 -------
@@ -210,4 +225,6 @@ Wheel
 
 .. toctree::
    :maxdepth: 2
+   
+   story
 
