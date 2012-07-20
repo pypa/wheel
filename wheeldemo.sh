@@ -1,21 +1,31 @@
 #!/bin/sh
+set -e
+
 # bdist_wheel demo
+
 # Create environment
-virtualenv /tmp/wheeldemo
+virtualenv --distribute /tmp/wheeldemo
 cd /tmp/wheeldemo
 
 # Install wheel and patched pip, distribute
-bin/pip install -e hg+https://bitbucket.org/dholth/wheel#egg=wheel hg+https://bitbucket.org/dholth/distribute#egg=distribute -e git+https://github.com/dholth/pip.git#egg=pip
+bin/pip install --upgrade --ignore-installed --no-index hg+https://bitbucket.org/dholth/distribute#egg=distribute \
+	git+https://github.com/dholth/pip.git#egg=pip
+
+bin/pip install hg+https://bitbucket.org/dholth/wheel#egg=wheel
+
+bin/python -c "import pkg_resources; pkg_resources.DistInfoDistribution"
 
 # Download an unpack a package and its dependencies into build/
 bin/pip install --build build --no-install --ignore-installed pyramid
 cd build
 
 # Make wheels for each package
-for i in *; do (cd $i; /tmp/wheeldemo/bin/python setup.py bdist_wheel); done
+for i in `find . -maxdepth 1 -mindepth 1 -type d`; do
+	(cd $i; ../../bin/python -c "import setuptools, sys; sys.argv = ['', 'bdist_wheel']; __file__ = 'setup.py'; exec(compile(open('setup.py').read(), 'setup.py', 'exec'))")
+done
 
 # Copy them into a repository
-mkdir ../wheelbase
+mkdir -p ../wheelbase
 find . -name *.whl -exec mv {} ../wheelbase \;
 cd ..
 
@@ -23,5 +33,5 @@ cd ..
 rm -rf build
 
 # Install from saved wheels
-bin/pip install -f file:///tmp/wheeldoc/wheelbase pyramid
+bin/pip install --no-index --find-links=file://$PWD/wheelbase pyramid
 
