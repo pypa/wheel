@@ -7,7 +7,7 @@ README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 setup(name='wheel',
-      version='0.5',
+      version='0.6',
       description='A built-package format for Python.',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
@@ -27,7 +27,7 @@ setup(name='wheel',
       keywords='wheel packaging',
       license='MIT',
       packages=['wheel'],
-      install_requires=['distribute', 'verlib', 'markerlib'],
+      install_requires=['distribute>=0.6.28', 'markerlib'],
       include_package_data=True,
       zip_safe=False,
       test_suite = 'nose.collector',

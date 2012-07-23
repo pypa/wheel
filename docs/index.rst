@@ -16,10 +16,9 @@ packages will be properly installed with only the “Unpack” step
 preserves enough information to “Spread” (copy data and scripts to their
 final locations) at any later time.
 
-The wheel project provides a `bdist_wheel` command
-for setuptools (requiring a patched distribute from
-https://bitbucket.org/dholth/distribute). Wheel files can be installed
-with a patched `pip` from https://github.com/dholth/pip.
+The wheel project provides a `bdist_wheel` command for setuptools
+(requires distribute >= 0.6.28). Wheel files can be installed with a
+patched `pip` from https://github.com/dholth/pip.
 
 Why not egg?
 ------------
@@ -60,8 +59,8 @@ wheeldemo.sh::
         virtualenv --distribute /tmp/wheeldemo
         cd /tmp/wheeldemo
 
-        # Install wheel and patched pip, distribute
-        bin/pip install --upgrade --ignore-installed --no-index hg+https://bitbucket.org/dholth/distribute#egg=distribute \
+        # Install wheel and patched pip
+        bin/pip install --upgrade --ignore-installed \
                 git+https://github.com/dholth/pip.git#egg=pip
         bin/pip install hg+https://bitbucket.org/dholth/wheel#egg=wheel
 

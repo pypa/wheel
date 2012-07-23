@@ -7,8 +7,8 @@ set -e
 virtualenv --distribute /tmp/wheeldemo
 cd /tmp/wheeldemo
 
-# Install wheel and patched pip, distribute
-bin/pip install --upgrade --ignore-installed --no-index hg+https://bitbucket.org/dholth/distribute#egg=distribute \
+# Install wheel and patched pip
+bin/pip install --upgrade --ignore-installed \
 	git+https://github.com/dholth/pip.git#egg=pip
 bin/pip install hg+https://bitbucket.org/dholth/wheel#egg=wheel
 

@@ -11,13 +11,11 @@ import hmac
 import hashlib
 from email.parser import Parser
 
-from verlib import NormalizedVersion
-
 from .decorator import reify
 from .util import urlsafe_b64encode, utf8, to_json
 
 # The next major version after this version of the 'wheel' tool:
-VERSION_TOO_HIGH = NormalizedVersion("1.0")
+VERSION_TOO_HIGH = (1, 0)
 
 # Non-greedy matching of an optional build number may be too clever (more
 # invalid wheel filenames will match). Separate regex for .dist-info?
@@ -83,7 +81,7 @@ class WheelFile(object):
         
     def check_version(self):
         version = self.parsed_wheel_info['Wheel-Version']
-        assert NormalizedVersion(version) < VERSION_TOO_HIGH, "Wheel version is too high"
+        assert tuple(map(int, version.split('.'))) < VERSION_TOO_HIGH, "Wheel version is too high"
         
     def sign(self, key, alg="HS256"):
         """Sign the wheel file's RECORD using `key` and algorithm `alg`. Alg 

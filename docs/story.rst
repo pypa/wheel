@@ -49,29 +49,14 @@ archive.whl” somewhere on sys.path.
 If you’ve made it this far you probably wonder whether I’ve heard
 of eggs. Some comparisons:
 
-* Wheel is an installation format; egg is importable. Wheel archives do
-not need to include .pyc and are less tied to a specific Python version
-or implementation. Wheel can install (pure Python) packages built with
-previous versions of Python so you don’t always have to wait for the
-packager to catch up.
+* Wheel is an installation format; egg is importable. Wheel archives do not need to include .pyc and are less tied to a specific Python version or implementation. Wheel can install (pure Python) packages built with previous versions of Python so you don’t always have to wait for the packager to catch up.
 
-* Wheel uses .dist-info directories; egg uses .egg-info. Wheel is
-compatible with the new world of Python `packaging` and the new concepts
-it brings.
+* Wheel uses .dist-info directories; egg uses .egg-info. Wheel is compatible with the new world of Python `packaging` and the new concepts it brings.
 
-* Wheel has a richer file naming convention for today’s
-multi-implementation world. A single wheel archive can indicate
-its compatibility with a number of Python language versions and
-implementations, ABIs, and system architectures. Historically the ABI has
-been specific to a CPython release, but when we get a longer-term ABI,
-wheel will be ready.
+* Wheel has a richer file naming convention for today’s multi-implementation world. A single wheel archive can indicate its compatibility with a number of Python language versions and implementations, ABIs, and system architectures. Historically the ABI has been specific to a CPython release, but when we get a longer-term ABI, wheel will be ready.
 
-* Wheel is lossless. The first wheel implementation `bdist_wheel` always
-generates `egg-info`, and then converts it to a `.whl`. Later tools will
-allow for the conversion of existing eggs and bdist_wininst distributions.
+* Wheel is lossless. The first wheel implementation `bdist_wheel` always generates `egg-info`, and then converts it to a `.whl`. Later tools will allow for the conversion of existing eggs and bdist_wininst distributions.
 
-* Wheel is versioned. Every wheel file contains the version of the wheel
-specification and the implementation that packaged it. Hopefully the
-next migration can simply be to Wheel 2.0.
+* Wheel is versioned. Every wheel file contains the version of the wheel specification and the implementation that packaged it. Hopefully the next migration can simply be to Wheel 2.0.
 
 I hope you will benefit from wheel.
