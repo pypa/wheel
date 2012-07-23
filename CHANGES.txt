@@ -1,3 +1,8 @@
+0.6
+===
+- require distribute >= 0.6.28
+- stop using verlib
+
 0.5
 ===
 - working pretty well
