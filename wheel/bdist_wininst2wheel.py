@@ -21,7 +21,7 @@ def bdist_wininst2wheel(path):
     datadir = "%s.data/" % dist_info
     
     # rewrite paths to trick ZipFile into extracting an egg
-    # XXX grab wininst .ini
+    # XXX grab wininst .ini - between .exe, padding, and first zip file.
     bdw = zipfile.ZipFile(path)
     root_is_purelib = True
     for zipinfo in bdw.infolist():
