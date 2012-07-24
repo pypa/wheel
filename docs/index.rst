@@ -129,7 +129,8 @@ The Python implementation is abbreviated. Each implementation has a two-letter c
 * pp: PyPy
 * jy: Jython
 
-concatenated with py_version_nodot “27”.
+concatenated with py_version_nodot “27”. The minor version can be omitted "py2" 
+or "py3" when appropriate.
 
 The ABI tag is an abbreviated SOABI “cp33m”, or, for “pure Python” packages, “noabi”
 
