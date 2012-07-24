@@ -2,6 +2,7 @@
 import os.path
 import re
 import sys
+import sysconfig
 import tempfile
 import zipfile
 import wheel.bdist_wheel
@@ -12,11 +13,24 @@ from shutil import rmtree
 egg_info_re = re.compile(r'''(?P<name>.+?)-(?P<ver>.+?)
     (-(?P<pyver>.+?))?(-(?P<arch>.+?))?.egg''', re.VERBOSE)
 
-bdist_wininst_info_re = re.compile(r'''^(?P<name>.+?)-(?P<ver>.+)\.
-    (?P<arch>\w+-\w+)-(?P<pyver>py\d.+).exe''', re.VERBOSE)
+# bdist_wininst_info_re = re.compile(r'''^(?P<name>.+?)(-(?P<ver>.+?)\.)?
+#     (?P<arch>\w+-\w+)-(?P<pyver>py\d.+).exe''', re.VERBOSE)
 
 def bdist_wininst2wheel(path):
-    info = bdist_wininst_info_re.match(os.path.basename(path)).groupdict()
+    base = os.path.splitext(os.path.basename(path))[0]
+    info = dict()
+    info['name'], sep, base = base.partition('-')
+    base, sep, info['pyver'] = base.rpartition('-')
+    if not sep:
+        base = info['pyver']
+        # This does not work, as the wheel filename format doesn't cater for
+        # archives that are not Python version specific
+        # info['pyver'] = 'any'
+        impl_ver = sysconfig.get_config_var("py_version_nodot")
+        if not impl_ver:
+            impl_ver = ''.join(map(str, sys.version_info[:2]))
+        info['pyver'] = 'py' + impl_ver
+    info['ver'], sep, info['arch'] = base.rpartition('.')
     dist_info = "%(name)s-%(ver)s" % info
     datadir = "%s.data/" % dist_info
     
