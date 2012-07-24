@@ -279,22 +279,32 @@ class bdist_wheel(Command):
     
     def egg2dist(self, egginfo_path, distinfo_path):
         """Convert an .egg-info directory into a .dist-info directory"""
-        pkginfo_path = os.path.join(egginfo_path, 'PKG-INFO')
-        pkg_info = self._pkginfo_to_metadata(egginfo_path, pkginfo_path)
-        
-        # 'safer delete'?
-        if os.path.exists(distinfo_path) and not os.path.islink(distinfo_path):
-            shutil.rmtree(distinfo_path)
-        elif os.path.exists(distinfo_path):
-            os.unlink(distinfo_path)
-            
-        shutil.copytree(egginfo_path, distinfo_path, 
-                        ignore=lambda x, y: set(('PKG-INFO', 'requires.txt')))
-            
+        def adios(p):
+            """Appropriately delete directory, file or link."""
+            if os.path.exists(p) and not os.path.islink(p) and os.path.isdir(p):
+                shutil.rmtree(p)
+            elif os.path.exists(p):
+                os.unlink(p)
+                
+        adios(distinfo_path)
+
+        if os.path.isfile(egginfo_path):
+            # .egg-info is a single file
+            pkginfo_path = egginfo_path
+            pkg_info = self._pkginfo_to_metadata(egginfo_path, egginfo_path)
+            os.mkdir(distinfo_path)
+        else:
+            # .egg-info is a directory
+            pkginfo_path = os.path.join(egginfo_path, 'PKG-INFO')
+            pkg_info = self._pkginfo_to_metadata(egginfo_path, pkginfo_path)        
+                
+            shutil.copytree(egginfo_path, distinfo_path, 
+                            ignore=lambda x, y: set(('PKG-INFO', 'requires.txt')))
+                
         with open(os.path.join(distinfo_path, 'METADATA'), 'w') as metadata:
             Generator(metadata, maxheaderlen=0).flatten(pkg_info)
-
-        shutil.rmtree(egginfo_path)
+        
+        adios(egginfo_path)
         
     def write_record(self, bdist_dir, distinfo_dir):
         from base64 import urlsafe_b64encode
