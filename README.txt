@@ -1,18 +1,23 @@
 
-wheel
+Wheel
 =====
 
-A built-package package format for Python.
+A built-package format for Python.
 
-Can be installed with a patched version of pip from
-https://github.com/dholth/pip
+A wheel is a ZIP-format archive with a specially formatted filename and
+the .whl extension. It is designed to contain all the files for a PEP 376
+compatible install in a way that is very close to the on-disk format. Many
+packages will be properly installed with only the “Unpack” step
+(simply extracting the file onto sys.path), and the unpacked archive
+preserves enough information to “Spread” (copy data and scripts to their
+final locations) at any later time.
 
-Requires a patched distribute from https://bitbucket.org/dholth/distribute
-
-Work on the spec is at https://docs.google.com/document/d/1mWPyvoeiqCrAy4UPNnvaz7Cgrqm4s_cfaTauAeJWABI/edit
+The wheel project provides a `bdist_wheel` command for setuptools
+(requires distribute >= 0.6.28). Wheel files can be installed with a
+patched `pip` from https://github.com/dholth/pip.
 
 Why not egg?
-============
+------------
 
 Python's egg format predates the packaging related standards we have today,
 the most important being PEP 376 "Database of Installed Python Distributions"
@@ -27,3 +32,4 @@ simply the language version used in a particular package.
 Unlike .egg, wheel will be a fully-documented standard at the binary level
 that is truly easy to install even if you do not want to use the reference
 implementation.
+
