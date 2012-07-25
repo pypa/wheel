@@ -12,7 +12,7 @@ import hashlib
 from email.parser import Parser
 
 from .decorator import reify
-from .util import urlsafe_b64encode, utf8, to_json
+from .util import urlsafe_b64encode, utf8, to_json, parse_version
 
 # The next major version after this version of the 'wheel' tool:
 VERSION_TOO_HIGH = (1, 0)
@@ -35,6 +35,9 @@ class WheelFile(object):
         self.parsed_filename = WHEEL_INFO_RE(basename)
         if not basename.endswith('.whl') or self.parsed_filename is None:
             raise ValueError("Bad filename '%s'" % filename)
+
+    def __repr__(self):
+        return self.filename
         
     @reify
     def zipfile(self):
@@ -74,6 +77,16 @@ class WheelFile(object):
     def arity(self):
         return len(list(self.compatibility_tags))
 
+    def compatibility_rank(self, supported):
+        preferences = []
+        for tag in self.compatibility_tags:
+            try:
+                preferences.append(supported.index(tag))
+            # Tag not present
+            except ValueError:
+                pass
+        return (min(preferences), self.arity)
+
     @reify
     def parsed_wheel_info(self):
         """Parse wheel metadata"""
@@ -112,7 +125,24 @@ class WheelFile(object):
         if verify != signature:
             return False
         return True
-        
+
+
+def pick_best(candidates, supported, top=True):
+    # XXX: Are candidates Wheels or paths (strings)?
+    # For now I'll assume they're already wheels.
+
+    ranked = []
+    for whl in candidates:
+        try:
+            preference, arity = whl.compatibility_rank(supported)
+        except ValueError:  # when preferences is empty
+            continue
+        ranked.append((preference, arity, whl))
+    if top:
+        return min(ranked)
+    return sorted(ranked)
+
+
 def install(wheel_path):
     """Install a single wheel (.whl) file without regard for dependencies."""
     try:

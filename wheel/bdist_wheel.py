@@ -28,6 +28,7 @@ from distutils.sysconfig import get_python_version
 from distutils import log as logger
 import shutil
 
+from wheel.util import get_abbr_impl, get_impl_ver
 from wheel.archive import archive_wheelfile
 
 def safer_name(name):
@@ -92,19 +93,7 @@ class bdist_wheel(Command):
         self.set_undefined_options('bdist',
                                    *zip(need_options, need_options))
         
-        self.root_is_purelib = self.distribution.is_pure()        
-
-    def get_abbr_impl(self):
-        """Return abbreviated implementation name"""
-        if hasattr(sys, 'pypy_version_info'):
-            pyimpl = 'pp'
-        elif sys.platform.startswith('java'):
-            pyimpl = 'jy'
-        elif sys.platform == 'cli':
-            pyimpl = 'ip'
-        else:
-            pyimpl = 'cp'
-        return pyimpl
+        self.root_is_purelib = self.distribution.is_pure()
     
     @property
     def wheel_dist_name(self):
@@ -115,15 +104,13 @@ class bdist_wheel(Command):
     def get_archive_basename(self):
         """Return archive name without extension"""
         purity = self.distribution.is_pure()
-        impl_ver = sysconfig.get_config_var("py_version_nodot")
-        if not impl_ver:
-            impl_ver = ''.join(map(str, sys.version_info[:2]))
+        impl_ver = get_impl_ver()
         plat_name = 'noarch'
         abi_tag = 'noabi'
         impl_name = 'py'
         if not purity:
             plat_name = self.plat_name.replace('-', '_').replace('.', '_')
-            impl_name = self.get_abbr_impl()
+            impl_name = get_abbr_impl()
             # PEP 3149 -- no SOABI in Py 2
             # For PyPy?
             # "pp%s%s" % (sys.pypy_version_info.major, 
