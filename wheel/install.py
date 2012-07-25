@@ -12,7 +12,7 @@ import hashlib
 from email.parser import Parser
 
 from .decorator import reify
-from .util import urlsafe_b64encode, utf8, to_json, parse_version
+from .util import urlsafe_b64encode, utf8, to_json
 
 # The next major version after this version of the 'wheel' tool:
 VERSION_TOO_HIGH = (1, 0)
@@ -24,6 +24,7 @@ WHEEL_INFO_RE = re.compile(
     ((-(?P<build>\d.*?))?-(?P<pyver>.+?)-(?P<abi>.+?)-(?P<plat>.+?)
     \.whl|\.dist-info)$""",
 re.VERBOSE).match
+
 
 class WheelFile(object):
     """Parse wheel-specific attributes from a wheel (.whl) file"""    
@@ -128,14 +129,28 @@ class WheelFile(object):
 
 
 def pick_best(candidates, supported, top=True):
-    # XXX: Are candidates Wheels or paths (strings)?
-    # For now I'll assume they're already wheels.
+    '''Pick the best supported wheel among the candidates.
 
+    The algorithm ranks each candidate wheel with respect to the supported
+    ones. A list of supported tags can be automatically generated with
+    :func:`wheel.util.generate_supported`.
+
+    :param candidates: A list of wheels that can be installed.
+    :param supported: A list of tags which represent wheels that can be
+        installed on the current system. Each tag is as follows::
+
+            (python_implementation, abi, architecture)
+
+        For example: ``('cp27', 'cp27m', 'linux_i686')``.
+    :param top: If True, only return the best wheel. Otherwise return all the
+        wheels among the candidates which are supported, sorted from best to
+        worst.
+    '''
     ranked = []
     for whl in candidates:
         try:
             preference, arity = whl.compatibility_rank(supported)
-        except ValueError:  # when preferences is empty
+        except ValueError:  # When preferences is empty
             continue
         ranked.append((preference, arity, whl))
     if top:
@@ -150,4 +165,3 @@ def install(wheel_path):
     except AttributeError:
         raise Exception("This alpha version of wheel will only install into a virtualenv")
     wf = WheelFile(wheel_path)
-    
