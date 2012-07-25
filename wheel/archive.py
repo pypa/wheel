@@ -7,7 +7,6 @@ import os.path
 import zipfile
 
 log = logging.getLogger("wheel")
-logging.basicConfig(level=logging.DEBUG)
 
 def archive_wheelfile(base_name, base_dir):
     olddir = os.path.abspath(os.curdir)
