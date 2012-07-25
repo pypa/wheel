@@ -306,7 +306,7 @@ class bdist_wheel(Command):
         adios(egginfo_path)
         
     def write_record(self, bdist_dir, distinfo_dir):
-        from base64 import urlsafe_b64encode
+        from wheel.util import urlsafe_b64encode
         
         record_path = os.path.join(distinfo_dir, 'RECORD')
         record_relpath = os.path.relpath(record_path, bdist_dir)
