@@ -91,7 +91,7 @@ class WheelFile(object):
             # python-jws (not in pypi) supports other algorithms 
             raise ValueError("Unsupported algorithm")
         sig = self.sign_hs256(key)
-        self.zipfile.writestr('/'.join((self.distinfo_name, 'RECORD.JWT')),
+        self.zipfile.writestr('/'.join((self.distinfo_name, 'RECORD.jws')),
                               sig)
         
     def sign_hs256(self, key):

@@ -28,6 +28,8 @@ from distutils.sysconfig import get_python_version
 from distutils import log as logger
 import shutil
 
+from wheel.archive import archive_wheelfile
+
 def safer_name(name):
     return safe_name(name).replace('-', '_')
 
@@ -194,17 +196,14 @@ class bdist_wheel(Command):
                                          '%s.dist-info' % self.wheel_dist_name)
         self.egg2dist(self.egginfo_dir, 
                       self.distinfo_dir)
-
+        
         self.write_wheelfile(self.distinfo_dir)
         
         self.write_record(self.bdist_dir, self.distinfo_dir)            
 
         # Make the archive
-        filename = self.make_archive(pseudoinstall_root,
-                                     self.format, root_dir=archive_root)
-       
-        wheel_name = filename[:-3] + 'whl'
-        os.rename(filename, filename[:-3] + 'whl')
+        wheel_name = archive_wheelfile(pseudoinstall_root,
+                                       archive_root)
 
         # Add to 'Distribution.dist_files' so that the "upload" command works
         getattr(self.distribution,'dist_files',[]).append(
@@ -334,4 +333,3 @@ class bdist_wheel(Command):
                 size = len(data)
             record_path = os.path.relpath(path, bdist_dir).replace(os.path.sep, '/')
             writer.writerow((record_path, hash, size))
-

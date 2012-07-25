@@ -1,3 +1,7 @@
+0.7
+===
+- sort .dist-info at end of wheel archive
+
 0.6
 ===
 - require distribute >= 0.6.28
