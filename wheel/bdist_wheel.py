@@ -193,9 +193,9 @@ class bdist_wheel(Command):
         self.write_record(self.bdist_dir, self.distinfo_dir)
 
         # Make the archive
-        filename = self.make_archive(pseudoinstall_root, self.format,
-                                     root_dir=archive_root)
-        wheel_name = filename[:-3] + 'whl'
+        if not os.path.exists(self.dist_dir):
+            os.makedirs(self.dist_dir)
+        wheel_name = archive_wheelfile(pseudoinstall_root, archive_root)
 
         # Add to 'Distribution.dist_files' so that the "upload" command works
         getattr(self.distribution, 'dist_files', []).append(
