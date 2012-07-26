@@ -87,21 +87,6 @@ wheeldemo.sh::
         # Install from saved wheels
         bin/pip install --no-index --find-links=file://$PWD/wheelbase pyramid
 
-
-File name convention
---------------------
-
-The wheel filename is `{distribution}-{version}(-{build tag})?-{python tag}-{abi tag}-{platform tag}.whl` ::
-
-    distribution: Distribution name, e.g. ‘django’, ‘pyramid’
-    version: PEP 386-compliant version, e.g. 1.0
-    build tag: Optional build number. Must start with a digit. A tie breaker if two wheels have the same version.
-    Python implementation tag ‘pp27’
-    Python abi tag ‘pp18’
-    Platform tag
-
-For example, package-1.0-py27-noabi-noarch.whl is compatible with Python 2.7 (any Python 2.7 implementation) on any CPU architecture.
-
 File Contents
 -------------
 
@@ -118,10 +103,33 @@ Wheel files contain metadata about the wheel format itself in `{distribution}-{v
         Packager: bdist_wheel-0.1
         Root-Is-Purelib: true
 
+
+File name convention
+--------------------
+
+The wheel filename is `{distribution}-{version}(-{build tag})?-{python tag}-{abi tag}-{platform tag}.whl`
+
+distribution 
+	Distribution name, e.g. ‘django’, ‘pyramid’
+version
+	PEP 386-compliant version, e.g. 1.0
+build tag
+	Optional build number. Must start with a digit. A tie breaker if two wheels have the same version. (Sorts as None if unspecified).
+implementation and language version tag
+	‘pp27’
+abi tag
+	‘cp33dmu’, 'noabi'
+platform tag
+	'linux_x86_64', 'noarch'
+	
+For example, package-1.0-py27-noabi-noarch.whl is compatible with Python 2.7 (any Python 2.7 implementation) on any CPU architecture.
+
+
 Values used in wheel filenames
 ------------------------------
 
-The Python implementation is abbreviated. Each implementation has a two-letter code :
+The Python implementation is abbreviated. Each implementation has a two-letter 
+code, initially :
 
 * py: Generic Python
 * cp: CPython
@@ -167,7 +175,7 @@ page by combining multiple builds into a multi-wheel:
 mostlypython-1.0-cp33-cp33m-win32.whl + mostlypython-1.0-cp33-cp33m-linux_x86_64.whl = mostlypython-1.0-cp33-cp33m-linux_x86_64.win32.whl
 
 Ranking multi-wheels with the same version
-::::::::::::::::::::::::::::::::::::::::::
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Installers will sometimes have to choose the best wheel among several
 for the same version of a distribution. First, rank the supported
