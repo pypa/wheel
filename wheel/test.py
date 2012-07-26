@@ -1,8 +1,12 @@
 import os
+import distutils
 import pkg_resources
 
 from nose.tools import assert_true, assert_false, assert_equal, raises
-from .install import WheelFile
+
+import wheel.util
+from wheel import egg2wheel
+from wheel.install import WheelFile, pick_best
 
 
 def test_findable():
@@ -12,7 +16,6 @@ def test_findable():
 
 def test_egg_re():
     """Make sure egg_info_re matches."""
-    from . import egg2wheel
     egg_names = open(pkg_resources.resource_filename('wheel', 'eggnames.txt'))
     for line in egg_names:
         line = line.strip()
@@ -33,13 +36,11 @@ def test_compatibility_tags():
 
 
 def test_bdist_wheel():
-    import distutils
     os.chdir(pkg_resources.working_set.by_key['wheel'].location)
     distutils.core.run_setup("setup.py", ["bdist_wheel"])
 
 
 def test_util():
-    import wheel.util
     for i in range(10):
         before = b'*' * i
         encoded = wheel.util.urlsafe_b64encode(before)
@@ -52,8 +53,6 @@ def test_pick_best():
     def get_tags(res):
         info = res[-1].parsed_filename.groupdict()
         return info['pyver'], info['abi'], info['plat']
-
-    from wheel.install import pick_best, WheelFile
 
     cand_tags = [('py27', 'noabi', 'noarch'), ('py26', 'noabi', 'noarch'),
                  ('cp27', 'noabi', 'linux_i686'),

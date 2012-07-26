@@ -11,8 +11,8 @@ import hmac
 import hashlib
 from email.parser import Parser
 
-from .decorator import reify
-from .util import urlsafe_b64encode, utf8, to_json
+from wheel.decorator import reify
+from wheel.util import urlsafe_b64encode, utf8, to_json
 
 # The next major version after this version of the 'wheel' tool:
 VERSION_TOO_HIGH = (1, 0)
