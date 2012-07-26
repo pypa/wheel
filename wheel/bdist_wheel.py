@@ -189,6 +189,8 @@ class bdist_wheel(Command):
         self.write_record(self.bdist_dir, self.distinfo_dir)            
 
         # Make the archive
+        if not os.path.exists(self.dist_dir):
+            os.makedirs(self.dist_dir)
         wheel_name = archive_wheelfile(pseudoinstall_root,
                                        archive_root)
 
