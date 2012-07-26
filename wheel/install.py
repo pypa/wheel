@@ -62,12 +62,13 @@ class WheelFile(object):
     @property
     def compatibility_tags(self):
         """A wheel file is compatible with the Cartesian product of the
-        period-delimited tags in its filename. To choose a wheel file among
-        several candidates having the same distribution version 'ver', an 
-        installer ranks each triple of (pyver, abi, plat) that its Python 
-        installation can run, sorting the wheels by the best-ranked tag it
-        supports and then by their arity which is just 
-        len(list(compatibility_tags))."""
+        period-delimited tags in its filename.
+        To choose a wheel file among several candidates having the same
+        distribution version 'ver', an installer ranks each triple of
+        (pyver, abi, plat) that its Python installation can run, sorting
+        the wheels by the best-ranked tag it supports and then by their
+        arity which is just len(list(compatibility_tags)).
+        """
         tags = self.parsed_filename.groupdict()
         for pyver in tags['pyver'].split('.'):
             for abi in tags['abi'].split('.'):
@@ -76,9 +77,15 @@ class WheelFile(object):
                     
     @property
     def arity(self):
+        '''The number of compatibility tags the wheel is compatible with.'''
         return len(list(self.compatibility_tags))
 
     def compatibility_rank(self, supported):
+        '''Rank the wheel against the supported ones.
+
+        :param supported: A list of compatibility tags that the current
+            Python implemenation can run.
+        '''
         preferences = []
         for tag in self.compatibility_tags:
             try:
