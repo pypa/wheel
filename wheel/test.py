@@ -25,6 +25,7 @@ def test_egg_re():
 
 
 def test_compatibility_tags():
+    """Test compatibilty tags are working."""
     wf = WheelFile("package-1.0.0-cp32.cp33-noabi-noarch.whl")
     assert_equal(list(wf.compatibility_tags),
                  [('cp32', 'noabi', 'noarch'), ('cp33', 'noabi', 'noarch')])
@@ -36,11 +37,13 @@ def test_compatibility_tags():
 
 
 def test_bdist_wheel():
+    """Make sure bdist_wheel finish without errors."""
     os.chdir(pkg_resources.working_set.by_key['wheel'].location)
     distutils.core.run_setup("setup.py", ["bdist_wheel"])
 
 
 def test_util():
+    """Test functions in util.py."""
     for i in range(10):
         before = b'*' * i
         encoded = wheel.util.urlsafe_b64encode(before)
@@ -50,6 +53,7 @@ def test_util():
 
 
 def test_pick_best():
+    """Test the wheel ranking algorithm."""
     def get_tags(res):
         info = res[-1].parsed_filename.groupdict()
         return info['pyver'], info['abi'], info['plat']
