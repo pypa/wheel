@@ -16,6 +16,7 @@ egg_info_re = re.compile(r'''(?P<name>.+?)-(?P<ver>.+?)
 # bdist_wininst_info_re = re.compile(r'''^(?P<name>.+?)(-(?P<ver>.+?)\.)?
 #     (?P<arch>\w+-\w+)-(?P<pyver>py\d.+).exe''', re.VERBOSE)
 
+
 def bdist_wininst2wheel(path):
     base = os.path.splitext(os.path.basename(path))[0]
     info = dict()
@@ -33,7 +34,7 @@ def bdist_wininst2wheel(path):
     info['ver'], sep, info['arch'] = base.rpartition('.')
     dist_info = "%(name)s-%(ver)s" % info
     datadir = "%s.data/" % dist_info
-    
+
     # rewrite paths to trick ZipFile into extracting an egg
     # XXX grab wininst .ini - between .exe, padding, and first zip file.
     bdw = zipfile.ZipFile(path)
@@ -43,9 +44,9 @@ def bdist_wininst2wheel(path):
             root_is_purelib = False
             break
     if root_is_purelib:
-        paths = {'purelib':''}
+        paths = {'purelib': ''}
     else:
-        paths = {'platlib':''}
+        paths = {'platlib': ''}
     for zipinfo in bdw.infolist():
         key, basename = zipinfo.filename.split('/', 1)
         key = key.lower()
@@ -59,7 +60,7 @@ def bdist_wininst2wheel(path):
         bdw.NameToInfo[newname] = zipinfo
     dir = tempfile.mkdtemp(suffix="_b2w")
     bdw.extractall(dir)
-    
+
     # egg2wheel
     abi = 'noabi'
     pyver = info['pyver'].replace('.', '')
@@ -68,11 +69,11 @@ def bdist_wininst2wheel(path):
         # assume all binary eggs are for CPython
         pyver = 'cp' + pyver[2:]
     wheel_name = '-'.join((
-            dist_info,
-            pyver,
-            abi,
-            arch
-            ))
+                          dist_info,
+                          pyver,
+                          abi,
+                          arch
+                          ))
     bw = wheel.bdist_wheel.bdist_wheel(distutils.dist.Distribution())
     bw.root_is_purelib = root_is_purelib
     dist_info_dir = os.path.join(dir, '%s.dist-info' % dist_info)
@@ -83,9 +84,7 @@ def bdist_wininst2wheel(path):
     filename = make_archive(wheel_name, 'zip', root_dir=dir)
     os.rename(filename, filename[:-3] + 'whl')
     rmtree(dir)
-    
+
 
 if __name__ == "__main__":
     bdist_wininst2wheel(sys.argv[1])
-    
-        

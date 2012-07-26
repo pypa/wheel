@@ -32,6 +32,7 @@ def from_json(j):
 
 try:
     unicode
+
     def utf8(data):
         if isinstance(data, unicode):
             return data.encode('utf-8')
@@ -75,7 +76,7 @@ def generate_supported(versions=None):
     arch = get_platform().replace('.', '_').replace('-', '_')
     for version in versions:
         for abi in abis:
-            supported.append(('%s%s' % (impl, version), abi, arch))    
+            supported.append(('%s%s' % (impl, version), abi, arch))
         if not impl.startswith('py'):
             # Add pure Python distributions if not already done so
             supported.append(('py%s' % (version), 'noabi', 'noarch'))
