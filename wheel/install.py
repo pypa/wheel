@@ -6,7 +6,6 @@ import sys
 import os.path
 import re
 import zipfile
-import json
 import hmac
 import hashlib
 from email.parser import Parser
@@ -102,8 +101,8 @@ class WheelFile(object):
 
     def check_version(self):
         version = self.parsed_wheel_info['Wheel-Version']
-        assert tuple(map(int, version.split('.'))
-                     ) < VERSION_TOO_HIGH, "Wheel version is too high"
+        if tuple(map(int, version.split('.'))) >= VERSION_TOO_HIGH:
+            raise ValueError("Wheel version is too high")
 
     def sign(self, key, alg="HS256"):
         """Sign the wheel file's RECORD using `key` and algorithm `alg`. Alg

@@ -10,6 +10,9 @@ log = logging.getLogger("wheel")
 
 
 def archive_wheelfile(base_name, base_dir):
+    '''Archive all files under `base_dir` in a whl file and name it like
+    `base_name`.
+    '''
     olddir = os.path.abspath(os.curdir)
     base_name = os.path.abspath(base_name)
     try:

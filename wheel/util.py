@@ -1,6 +1,5 @@
 """Utility functions."""
 
-import re
 import sys
 import base64
 import json
@@ -23,10 +22,12 @@ def urlsafe_b64decode(data):
 
 
 def to_json(o):
+    '''Convert given data to JSON.'''
     return json.dumps(o, sort_keys=True)
 
 
 def from_json(j):
+    '''Decode a JSON payload.'''
     return json.loads(j)
 
 
@@ -34,18 +35,20 @@ try:
     unicode
 
     def utf8(data):
+        '''Utf-8 encode data.'''
         if isinstance(data, unicode):
             return data.encode('utf-8')
         return data
 except NameError:
     def utf8(data):
+        '''Utf-8 encode data.'''
         if isinstance(data, str):
             return data.encode('utf-8')
         return data
 
 
 def get_abbr_impl():
-    """Return abbreviated implementation name"""
+    """Return abbreviated implementation name."""
     if hasattr(sys, 'pypy_version_info'):
         pyimpl = 'pp'
     elif sys.platform.startswith('java'):
@@ -58,6 +61,7 @@ def get_abbr_impl():
 
 
 def get_impl_ver():
+    '''Return implementation version.'''
     impl_ver = sysconfig.get_config_var("py_version_nodot")
     if not impl_ver:
         impl_ver = ''.join(map(str, sys.version_info[:2]))
@@ -65,6 +69,13 @@ def get_impl_ver():
 
 
 def generate_supported(versions=None):
+    '''Generate supported tags for each version specified in `versions`.
+
+    Versions must be given with respect to preference from best to worst.
+    If `versions` is None, then the current version is assumed.
+    Returned tags are sorted from best-matching tags to worst. All tags
+    returned should be compatible with the machine.
+    '''
     # XXX: Only a draft
     supported = []
     current_ver = get_impl_ver()
