@@ -46,6 +46,7 @@ def bdist_wininst2wheel(path):
         paths = {'purelib':''}
     else:
         paths = {'platlib':''}
+    members = []
     for zipinfo in bdw.infolist():
         key, basename = zipinfo.filename.split('/', 1)
         key = key.lower()
@@ -57,8 +58,11 @@ def bdist_wininst2wheel(path):
         zipinfo.filename = newname
         del bdw.NameToInfo[oldname]
         bdw.NameToInfo[newname] = zipinfo
+        # Collect member names, but omit '' (from an entry like "PLATLIB/"
+        if newname:
+            members.append(newname)
     dir = tempfile.mkdtemp(suffix="_b2w")
-    bdw.extractall(dir)
+    bdw.extractall(dir, members)
     
     # egg2wheel
     abi = 'noabi'
