@@ -1,5 +1,5 @@
 [console_scripts]
-wininst2wheel = wheel.bdist_wininst2wheel:main
+wininst2wheel = wheel.wininst2wheel:main
 egg2wheel = wheel.egg2wheel:main
 
 [distutils.commands]
