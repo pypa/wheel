@@ -64,7 +64,7 @@ def test():
         verify(jwsjs)
     except ValueError:
         pass
-    else:
+    else: # pragma no cover
         raise RuntimeError("No error from bad wheel.signatures payload.")
     
 test()
