@@ -12,7 +12,7 @@ from shutil import rmtree
 egg_info_re = re.compile(r'''(?P<name>.+?)-(?P<ver>.+?)
     (-(?P<pyver>.+?))?(-(?P<arch>.+?))?.egg''', re.VERBOSE)
 
-if __name__ == "__main__":
+def main():
     egg_path = sys.argv[1]
     egg_info = egg_info_re.match(os.path.basename(egg_path)).groupdict()
     egg = zipfile.ZipFile(sys.argv[1])
@@ -42,3 +42,5 @@ if __name__ == "__main__":
     os.rename(filename, filename[:-3] + 'whl')
     rmtree(dir)
 
+if __name__ == "__main__":
+    main()

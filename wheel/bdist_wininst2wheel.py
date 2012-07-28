@@ -88,8 +88,10 @@ def bdist_wininst2wheel(path):
     os.rename(filename, filename[:-3] + 'whl')
     rmtree(dir)
     
+def main():
+    bdist_wininst2wheel(sys.argv[1])
 
 if __name__ == "__main__":
-    bdist_wininst2wheel(sys.argv[1])
+    main()
     
         
