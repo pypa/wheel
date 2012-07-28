@@ -289,6 +289,21 @@ class bdist_wheel(Command):
 
         adios(distinfo_path)
 
+        if not os.path.exists(egginfo_path):
+            # There is no egg-info. This is probably because the egg-info
+            # file/directory is not named matching the distribution name used
+            # to name the archive file. Check for this case and report
+            # accordingly.
+            import glob
+            pat = os.path.join(os.path.dirname(egginfo_path), '*.egg-info')
+            possible = glob.glob(pat)
+            err = "Egg metadata not found in %s" % (egginfo_path,)
+            if possible:
+                alt = os.path.basename(possible[0])
+                err += " (%s found - possible misnamed archive file?)" % (alt,)
+
+            raise ValueError(err)
+
         if os.path.isfile(egginfo_path):
             # .egg-info is a single file
             pkginfo_path = egginfo_path
