@@ -1,6 +1,9 @@
 0.7
 ===
 - sort .dist-info at end of wheel archive
+- Windows & Python 3 fixes from Paul Moore
+- pep8
+- scripts to convert wininst & egg to wheel
 
 0.6
 ===
