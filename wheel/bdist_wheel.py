@@ -31,6 +31,15 @@ import shutil
 from wheel.util import get_abbr_impl, get_impl_ver
 from wheel.archive import archive_wheelfile
 
+def open_for_csv(name, mode):
+    if sys.version_info[0] < 3:
+        nl = {}
+        bin = 'b'
+    else:
+        nl = { 'newline': '' }
+        bin = ''
+    return open(name, mode + bin, **nl)
+
 def safer_name(name):
     return safe_name(name).replace('-', '_')
 
@@ -309,7 +318,7 @@ class bdist_wheel(Command):
             return (path.endswith('.pyc') \
                 or path.endswith('.pyo') or path == record_relpath)
                 
-        writer = csv.writer(open(record_path, 'w+'))
+        writer = csv.writer(open_for_csv(record_path, 'w+'))
         for path in walk():
             relpath = os.path.relpath(path, bdist_dir)
             if skip(relpath):
