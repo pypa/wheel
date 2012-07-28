@@ -1,10 +1,10 @@
-import os
+import os, codecs
 
 from setuptools import setup
 
 here = os.path.abspath(os.path.dirname(__file__))
-README = open(os.path.join(here, 'README.txt')).read()
-CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
+README = codecs.open(os.path.join(here, 'README.txt'), encoding='utf8').read()
+CHANGES = codecs.open(os.path.join(here, 'CHANGES.txt'), encoding='utf8').read()
 
 setup(name='wheel',
       version='0.7',
