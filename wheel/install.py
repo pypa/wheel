@@ -6,13 +6,12 @@ import sys
 import os.path
 import re
 import zipfile
-import json
 import hmac
 import hashlib
 from email.parser import Parser
 
-from .decorator import reify
-from .util import urlsafe_b64encode, utf8, to_json
+from wheel.decorator import reify
+from wheel.util import urlsafe_b64encode, utf8, to_json
 
 # The next major version after this version of the 'wheel' tool:
 VERSION_TOO_HIGH = (1, 0)
@@ -23,13 +22,13 @@ WHEEL_INFO_RE = re.compile(
     r"""^(?P<namever>(?P<name>.+?)(-(?P<ver>\d.+?))?)
     ((-(?P<build>\d.*?))?-(?P<pyver>.+?)-(?P<abi>.+?)-(?P<plat>.+?)
     \.whl|\.dist-info)$""",
-re.VERBOSE).match
+    re.VERBOSE).match
 
 
 class WheelFile(object):
-    """Parse wheel-specific attributes from a wheel (.whl) file"""    
+    """Parse wheel-specific attributes from a wheel (.whl) file"""
     WHEEL_INFO = "WHEEL"
-    
+
     def __init__(self, filename):
         self.filename = filename
         basename = os.path.basename(filename)
@@ -39,26 +38,26 @@ class WheelFile(object):
 
     def __repr__(self):
         return self.filename
-        
+
     @reify
     def zipfile(self):
         return zipfile.ZipFile(self.filename)
-        
+
     def get_metadata(self):
         pass
-    
+
     @property
     def distinfo_name(self):
         return "%s.dist-info" % self.parsed_filename.group('namever')
-    
+
     @property
     def datadir_name(self):
         return "%s.data" % self.parsed_filename.group('namever')
-    
+
     @property
     def wheelinfo_name(self):
         return "%s/%s" % (self.distinfo_name, self.WHEEL_INFO)
-    
+
     @property
     def compatibility_tags(self):
         """A wheel file is compatible with the Cartesian product of the
@@ -74,7 +73,7 @@ class WheelFile(object):
             for abi in tags['abi'].split('.'):
                 for plat in tags['plat'].split('.'):
                     yield (pyver, abi, plat)
-                    
+
     @property
     def arity(self):
         '''The number of compatibility tags the wheel is compatible with.'''
@@ -98,36 +97,37 @@ class WheelFile(object):
     @reify
     def parsed_wheel_info(self):
         """Parse wheel metadata"""
-        return Parser().parse(self.zipfile.open(self.wheelinfo_name))    
-        
+        return Parser().parse(self.zipfile.open(self.wheelinfo_name))
+
     def check_version(self):
         version = self.parsed_wheel_info['Wheel-Version']
-        assert tuple(map(int, version.split('.'))) < VERSION_TOO_HIGH, "Wheel version is too high"
-        
+        if tuple(map(int, version.split('.'))) >= VERSION_TOO_HIGH:
+            raise ValueError("Wheel version is too high")
+
     def sign(self, key, alg="HS256"):
-        """Sign the wheel file's RECORD using `key` and algorithm `alg`. Alg 
+        """Sign the wheel file's RECORD using `key` and algorithm `alg`. Alg
         values are from JSON Web Signatures; only HS256 is supported at this
         time."""
         if alg != 'HS256':
-            # python-jws (not in pypi) supports other algorithms 
+            # python-jws (not in pypi) supports other algorithms
             raise ValueError("Unsupported algorithm")
         sig = self.sign_hs256(key)
         self.zipfile.writestr('/'.join((self.distinfo_name, 'RECORD.jws')),
                               sig)
-        
+
     def sign_hs256(self, key):
-        record = self.zipfile.read('/'.join((self.distinfo_name, 'RECORD')))        
+        record = self.zipfile.read('/'.join((self.distinfo_name, 'RECORD')))
         record_digest = urlsafe_b64encode(hashlib.sha256(record).digest())
         header = utf8(to_json(dict(alg="HS256", typ="JWT")))
-        payload = utf8(to_json(dict(hash="sha256="+record_digest)))
-        protected = b'.'.join((urlsafe_b64encode(header), 
+        payload = utf8(to_json(dict(hash="sha256=" + record_digest)))
+        protected = b'.'.join((urlsafe_b64encode(header),
                                urlsafe_b64encode(payload)))
         mac = hmac.HMAC(key, protected, hashlib.sha256).digest()
         sig = b'.'.join((protected, urlsafe_b64encode(mac)))
         return sig
-    
+
     def verify_hs256(self, key):
-        signature = self.zipfile.read('/'.join((self.distinfo_name, 
+        signature = self.zipfile.read('/'.join((self.distinfo_name,
                                                 'RECORD.JWT')))
         verify = self.sign_hs256(key)
         if verify != signature:
@@ -170,5 +170,6 @@ def install(wheel_path):
     try:
         sys.real_prefix
     except AttributeError:
-        raise Exception("This alpha version of wheel will only install into a virtualenv")
+        raise Exception(
+            "This alpha version of wheel will only install into a virtualenv")
     wf = WheelFile(wheel_path)

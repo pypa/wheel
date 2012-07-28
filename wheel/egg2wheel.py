@@ -26,11 +26,11 @@ def main():
         # assume all binary eggs are for CPython
         pyver = 'cp' + pyver[2:]
     wheel_name = '-'.join((
-            dist_info,
-            pyver,
-            abi,
-            arch
-            ))
+                          dist_info,
+                          pyver,
+                          abi,
+                          arch
+                          ))
     bw = wheel.bdist_wheel.bdist_wheel(distutils.dist.Distribution())
     bw.root_is_purelib = egg_info['arch'] is None
     dist_info_dir = os.path.join(dir, '%s.dist-info' % dist_info)
