@@ -11,7 +11,7 @@ setup(name='wheel',
       description='A built-package format for Python.',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
