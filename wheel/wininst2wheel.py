@@ -2,13 +2,13 @@
 import os.path
 import re
 import sys
-import sysconfig
 import tempfile
 import zipfile
 import wheel.bdist_wheel
 import distutils.dist
 from distutils.archive_util import make_archive
 from shutil import rmtree
+from wheel.archive import archive_wheelfile
 
 egg_info_re = re.compile(r'''(^|/)(?P<name>[^/]+?)-(?P<ver>.+?)
     (-(?P<pyver>.+?))?(-(?P<arch>.+?))?.egg-info(/|$)''', re.VERBOSE)
@@ -144,8 +144,8 @@ def bdist_wininst2wheel(path):
     bw.egg2dist(os.path.join(dir, egginfo_name), dist_info_dir)
     bw.write_wheelfile(dist_info_dir, packager='egg2wheel')
     bw.write_record(dir, dist_info_dir)
-    filename = make_archive(wheel_name, 'zip', root_dir=dir)
-    os.rename(filename, filename[:-3] + 'whl')
+    
+    archive_wheelfile(wheel_name, dir)
     rmtree(dir)
 
 def main():
