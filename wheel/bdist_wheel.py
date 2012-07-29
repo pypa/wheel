@@ -297,7 +297,7 @@ class bdist_wheel(Command):
             import glob
             pat = os.path.join(os.path.dirname(egginfo_path), '*.egg-info')
             possible = glob.glob(pat)
-            err = "Egg metadata not found in %s" % (egginfo_path,)
+            err = "Egg metadata expected at %s but not found" % (egginfo_path,)
             if possible:
                 alt = os.path.basename(possible[0])
                 err += " (%s found - possible misnamed archive file?)" % (alt,)
