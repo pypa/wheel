@@ -8,10 +8,12 @@ import re
 import zipfile
 import hmac
 import hashlib
+import csv
 from email.parser import Parser
 
 from wheel.decorator import reify
-from wheel.util import urlsafe_b64encode, utf8, to_json
+from wheel.util import urlsafe_b64encode, utf8, to_json, from_json
+from wheel import signatures
 
 # The next major version after this version of the 'wheel' tool:
 VERSION_TOO_HIGH = (1, 0)
@@ -114,6 +116,33 @@ class WheelFile(object):
         sig = self.sign_hs256(key)
         self.zipfile.writestr('/'.join((self.distinfo_name, 'RECORD.jws')),
                               sig)
+        
+    def verify(self):
+        """Verify the wheel file by verifying the signature and every hash
+        in RECORD."""
+        record = self.zipfile.read('/'.join((self.distinfo_name, 'RECORD')))
+        reader = csv.reader(record.splitlines())
+        for row in reader:
+            filename = row[0]
+            hash = row[1]
+            if not hash:
+                sys.stderr.write("%s has no hash!\n" % filename)
+                continue
+            zf = self.zipfile.open(filename, 'r')
+            sha256 = hashlib.sha256()
+            chunk = zf.read(1<<20)
+            while chunk:
+                sha256.update(chunk)
+                chunk = zf.read(1<<20)
+            expected = "sha256=%s" % urlsafe_b64encode(sha256.digest())
+            if hash != expected:
+                raise ValueError("Bad hash in RECORD for %s" % (filename,))
+            sys.stdout.write("%s %s %s\n" % (filename, hash, expected))
+        record_digest = urlsafe_b64encode(hashlib.sha256(record).digest())
+        sig = from_json(self.zipfile.read('/'.join((self.distinfo_name, 'RECORD.jws'))))
+        headers, payload = signatures.verify(sig)
+        if payload['hash'] != "sha256=" + record_digest:
+            raise ValueError("Claimed RECORD hash != computed hash.")
 
     def sign_hs256(self, key):
         record = self.zipfile.read('/'.join((self.distinfo_name, 'RECORD')))
