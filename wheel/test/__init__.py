@@ -1,6 +1,7 @@
 import os
 import distutils
 import pkg_resources
+import sys
 
 from nose.tools import assert_true, assert_false, assert_equal, raises
 
@@ -38,8 +39,16 @@ def test_compatibility_tags():
 
 def test_bdist_wheel():
     """Make sure bdist_wheel finish without errors."""
-    os.chdir(pkg_resources.working_set.by_key['wheel'].location)
-    distutils.core.run_setup("setup.py", ["bdist_wheel"])
+    pwd = os.curdir
+    simpledist = pkg_resources.resource_filename('wheel.test', 'simple.dist')
+    os.chdir(simpledist)
+    try:
+        sys.path.append(simpledist)
+        sys.argv = ['', 'bdist_wheel']
+        __file__ = 'setup.py'
+        exec(compile(open('setup.py').read(), 'setup.py', 'exec'))
+    finally:
+        os.chdir(pwd)
 
 
 def test_util():
