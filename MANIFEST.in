@@ -1,1 +1,4 @@
 include wheel/*.txt *.txt *.sh
+recursive-include wheel/test *.py
+prune wheel/test/*/dist
+prune wheel/test/*/build
