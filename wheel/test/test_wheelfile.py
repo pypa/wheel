@@ -1,10 +1,13 @@
 import wheel.install
 import hashlib
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import BytesIO as StringIO
 import zipfile
 
 def test_verifying_zipfile():
-    sio = StringIO.StringIO()
+    sio = StringIO()
     zf = zipfile.ZipFile(sio, 'w')
     zf.writestr("one", b"first file")
     zf.writestr("two", b"second file")

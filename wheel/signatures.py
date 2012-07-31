@@ -3,7 +3,10 @@ Create and verify jws-js format Ed25519 signatures.
 """
 
 import json
-import ed25519ll
+try:
+    import ed25519ll
+except ImportError:
+    ed25519ll = None
 from wheel.util import urlsafe_b64decode, urlsafe_b64encode
 
 
@@ -54,6 +57,8 @@ def verify(jwsjs):
     return headers, payload
 
 def test():
+    if ed25519ll is None:
+        return
     # Takes less than 25 milliseconds.
     kp = ed25519ll.crypto_sign_keypair()
     payload = {'test': 'onstartup'}

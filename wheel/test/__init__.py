@@ -84,7 +84,7 @@ def test_pick_best():
     for supp in (supported, supported2, supported3):
         assert_equal(get_tags(pick_best(cand_wheels, supp)), supp[0])
         assert_equal(
-            map(get_tags, pick_best(cand_wheels, supp, top=False)), supp)
+            list(map(get_tags, pick_best(cand_wheels, supp, top=False))), supp)
 
 
 if __name__ == '__main__':
