@@ -176,7 +176,7 @@ class VerifyingZipFile(zipfile.ZipFile):
         zipfile.ZipFile.__init__(self, file, mode, compression, allowZip64)
 
         self._expected_hashes = {}
-        self._hash_algorithm = hashlib.sha256 
+        self._hash_algorithm = hashlib.sha256
         
     def set_expected_hash(self, name, hash):
         """
