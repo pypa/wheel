@@ -41,11 +41,9 @@ def test_bdist_wheel():
     """Make sure bdist_wheel finish without errors."""
     pwd = os.curdir
     simpledist = pkg_resources.resource_filename('wheel.test', 'simple.dist')
-    os.chdir(simpledist)
+    os.chdir(simpledist)    
     try:
-        sys.path.append(simpledist)
         sys.argv = ['', 'bdist_wheel']
-        __file__ = 'setup.py'
         exec(compile(open('setup.py').read(), 'setup.py', 'exec'))
     finally:
         os.chdir(pwd)

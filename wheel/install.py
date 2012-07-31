@@ -45,7 +45,7 @@ class WheelFile(object):
 
     @reify
     def zipfile(self):
-        return zipfile.ZipFile(self.filename)
+        return VerifyingZipFile(self.filename)
 
     def get_metadata(self):
         pass
@@ -123,6 +123,7 @@ class WheelFile(object):
         """Verify the wheel file by verifying the signature and every hash
         in RECORD."""
         record = self.zipfile.read('/'.join((self.distinfo_name, 'RECORD')))
+        sig = '/'.join((self.distinfo_name, 'RECORD.jws'))
         reader = csv.reader(record.splitlines())
         for row in reader:
             filename = row[0]
@@ -175,21 +176,27 @@ class VerifyingZipFile(zipfile.ZipFile):
                  allowZip64=False):
         zipfile.ZipFile.__init__(self, file, mode, compression, allowZip64)
 
+        self._strict = False
         self._expected_hashes = {}
         self._hash_algorithm = hashlib.sha256
         
     def set_expected_hash(self, name, hash):
         """
         :param name: name of zip entry
-        :param hash: bytes of hash
+        :param hash: bytes of hash (or None for "don't care")
         """
         self._expected_hashes[name] = hash
+        
+    def set_strict(self, strict):
+        """If strict is True, then every extracted file must be mentioned in
+        set_expected_hash (may use None for "don't care")"""
         
     def open(self, name, mode="r", pwd=None):
         """Return file-like object for 'name'."""
         # A non-monkey-patched version would contain most of zipfile.py
         ef = zipfile.ZipFile.open(self, name, mode, pwd)
-        if name in self._expected_hashes:
+        if (name in self._expected_hashes 
+            and self._expected_hashes[name] != None):
             expected_hash = self._expected_hashes[name]
             _update_crc_orig = ef._update_crc
             running_hash = self._hash_algorithm()
@@ -199,6 +206,8 @@ class VerifyingZipFile(zipfile.ZipFile):
                 if eof and running_hash.digest() != expected_hash:
                     raise BadWheelFile("Bad hash for file %r" % ef.name)
             ef._update_crc = _update_crc
+        elif self._strict and name not in self._expected_hashes:
+            raise BadWheelFile("No expected hash for file %r" % ef.name)
         return ef
 
 
