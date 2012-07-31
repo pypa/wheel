@@ -26,6 +26,8 @@ WHEEL_INFO_RE = re.compile(
     \.whl|\.dist-info)$""",
     re.VERBOSE).match
 
+class BadWheelFile(ValueError):
+    pass
 
 class WheelFile(object):
     """Parse wheel-specific attributes from a wheel (.whl) file"""
@@ -162,6 +164,42 @@ class WheelFile(object):
         if verify != signature:
             return False
         return True
+    
+    
+class VerifyingZipFile(zipfile.ZipFile):
+    """ZipFile that can assert that each of its extracted contents matches
+    an expected sha256 hash."""
+    
+    def __init__(self, file, mode="r", 
+                 compression=zipfile.ZIP_STORED, 
+                 allowZip64=False):
+        zipfile.ZipFile.__init__(self, file, mode, compression, allowZip64)
+
+        self._expected_hashes = {}
+        self._hash_algorithm = hashlib.sha256 
+        
+    def set_expected_hash(self, name, hash):
+        """
+        :param name: name of zip entry
+        :param hash: bytes of hash
+        """
+        self._expected_hashes[name] = hash
+        
+    def open(self, name, mode="r", pwd=None):
+        """Return file-like object for 'name'."""
+        # A non-monkey-patched version would contain most of zipfile.py
+        ef = zipfile.ZipFile.open(self, name, mode, pwd)
+        if name in self._expected_hashes:
+            expected_hash = self._expected_hashes[name]
+            _update_crc_orig = ef._update_crc
+            running_hash = self._hash_algorithm()
+            def _update_crc(newdata, eof):
+                _update_crc_orig(newdata, eof)
+                running_hash.update(newdata)
+                if eof and running_hash.digest() != expected_hash:
+                    raise BadWheelFile("Bad hash for file %r" % ef.name)
+            ef._update_crc = _update_crc
+        return ef
 
 
 def pick_best(candidates, supported, top=True):
@@ -202,3 +240,4 @@ def install(wheel_path):
         raise Exception(
             "This alpha version of wheel will only install into a virtualenv")
     wf = WheelFile(wheel_path)
+    raise NotImplementedError()
