@@ -14,6 +14,9 @@ def test_verifying_zipfile():
     zf.writestr("three", b"third file")
     zf.close()
     
+    # In default mode, VerifyingZipFile checks the hash of any read file
+    # mentioned with set_expected_hash(). Files not mentioned with
+    # set_expected_hash() are not checked.
     vzf = wheel.install.VerifyingZipFile(sio, 'r')
     vzf.set_expected_hash("one", hashlib.sha256(b"first file").digest())
     vzf.set_expected_hash("three", "blurble")
@@ -25,4 +28,17 @@ def test_verifying_zipfile():
         pass
     else:
         raise Exception("expected exception 'BadWheelFile()'")
+    
+    # In strict mode, VerifyingZipFile requires every read file to be
+    # mentioned with set_expected_hash().
+    vzf.strict = True
+    try:
+        vzf.open("two").read()
+    except wheel.install.BadWheelFile:
+        pass
+    else:
+        raise Exception("expected exception 'BadWheelFile()'")
+        
+    vzf.set_expected_hash("two", None)
+    vzf.open("two").read()
     

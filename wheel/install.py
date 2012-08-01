@@ -12,7 +12,8 @@ import csv
 from email.parser import Parser
 
 from wheel.decorator import reify
-from wheel.util import urlsafe_b64encode, utf8, to_json, from_json
+from wheel.util import urlsafe_b64encode, utf8, to_json, from_json,\
+    urlsafe_b64decode
 from wheel import signatures
 
 # The next major version after this version of the 'wheel' tool:
@@ -122,30 +123,34 @@ class WheelFile(object):
     def verify(self):
         """Verify the wheel file by verifying the signature and every hash
         in RECORD."""
-        record = self.zipfile.read('/'.join((self.distinfo_name, 'RECORD')))
-        sig = '/'.join((self.distinfo_name, 'RECORD.jws'))
+        self.zipfile.strict = True
+        
+        record_name = '/'.join((self.distinfo_name, 'RECORD'))
+        sig_name = '/'.join((self.distinfo_name, 'RECORD.jws'))
+        self.zipfile.set_expected_hash(record_name, None)
+        self.zipfile.set_expected_hash(sig_name, None)        
+        record = self.zipfile.read(record_name)
+                
+        record_digest = urlsafe_b64encode(hashlib.sha256(record).digest())
+        sig = from_json(self.zipfile.read(sig_name))
+        headers, payload = signatures.verify(sig)
+        if payload['hash'] != "sha256=" + record_digest:
+            raise ValueError("Claimed RECORD hash != computed hash.")
+        
         reader = csv.reader(record.splitlines())
+        
         for row in reader:
             filename = row[0]
             hash = row[1]
             if not hash:
                 sys.stderr.write("%s has no hash!\n" % filename)
                 continue
+            self.zipfile.set_expected_hash(filename, urlsafe_b64decode(hash))
+            
             zf = self.zipfile.open(filename, 'r')
-            sha256 = hashlib.sha256()
             chunk = zf.read(1<<20)
             while chunk:
-                sha256.update(chunk)
                 chunk = zf.read(1<<20)
-            expected = "sha256=%s" % urlsafe_b64encode(sha256.digest())
-            if hash != expected:
-                raise ValueError("Bad hash in RECORD for %s" % (filename,))
-            sys.stdout.write("%s %s %s\n" % (filename, hash, expected))
-        record_digest = urlsafe_b64encode(hashlib.sha256(record).digest())
-        sig = from_json(self.zipfile.read('/'.join((self.distinfo_name, 'RECORD.jws'))))
-        headers, payload = signatures.verify(sig)
-        if payload['hash'] != "sha256=" + record_digest:
-            raise ValueError("Claimed RECORD hash != computed hash.")
 
     def sign_hs256(self, key):
         record = self.zipfile.read('/'.join((self.distinfo_name, 'RECORD')))
@@ -176,7 +181,7 @@ class VerifyingZipFile(zipfile.ZipFile):
                  allowZip64=False):
         zipfile.ZipFile.__init__(self, file, mode, compression, allowZip64)
 
-        self._strict = False
+        self.strict = False
         self._expected_hashes = {}
         self._hash_algorithm = hashlib.sha256
         
@@ -186,10 +191,6 @@ class VerifyingZipFile(zipfile.ZipFile):
         :param hash: bytes of hash (or None for "don't care")
         """
         self._expected_hashes[name] = hash
-        
-    def set_strict(self, strict):
-        """If strict is True, then every extracted file must be mentioned in
-        set_expected_hash (may use None for "don't care")"""
         
     def open(self, name, mode="r", pwd=None):
         """Return file-like object for 'name'."""
@@ -206,7 +207,7 @@ class VerifyingZipFile(zipfile.ZipFile):
                 if eof and running_hash.digest() != expected_hash:
                     raise BadWheelFile("Bad hash for file %r" % ef.name)
             ef._update_crc = _update_crc
-        elif self._strict and name not in self._expected_hashes:
+        elif self.strict and name not in self._expected_hashes:
             raise BadWheelFile("No expected hash for file %r" % ef.name)
         return ef
 
