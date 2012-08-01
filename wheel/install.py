@@ -174,7 +174,8 @@ class WheelFile(object):
     
 class VerifyingZipFile(zipfile.ZipFile):
     """ZipFile that can assert that each of its extracted contents matches
-    an expected sha256 hash."""
+    an expected sha256 hash. Note that each file must be completly read in 
+    order for its hash to be checked."""
     
     def __init__(self, file, mode="r", 
                  compression=zipfile.ZIP_STORED, 
