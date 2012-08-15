@@ -122,7 +122,7 @@ abi tag
 platform tag
 	'linux_x86_64', 'any'
 	
-For example, package-1.0-py27-noabi-noarch.whl is compatible with Python 2.7 (any Python 2.7 implementation) on any CPU architecture.
+For example, package-1.0-py27-none-any.whl is compatible with Python 2.7 (any Python 2.7 implementation) on any CPU architecture.
 
 The last three components of the file are called "compatibility tags."  The
 compatibility tags express the package's basic interpreter requirements, and

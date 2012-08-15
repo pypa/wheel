@@ -116,8 +116,8 @@ class bdist_wheel(Command):
         """Return archive name without extension"""
         purity = self.distribution.is_pure()
         impl_ver = get_impl_ver()
-        plat_name = 'noarch'
-        abi_tag = 'noabi'
+        abi_tag = 'none'
+        plat_name = 'any'
         impl_name = 'py'
         if not purity:
             plat_name = self.plat_name.replace('-', '_').replace('.', '_')

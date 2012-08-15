@@ -19,10 +19,10 @@ def main():
     dir = tempfile.mkdtemp(suffix="_e2w")
     egg.extractall(dir)
     dist_info = "%s-%s" % (egg_info['name'], egg_info['ver'])
-    abi = 'noabi'
+    abi = 'none'
     pyver = egg_info['pyver'].replace('.', '')
-    arch = (egg_info['arch'] or 'noarch').replace('.', '_').replace('-', '_')
-    if arch != 'noarch':
+    arch = (egg_info['arch'] or 'any').replace('.', '_').replace('-', '_')
+    if arch != 'any':
         # assume all binary eggs are for CPython
         pyver = 'cp' + pyver[2:]
     wheel_name = '-'.join((

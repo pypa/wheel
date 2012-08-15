@@ -126,10 +126,10 @@ def bdist_wininst2wheel(path):
     bdw.extractall(dir, members)
 
     # egg2wheel
-    abi = 'noabi'
+    abi = 'none'
     pyver = info['pyver'].replace('.', '')
-    arch = (info['arch'] or 'noarch').replace('.', '_').replace('-', '_')
-    if arch != 'noarch':
+    arch = (info['arch'] or 'any').replace('.', '_').replace('-', '_')
+    if arch != 'any':
         # assume all binary eggs are for CPython
         pyver = 'cp' + pyver[2:]
     wheel_name = '-'.join((
