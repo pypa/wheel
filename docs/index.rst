@@ -43,7 +43,7 @@ Usage
 The current version of wheel can be used to speed up repeated
 installations by reducing the number of times you have to compile your
 software. When you are creating a virtualenv for each new version of your
-software, as in some web deployment schemes, the savings can be
+software, the savings can be
 dramatic. This script from the wheel source code builds a virtualenv
 that can build and understand wheels, packages pyramid and all its
 dependencies as wheels, and then installs pyramid from the built packages.
@@ -118,32 +118,15 @@ build tag
 implementation and language version tag
 	‘pp27’
 abi tag
-	‘cp33dmu’, 'noabi'
+	‘cp33dmu’, 'none'
 platform tag
-	'linux_x86_64', 'noarch'
+	'linux_x86_64', 'any'
 	
 For example, package-1.0-py27-noabi-noarch.whl is compatible with Python 2.7 (any Python 2.7 implementation) on any CPU architecture.
 
-
-Values used in wheel filenames
-------------------------------
-
-The Python implementation is abbreviated. Each implementation has a two-letter 
-code, initially :
-
-* py: Generic Python
-* cp: CPython
-* ip: IronPython
-* pp: PyPy
-* jy: Jython
-
-concatenated with py_version_nodot “27”. The minor version can be omitted "py2" 
-or "py3" when appropriate.
-
-The ABI tag is an abbreviated SOABI “cp33m”, or, for “pure Python” packages, “noabi”
-
-The platform tag is distutils.util.get_platform() with all periods and hyphens 
-replaced with underscore, or the string ‘noarch’.
+The last three components of the file are called "compatibility tags."  The
+compatibility tags express the package's basic interpreter requirements, and
+are detailed in PEP 485 [http://hg.python.org/peps/file/tip/pep-0425.txt]. 
 
 Wheels within wheels XXX work in progress
 -----------------------------------------
