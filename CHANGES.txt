@@ -1,3 +1,9 @@
+0.8
+===
+- none/any draft pep tags update
+- improved wininst2wheel script
+- doc changes and other improvements
+
 0.7
 ===
 - sort .dist-info at end of wheel archive
