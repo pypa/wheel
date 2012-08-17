@@ -83,12 +83,12 @@ def generate_supported(versions=None):
     if versions is None:
         versions = [''.join(map(str, sys.version_info[:2]))]
     impl = get_abbr_impl()
-    abis = ['noabi']  # XXX: Fix here
+    abis = ['none']  # XXX: Should add more depending on the implementation
     arch = get_platform().replace('.', '_').replace('-', '_')
     for version in versions:
         for abi in abis:
             supported.append(('%s%s' % (impl, version), abi, arch))
         if not impl.startswith('py'):
             # Add pure Python distributions if not already done so
-            supported.append(('py%s' % (version), 'noabi', 'noarch'))
+            supported.append(('py%s' % (version), 'none', 'any'))
     return supported
