@@ -56,3 +56,10 @@ def test_pop_zipfile():
     else:
         raise Exception("expected RuntimeError")
     
+    zf = wheel.install.VerifyingZipFile(sio, 'a')
+    zf.pop()
+    zf.close()
+    
+    zf = wheel.install.VerifyingZipFile(sio, 'r')
+    assert len(zf.infolist()) == 1
+    

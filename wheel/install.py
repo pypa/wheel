@@ -215,7 +215,7 @@ class VerifyingZipFile(zipfile.ZipFile):
     def pop(self):
         """Truncate the last file off this zipfile.
         Assumes infolist() is in the same order as the files (true for
-        ordinary zip files)"""    
+        ordinary zip files created by Python)"""
         if not self.fp:
             raise RuntimeError(
                   "Attempt to pop from ZIP archive that was already closed")
