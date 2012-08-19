@@ -14,17 +14,17 @@ wb = baker.Baker()
 def keygen():
     """Generate a public/private key pair."""
     keypair = ed25519ll.crypto_sign_keypair()
-    vk = urlsafe_b64encode(keypair.vk)
-    sk = urlsafe_b64encode(keypair.sk)
+    vk = urlsafe_b64encode(keypair.vk).decode('latin1')
+    sk = urlsafe_b64encode(keypair.sk).decode('latin1')
     kr = keyring.get_keyring()
-    kr.set_password(b"wheel", vk, sk)
-    sys.stdout.write(u"Created Ed25519 keypair with vk={0}\n".format(vk))
+    kr.set_password("wheel", vk, sk)
+    sys.stdout.write("Created Ed25519 keypair with vk={0}\n".format(vk))
     if isinstance(kr, keyring.backend.BasicFileKeyring):
-        sys.stdout.write(u"in {0}\n".format(kr.file_path))
+        sys.stdout.write("in {0}\n".format(kr.file_path))
     else:
-        sys.stdout.write(u"in %r\n" % kr)
+        sys.stdout.write("in %r\n" % kr)
 
-    sk2 = kr.get_password(b'wheel', vk)
+    sk2 = kr.get_password('wheel', vk)
     if sk2 != sk:
         raise Exception("Keyring is broken. Could not retrieve secret key.")
 
