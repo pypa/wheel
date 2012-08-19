@@ -42,3 +42,17 @@ def test_verifying_zipfile():
     vzf.set_expected_hash("two", None)
     vzf.open("two").read()
     
+def test_pop_zipfile():
+    sio = StringIO()
+    zf = wheel.install.VerifyingZipFile(sio, 'w')
+    zf.writestr("one", b"first file")
+    zf.writestr("two", b"second file")
+    zf.close()
+    
+    try:
+        zf.pop()
+    except RuntimeError:
+        pass # already closed
+    else:
+        raise Exception("expected RuntimeError")
+    

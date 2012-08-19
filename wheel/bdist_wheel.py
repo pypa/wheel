@@ -261,7 +261,7 @@ class bdist_wheel(Command):
         # XXX does Requires: become Requires-Dist: ?
         # (very few source packages include Requires: (644) or
         # Requires-Dist: (5) in PKG-INFO); packaging treats both identically
-        pkg_info = Parser().parse(open(pkginfo_path))
+        pkg_info = Parser().parse(open(pkginfo_path, 'r'), True)
         pkg_info.replace_header('Metadata-Version', '1.2')
         requires_path = os.path.join(egg_info_path, 'requires.txt')
         if os.path.exists(requires_path):
@@ -314,10 +314,22 @@ class bdist_wheel(Command):
             pkginfo_path = os.path.join(egginfo_path, 'PKG-INFO')
             pkg_info = self._pkginfo_to_metadata(egginfo_path, pkginfo_path)
 
+            # ignore common egg metadata that is useless to wheel
             shutil.copytree(egginfo_path, distinfo_path,
-                            ignore=lambda x, y: set(('PKG-INFO', 'requires.txt')))
+                            ignore=lambda x, y: set(('PKG-INFO', 
+                                                     'requires.txt',
+                                                     'SOURCES.txt',
+                                                     'top_level.txt',
+                                                     'not-zip-safe',)))
+            
+            # delete dependency_links if it is only whitespace
+            dependency_links = os.path.join(distinfo_path, 'dependency_links.txt')
+            if not open(dependency_links, 'r').read().strip(): 
+                adios(dependency_links)
 
         with open(os.path.join(distinfo_path, 'METADATA'), 'w') as metadata:
+            pkg_info.set_charset('utf8')
+            pkg_info.set_payload(None)
             Generator(metadata, maxheaderlen=0).flatten(pkg_info)
 
         adios(egginfo_path)

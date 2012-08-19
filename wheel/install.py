@@ -39,7 +39,7 @@ class WheelFile(object):
         basename = os.path.basename(filename)
         self.parsed_filename = WHEEL_INFO_RE(basename)
         if not basename.endswith('.whl') or self.parsed_filename is None:
-            raise ValueError("Bad filename '%s'" % filename)
+            raise BadWheelFile("Bad filename '%s'" % filename)
 
     def __repr__(self):
         return self.filename
@@ -135,7 +135,7 @@ class WheelFile(object):
         sig = from_json(self.zipfile.read(sig_name))
         headers, payload = signatures.verify(sig)
         if payload['hash'] != "sha256=" + record_digest:
-            raise ValueError("Claimed RECORD hash != computed hash.")
+            raise BadWheelFile("Claimed RECORD hash != computed hash.")
         
         reader = csv.reader(record.splitlines())
         
@@ -212,6 +212,18 @@ class VerifyingZipFile(zipfile.ZipFile):
             raise BadWheelFile("No expected hash for file %r" % ef.name)
         return ef
 
+    def pop(self):
+        """Truncate the last file off this zipfile.
+        Assumes infolist() is in the same order as the files (true for
+        ordinary zip files)"""    
+        if not self.fp:
+            raise RuntimeError(
+                  "Attempt to pop from ZIP archive that was already closed")
+        last = self.infolist().pop()
+        del self.NameToInfo[last.filename]
+        self.fp.seek(last.header_offset, os.SEEK_SET)
+        self.fp.truncate()
+        self._didModify = True
 
 def pick_best(candidates, supported, top=True):
     '''Pick the best supported wheel among the candidates.
