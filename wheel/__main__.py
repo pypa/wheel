@@ -6,6 +6,9 @@ import baker
 import ed25519ll
 import sys
 import keyring
+import wheel.install
+import wheel.signatures
+import json
 from .util import urlsafe_b64decode, urlsafe_b64encode
 
 wb = baker.Baker()
@@ -29,9 +32,27 @@ def keygen():
         raise Exception("Keyring is broken. Could not retrieve secret key.")
 
 @wb.command()
-def sign():
+def sign(wheelfile):
     """Sign a wheel"""
-    pass
+    import hashlib    
+    wf = wheel.install.WheelFile(wheelfile, append=True)
+    record_name = wf.distinfo_name + '/RECORD'
+    sig_name = wf.distinfo_name + '/RECORD.JWS'
+    if sig_name in wf.zipfile.namelist():
+        raise NotImplementedError("Wheel is already signed")
+    record_data = wf.zipfile.read(record_name)
+    payload = {"hash":"sha256=%s" % urlsafe_b64encode(hashlib.sha256(record_data).digest())}
+    sig = wheel.signatures.sign(payload, ed25519ll.crypto_sign_keypair())
+    wf.zipfile.writestr(sig_name, json.dumps(sig, sort_keys=True))
+    wf.zipfile.close()
+
+@wb.command()
+def verify(wheelfile):
+    """Verify a wheel."""    
+    wf = wheel.install.WheelFile(wheelfile)
+    sig_name = wf.distinfo_name + '/RECORD.JWS'
+    sig = json.loads(wf.zipfile.open(sig_name).read())
+    sys.stdout.write("Signatures are %r" % (wheel.signatures.verify(sig),))
 
 def main():
     wb.run()

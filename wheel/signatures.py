@@ -36,10 +36,12 @@ def verify(jwsjs):
     Caller must decide whether the keys are actually trusted."""
     # XXX forbid duplicate keys in JSON input
     encoded_headers = jwsjs["headers"]
-    encoded_payload = jwsjs["payload"]
+    encoded_payload = jwsjs["payload"].encode('latin1')
     encoded_signatures = jwsjs["signatures"]
     headers = []
     for h, s in zip(encoded_headers, encoded_signatures):
+        h = h.encode('latin1')
+        s = s.encode('latin1')
         header = json.loads(urlsafe_b64decode(h))
         assert header["alg"] == "Ed25519"
         assert header["key"]["alg"] == "Ed25519"

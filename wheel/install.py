@@ -34,8 +34,12 @@ class WheelFile(object):
     """Parse wheel-specific attributes from a wheel (.whl) file"""
     WHEEL_INFO = "WHEEL"
 
-    def __init__(self, filename):
+    def __init__(self, filename, append=False):
+        """
+        :param append: Open archive in append mode.
+        """
         self.filename = filename
+        self.append = append
         basename = os.path.basename(filename)
         self.parsed_filename = WHEEL_INFO_RE(basename)
         if not basename.endswith('.whl') or self.parsed_filename is None:
@@ -46,7 +50,10 @@ class WheelFile(object):
 
     @reify
     def zipfile(self):
-        return VerifyingZipFile(self.filename)
+        mode = "r"
+        if self.append:
+            mode = "a"
+        return VerifyingZipFile(self.filename, mode)
 
     def get_metadata(self):
         pass
