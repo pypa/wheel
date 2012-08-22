@@ -32,13 +32,13 @@ def keygen():
         raise Exception("Keyring is broken. Could not retrieve secret key.")
 
 @wb.command()
-def sign(wheelfile):
+def sign(wheelfile, replace=False):
     """Sign a wheel"""
     import hashlib    
     wf = wheel.install.WheelFile(wheelfile, append=True)
     record_name = wf.distinfo_name + '/RECORD'
-    sig_name = wf.distinfo_name + '/RECORD.JWS'
-    if sig_name in wf.zipfile.namelist():
+    sig_name = wf.distinfo_name + '/RECORD.jws'
+    if sig_name in wf.zipfile.namelist(): 
         raise NotImplementedError("Wheel is already signed")
     record_data = wf.zipfile.read(record_name)
     payload = {"hash":"sha256=%s" % urlsafe_b64encode(hashlib.sha256(record_data).digest())}
@@ -48,11 +48,13 @@ def sign(wheelfile):
 
 @wb.command()
 def verify(wheelfile):
-    """Verify a wheel."""    
+    """Verify a wheel."""
+    import pprint
     wf = wheel.install.WheelFile(wheelfile)
-    sig_name = wf.distinfo_name + '/RECORD.JWS'
+    sig_name = wf.distinfo_name + '/RECORD.jws'
     sig = json.loads(wf.zipfile.open(sig_name).read())
-    sys.stdout.write("Signatures are %r" % (wheel.signatures.verify(sig),))
+    sys.stdout.write("Signatures are internally consistent.\n%s\n" % (
+                     pprint.pformat(wheel.signatures.verify(sig),)))
 
 def main():
     wb.run()

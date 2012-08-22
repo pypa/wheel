@@ -128,37 +128,8 @@ The last three components of the file are called "compatibility tags."  The
 compatibility tags express the package's basic interpreter requirements, and
 are detailed in PEP 485 [http://hg.python.org/peps/file/tip/pep-0425.txt]. 
 
-Wheels within wheels XXX work in progress
------------------------------------------
-
-A wheel filename can contain multiple implementation, platform, and
-architecture tags separated by a `.` to indicate compatibility.
-
-Two or more wheel files may be combined into a multi-wheel
-
-* Ensure both wheel’s Root-Is-Purelib flags match.
-* Merge the two directory trees, taking care that any overlapping files have the same content (Python source code) or can be merged sensibly (fat binaries, potentially METADATA). This will not always be possible.
-* For each source wheel, copy RECORD into RECORD.{python tag}.{platform tag}.
-* Create a new RECORD listing the combined contents of the multi-wheel.
-
-The multi-wheel filename indicates the sets of Python versions and platforms from the source wheels:
-
-`{distribution}-{version}-{python tag 1}.{python tag 2}-{platform tag 1}.{platform tag 2}.whl`
-
-(The single Python and platform tags from an ordinary wheel become
-.-separated sets of tags.) The multi-wheel is only legal if it is
-compatible with the Cartesian product of the two sets of tags; normally,
-one of {python tag} or {platform tag} willl match when combining two
-wheels into a multi-wheel.
-
-For example, a mostly-Python project with a .so extension module on Linux
-and a .dll on Windows could save server space and simplify its download
-page by combining multiple builds into a multi-wheel:
-
-mostlypython-1.0-cp33-cp33m-win32.whl + mostlypython-1.0-cp33-cp33m-linux_x86_64.whl = mostlypython-1.0-cp33-cp33m-linux_x86_64.win32.whl
-
-Ranking multi-wheels with the same version
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Ranking wheels with the same version
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Installers will sometimes have to choose the best wheel among several
 for the same version of a distribution. First, rank the supported
@@ -178,14 +149,14 @@ but not RECORD. For example::
 
         file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT_pNh2yI,3144
 
-The signature is one or more JSON Web Signature JSON Serialization (JWS-JS)
-signatures stored in a file
-RECORD.jws in the .dist-info directory adjacent to RECORD. The JSON Web
-Signature payload is an object with one key “hash” with a value
-of a hash of RECORD stored in the same format as entries in RECORD:
-digestname=urlsafe_b64encode_nopad(digest), but need not use the same hash
-function as RECORD. The signing algorithm ‘JWS using HMAC SHA-256’
-must be supported.
+The signature is one or more JSON Web Signature JSON Serialization
+(JWS-JS) signatures stored in a file RECORD.jws in the
+.dist-info directory adjacent to RECORD. The JSON Web Signature
+payload is an object with one key “hash” with a value of a
+hash of RECORD stored in the same format as entries in RECORD:
+digestname=urlsafe_b64encode_nopad(digest), but need not use the same
+hash function as RECORD. The only supported signing algorithm is ‘JWS
+using Ed25519’ and the only currently supported hash algorithm is sha256.
 
 To verify, first verify the signature, then hash RECORD with the hashing
 algorithm used in the signed payload and check for equality with the
@@ -197,11 +168,38 @@ included in the signed RECORD; an implementation could choose to unpack
 only the verified files. Verification must also reject signatures that
 use hashing algorithms outside a list of trusted algorithms.
 
+Public-key signed wheels bundle the (short) public key in the signature. A
+wheel installer should always verify the internal consistency of any
+bundled signatures and the hashes in RECORD while unpacking, and may
+check that signatures come from a trusted signer.
+
+A signature-aware installer can be instructed to check for a particular
+Ed25519 public key by using an extended "extras" syntax.::
+
+        # request a normal optional feature "extra", and a particular
+        # urlsafe-b64encode-nopad Ed25519 (ed25519 is in lowercase within
+        # the []) public key:
+        package[extra, ed25519=ouBJlTJJ4SJXoy8Bi1KRlewWLU6JW7HUXTgvU1YRuiA]
+
+An application could distribute a `requires.txt` file with many such
+lines for all its dependencies and their public keys.  By installing
+from this file an application's users would know whether the applicaton's
+dependencies came from the correct publishers.
+
+Applications that wish to "fail open" for backwards compatibility with
+non-signature-aware installers should specify that their package provides
+the extra `ed25519=(key)` with no associated dependencies.
+
 Key distribution is outside the scope of this spec. Public wheel signing
 keys could be signed with the packager’s GPG key, or stored at an
-https://-protected URL. Within an organization, wheel files could be
-signed with a private key using HMAC and distribute the private key
-over ssh.
+https://-protected URL.
+
+The `wheel` command line tool can create signed wheel files with
+`wheel sign wheelfilename.whl`. It generates a new signing key for each
+invocation because it is not smart enough to remember them yet. `wheel
+verify wheelfilename.whl` will check the signature for internal
+consistentcy, but does not yet check that `RECORD` hashes to the correct
+value, or that the files in the wheel hash to the values in `RECORD`.
 
 See http://self-issued.info/docs/draft-ietf-jose-json-web-signature.html, http://self-issued.info/docs/draft-jones-json-web-signature-json-serialization-01.html
 
