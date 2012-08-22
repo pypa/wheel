@@ -2,6 +2,7 @@
 Wheel command-line utility.
 """
 
+import os
 import baker
 import ed25519ll
 import sys
@@ -13,7 +14,7 @@ from .util import urlsafe_b64decode, urlsafe_b64encode
 
 wb = baker.Baker()
 
-@wb.command()
+@wb.command
 def keygen():
     """Generate a public/private key pair."""
     keypair = ed25519ll.crypto_sign_keypair()
@@ -31,7 +32,7 @@ def keygen():
     if sk2 != sk:
         raise Exception("Keyring is broken. Could not retrieve secret key.")
 
-@wb.command()
+@wb.command
 def sign(wheelfile, replace=False):
     """Sign a wheel"""
     import hashlib    
@@ -46,7 +47,7 @@ def sign(wheelfile, replace=False):
     wf.zipfile.writestr(sig_name, json.dumps(sig, sort_keys=True))
     wf.zipfile.close()
 
-@wb.command()
+@wb.command
 def verify(wheelfile):
     """Verify a wheel."""
     import pprint
@@ -56,8 +57,24 @@ def verify(wheelfile):
     sys.stdout.write("Signatures are internally consistent.\n%s\n" % (
                      pprint.pformat(wheel.signatures.verify(sig),)))
 
-def main():
-    wb.run()
-    
+
+@wb.command(shortopts={'dest': 'd'})
+def unpack(wheelfile, dest='.'):
+    """Unpack a wheel.
+
+    Wheel content will be unpacked to {dest}/{name}-{ver}, where {name}
+    is the package name and {ver} its version.
+
+    :param wheelfile: The path to the wheel.
+    :param dest: Destination directory (default to current directory).
+    """
+    wf = wheel.install.WheelFile(wheelfile)
+    namever = wf.parsed_filename.group('namever')
+    destination = os.path.join(dest, namever)
+    sys.stdout.write("Unpacking to: %s\n" % (destination))
+    wf.zipfile.extractall(destination)
+    wf.zipfile.close()
+
+
 if __name__ == "__main__":
     wb.run()
