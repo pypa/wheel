@@ -57,7 +57,6 @@ def verify(wheelfile):
     sys.stdout.write("Signatures are internally consistent.\n%s\n" % (
                      pprint.pformat(wheel.signatures.verify(sig),)))
 
-
 @wb.command(shortopts={'dest': 'd'})
 def unpack(wheelfile, dest='.'):
     """Unpack a wheel.

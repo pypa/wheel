@@ -145,7 +145,9 @@ class WheelFile(object):
         if sig:
             headers, payload = signatures.verify(sig)
             if payload['hash'] != "sha256=" + native(record_digest):
-                raise BadWheelFile("RECORD.sig claimed RECORD hash %r != computed hash %r." % (payload['hash'], record_digest))
+                msg = "RECORD.sig claimed RECORD hash {0} != computed hash {1}."
+                raise BadWheelFile(msg.format(payload['hash'], 
+                                              native(record_digest)))
         
         reader = csv.reader((native(r) for r in record.splitlines()))
         
