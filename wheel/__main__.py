@@ -7,7 +7,6 @@ import baker
 import ed25519ll
 import hashlib
 import sys
-import keyring
 import wheel.install
 import wheel.signatures
 import json
@@ -18,6 +17,7 @@ wb = baker.Baker()
 @wb.command
 def keygen():
     """Generate a public/private key pair."""
+    import keyring
     keypair = ed25519ll.crypto_sign_keypair()
     vk = urlsafe_b64encode(keypair.vk).decode('latin1')
     sk = urlsafe_b64encode(keypair.sk).decode('latin1')

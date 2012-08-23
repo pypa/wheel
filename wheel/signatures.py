@@ -9,24 +9,8 @@ try:
     import ed25519ll
 except ImportError:
     ed25519ll = None
-from wheel.util import urlsafe_b64decode, urlsafe_b64encode
+from wheel.util import urlsafe_b64decode, urlsafe_b64encode, native, binary
 
-try:
-    unicode
-    def native(s):
-        return s
-    def binary(s):
-        if isinstance(s, unicode):
-            return s.encode('latin1')
-        return s
-except NameError:
-    def native(s):
-        if isinstance(s, bytes):
-            return s.decode('latin1')
-        return s
-    def binary(s):
-        if isinstance(s, str):
-            return s.encode('latin1')
 
 def sign(payload, keypair):
     """Return a JWS-JS format signature given a JSON-serializable payload and 

@@ -28,8 +28,9 @@ from distutils.sysconfig import get_python_version
 from distutils import log as logger
 import shutil
 
-from wheel.util import get_abbr_impl, get_impl_ver
-from wheel.archive import archive_wheelfile
+from .util import get_abbr_impl, get_impl_ver
+from .archive import archive_wheelfile
+from .pkginfo import read_pkg_info, write_pkg_info
 
 def open_for_csv(name, mode):
     if sys.version_info[0] < 3:
@@ -261,7 +262,7 @@ class bdist_wheel(Command):
         # XXX does Requires: become Requires-Dist: ?
         # (very few source packages include Requires: (644) or
         # Requires-Dist: (5) in PKG-INFO); packaging treats both identically
-        pkg_info = Parser().parse(open(pkginfo_path, 'r'))
+        pkg_info = read_pkg_info(pkginfo_path)
         pkg_info.replace_header('Metadata-Version', '1.2')
         requires_path = os.path.join(egg_info_path, 'requires.txt')
         if os.path.exists(requires_path):
@@ -327,8 +328,7 @@ class bdist_wheel(Command):
             if not open(dependency_links, 'r').read().strip(): 
                 adios(dependency_links)
 
-        with open(os.path.join(distinfo_path, 'METADATA'), 'w') as metadata:
-            Generator(metadata, maxheaderlen=0).flatten(pkg_info)
+        write_pkg_info(os.path.join(distinfo_path, 'METADATA'), pkg_info)
 
         adios(egginfo_path)
 

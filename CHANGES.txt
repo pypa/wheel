@@ -1,3 +1,10 @@
+0.9
+===
+- Updated digital signatures scheme
+- Python 3 support for digital signatures
+- Always verify RECORD hashes on extract
+- "wheel" command line tool to sign, verify, unpack wheel files
+
 0.8
 ===
 - none/any draft pep tags update

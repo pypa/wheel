@@ -51,6 +51,24 @@ except NameError:
         return data
 
 
+try:
+    unicode
+    def native(s):
+        return s
+    def binary(s):
+        if isinstance(s, unicode):
+            return s.encode('latin1')
+        return s
+except NameError:
+    def native(s):
+        if isinstance(s, bytes):
+            return s.decode('latin1')
+        return s
+    def binary(s):
+        if isinstance(s, str):
+            return s.encode('latin1')
+
+
 def get_abbr_impl():
     """Return abbreviated implementation name."""
     if hasattr(sys, 'pypy_version_info'):

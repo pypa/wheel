@@ -13,7 +13,7 @@ from email.parser import Parser
 
 from wheel.decorator import reify
 from wheel.util import urlsafe_b64encode, utf8, to_json, from_json,\
-    urlsafe_b64decode
+    urlsafe_b64decode, native, binary
 from wheel import signatures
 
 # The next major version after this version of the 'wheel' tool:
@@ -126,6 +126,7 @@ class WheelFile(object):
         and setting expected hashes for every hash in RECORD.
         Caller must complete the verification process by completely reading 
         every file in the archive (e.g. with extractall)."""
+        sig = None
         if zipfile is None:
             zipfile = self.zipfile
         zipfile.strict = True
@@ -137,12 +138,16 @@ class WheelFile(object):
         record = zipfile.read(record_name)
                 
         record_digest = urlsafe_b64encode(hashlib.sha256(record).digest())
-        sig = from_json(zipfile.read(sig_name))
-        headers, payload = signatures.verify(sig)
-        if payload['hash'] != "sha256=" + record_digest:
-            raise BadWheelFile("Claimed RECORD hash != computed hash.")
+        try:
+            sig = from_json(zipfile.read(sig_name))
+        except KeyError: # no signature
+            pass
+        if sig:
+            headers, payload = signatures.verify(sig)
+            if payload['hash'] != "sha256=" + record_digest:
+                raise BadWheelFile("Claimed RECORD hash != computed hash.")
         
-        reader = csv.reader(record.splitlines())
+        reader = csv.reader((native(r) for r in record.splitlines()))
         
         for row in reader:
             filename = row[0]
@@ -153,7 +158,7 @@ class WheelFile(object):
                 continue
             algo, data = row[1].split('=', 1)
             assert algo == "sha256", "Unsupported hash algorithm"
-            zipfile.set_expected_hash(filename, urlsafe_b64decode(data))
+            zipfile.set_expected_hash(filename, urlsafe_b64decode(binary(data)))
     
     
 class VerifyingZipFile(zipfile.ZipFile):
