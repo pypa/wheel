@@ -27,8 +27,10 @@ WHEEL_INFO_RE = re.compile(
     \.whl|\.dist-info)$""",
     re.VERBOSE).match
 
+
 class BadWheelFile(ValueError):
     pass
+
 
 class WheelFile(object):
     """Parse wheel-specific attributes from a wheel (.whl) file"""
