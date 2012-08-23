@@ -34,7 +34,7 @@ def keygen():
         raise Exception("Keyring is broken. Could not retrieve secret key.")
 
 @wb.command
-def sign(wheelfiles, replace=False):
+def sign(wheelfile, replace=False):
     """Sign a wheel"""    
     wf = wheel.install.WheelFile(wheelfile, append=True)
     record_name = wf.distinfo_name + '/RECORD'
