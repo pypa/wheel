@@ -52,21 +52,23 @@ except NameError:
 
 
 try:
+    # For encoding ascii back and forth between bytestrings, as is repeatedly
+    # necessary in JSON-based crypto under Python 3
     unicode
     def native(s):
         return s
     def binary(s):
         if isinstance(s, unicode):
-            return s.encode('latin1')
+            return s.encode('ascii')
         return s
 except NameError:
     def native(s):
         if isinstance(s, bytes):
-            return s.decode('latin1')
+            return s.decode('ascii')
         return s
     def binary(s):
         if isinstance(s, str):
-            return s.encode('latin1')
+            return s.encode('ascii')
 
 
 def get_abbr_impl():

@@ -10,7 +10,7 @@ import sys
 import wheel.install
 import wheel.signatures
 import json
-from .util import urlsafe_b64decode, urlsafe_b64encode, native
+from .util import urlsafe_b64decode, urlsafe_b64encode, native, binary
 
 wb = baker.Baker()
 
@@ -19,8 +19,8 @@ def keygen():
     """Generate a public/private key pair."""
     import keyring
     keypair = ed25519ll.crypto_sign_keypair()
-    vk = urlsafe_b64encode(keypair.vk).decode('latin1')
-    sk = urlsafe_b64encode(keypair.sk).decode('latin1')
+    vk = binary(urlsafe_b64encode(keypair.vk))
+    sk = binary(urlsafe_b64encode(keypair.sk))
     kr = keyring.get_keyring()
     kr.set_password("wheel", vk, sk)
     sys.stdout.write("Created Ed25519 keypair with vk={0}\n".format(vk))

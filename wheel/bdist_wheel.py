@@ -28,7 +28,7 @@ from distutils.sysconfig import get_python_version
 from distutils import log as logger
 import shutil
 
-from .util import get_abbr_impl, get_impl_ver
+from .util import get_abbr_impl, get_impl_ver, native
 from .archive import archive_wheelfile
 from .pkginfo import read_pkg_info, write_pkg_info
 
@@ -356,7 +356,7 @@ class bdist_wheel(Command):
             else:
                 data = open(path, 'rb').read()
                 digest = hashlib.sha256(data).digest()
-                hash = 'sha256=%s' % urlsafe_b64encode(digest).decode('latin1')
+                hash = 'sha256='+native(urlsafe_b64encode(digest))
                 size = len(data)
             record_path = os.path.relpath(
                 path, bdist_dir).replace(os.path.sep, '/')
