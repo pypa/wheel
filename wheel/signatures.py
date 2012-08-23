@@ -16,6 +16,8 @@ try:
     def native(s):
         return s
     def binary(s):
+        if isinstance(s, unicode):
+            return s.encode('latin1')
         return s
 except NameError:
     def native(s):

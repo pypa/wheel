@@ -5,6 +5,7 @@ Wheel command-line utility.
 import os
 import baker
 import ed25519ll
+import hashlib
 import sys
 import keyring
 import wheel.install
@@ -33,9 +34,8 @@ def keygen():
         raise Exception("Keyring is broken. Could not retrieve secret key.")
 
 @wb.command
-def sign(wheelfile, replace=False):
-    """Sign a wheel"""
-    import hashlib    
+def sign(wheelfiles, replace=False):
+    """Sign a wheel"""    
     wf = wheel.install.WheelFile(wheelfile, append=True)
     record_name = wf.distinfo_name + '/RECORD'
     sig_name = wf.distinfo_name + '/RECORD.jws'
@@ -76,5 +76,8 @@ def unpack(wheelfile, dest='.'):
     wf.zipfile.close()
 
 
-if __name__ == "__main__":
+def main(): # needed for console script
     wb.run()
+
+if __name__ == "__main__":
+    main()
