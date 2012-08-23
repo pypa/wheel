@@ -3,7 +3,11 @@
 import sys
 import base64
 import json
-import sysconfig
+try:
+    import sysconfig
+except ImportError:  # pragma nocover
+    # Python < 2.7
+    import distutils.sysconfig as sysconfig
 from distutils.util import get_platform
 
 __all__ = ['urlsafe_b64encode', 'urlsafe_b64decode', 'utf8', 'to_json',
