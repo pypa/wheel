@@ -10,7 +10,7 @@ import sys
 import wheel.install
 import wheel.signatures
 import json
-from .util import urlsafe_b64decode, urlsafe_b64encode
+from .util import urlsafe_b64decode, urlsafe_b64encode, native
 
 wb = baker.Baker()
 
@@ -42,7 +42,7 @@ def sign(wheelfile, replace=False):
     if sig_name in wf.zipfile.namelist(): 
         raise NotImplementedError("Wheel is already signed")
     record_data = wf.zipfile.read(record_name)
-    payload = {"hash":"sha256=%s" % urlsafe_b64encode(hashlib.sha256(record_data).digest())}
+    payload = {"hash":"sha256="+native(urlsafe_b64encode(hashlib.sha256(record_data).digest()))}
     sig = wheel.signatures.sign(payload, ed25519ll.crypto_sign_keypair())
     wf.zipfile.writestr(sig_name, json.dumps(sig, sort_keys=True))
     wf.zipfile.close()
@@ -53,7 +53,7 @@ def verify(wheelfile):
     import pprint
     wf = wheel.install.WheelFile(wheelfile)
     sig_name = wf.distinfo_name + '/RECORD.jws'
-    sig = json.loads(wf.zipfile.open(sig_name).read())
+    sig = json.loads(native(wf.zipfile.open(sig_name).read()))
     sys.stdout.write("Signatures are internally consistent.\n%s\n" % (
                      pprint.pformat(wheel.signatures.verify(sig),)))
 

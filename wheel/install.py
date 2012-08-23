@@ -139,12 +139,12 @@ class WheelFile(object):
                 
         record_digest = urlsafe_b64encode(hashlib.sha256(record).digest())
         try:
-            sig = from_json(zipfile.read(sig_name))
+            sig = from_json(native(zipfile.read(sig_name)))
         except KeyError: # no signature
             pass
         if sig:
             headers, payload = signatures.verify(sig)
-            if payload['hash'] != "sha256=" + record_digest:
+            if payload['hash'] != "sha256=" + native(record_digest):
                 raise BadWheelFile("Claimed RECORD hash != computed hash.")
         
         reader = csv.reader((native(r) for r in record.splitlines()))
