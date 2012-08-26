@@ -6,13 +6,12 @@ import sys
 import os.path
 import re
 import zipfile
-import hmac
 import hashlib
 import csv
 from email.parser import Parser
 
 from wheel.decorator import reify
-from wheel.util import urlsafe_b64encode, utf8, to_json, from_json,\
+from wheel.util import urlsafe_b64encode, from_json,\
     urlsafe_b64decode, native, binary
 from wheel import signatures
 
@@ -93,7 +92,7 @@ class WheelFile(object):
 
     @property
     def arity(self):
-        '''The number of compatibility tags the wheel is compatible with.'''
+        '''The number of compatibility tags the wheel declares.'''
         return len(list(self.compatibility_tags))
 
     def compatibility_rank(self, supported):
@@ -122,7 +121,7 @@ class WheelFile(object):
             raise ValueError("Wheel version is too high")
         
     def verify(self, zipfile=None):
-        """Verify the VerifyingZipFile `zipfile` by verifying its signature 
+        """Configure the VerifyingZipFile `zipfile` by verifying its signature 
         and setting expected hashes for every hash in RECORD.
         Caller must complete the verification process by completely reading 
         every file in the archive (e.g. with extractall)."""
@@ -249,13 +248,3 @@ def pick_best(candidates, supported, top=True):
         return min(ranked)
     return sorted(ranked)
 
-
-def install(wheel_path):
-    """Install a single wheel (.whl) file without regard for dependencies."""
-    try:
-        sys.real_prefix
-    except AttributeError:
-        raise Exception(
-            "This alpha version of wheel will only install into a virtualenv")
-    wf = WheelFile(wheel_path)
-    raise NotImplementedError()

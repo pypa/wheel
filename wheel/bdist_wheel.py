@@ -18,7 +18,6 @@ import pkg_resources
 from pkg_resources import safe_name, safe_version
 
 from shutil import rmtree
-from email.parser import Parser
 from email.generator import Generator
 
 from distutils.util import get_platform

@@ -16,3 +16,4 @@ dist
 docs/_build
 htmlcov
 requirements.txt
+__pycache__
