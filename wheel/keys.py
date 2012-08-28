@@ -43,7 +43,7 @@ class WheelKeys(object):
     def load(self):
         # XXX JSON is not a great database
         for path in dirspec.basedir.load_config_paths('wheel'):
-            conf = os.path.join(path, 'wheel.json')
+            conf = os.path.join(native(path), 'wheel.json')
             if os.path.exists(conf):
                 with open(conf, 'r') as infile:
                     self.data = json.load(infile)

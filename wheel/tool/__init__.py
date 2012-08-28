@@ -53,11 +53,14 @@ def sign(wheelfile, replace=False):
     
     name = wf.parsed_filename.group('name')
     sign_with = wk.signers(name)[0]
-    vk = binary(sign_with[1])
     sys.stdout.write("Signing {0} with {1}\n".format(name, sign_with[1]))
     
-    sk = binary(keyring.get_keyring().get_password('wheel', vk))
-    keypair = ed25519ll.Keypair(urlsafe_b64decode(vk), urlsafe_b64decode(sk))
+    vk = sign_with[1]
+    kr = keyring.get_keyring()
+    sk = kr.get_password('wheel', vk)
+    keypair = ed25519ll.Keypair(urlsafe_b64decode(binary(vk)), 
+                                urlsafe_b64decode(binary(sk)))
+    
     
     record_name = wf.distinfo_name + '/RECORD'
     sig_name = wf.distinfo_name + '/RECORD.jws'
