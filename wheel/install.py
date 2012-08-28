@@ -3,6 +3,7 @@
 # XXX see patched pip to install
 
 import sys
+import warnings
 import os.path
 import re
 import zipfile
@@ -194,7 +195,12 @@ class VerifyingZipFile(zipfile.ZipFile):
         if (name in self._expected_hashes 
             and self._expected_hashes[name] != None):
             expected_hash = self._expected_hashes[name]
-            _update_crc_orig = ef._update_crc
+            try:
+                _update_crc_orig = ef._update_crc
+            except AttributeError:
+                warnings.warn('Need ZipExtFile._update_crc to implement '
+                              'file hash verification (in Python >= 2.7)')
+                return ef
             running_hash = self._hash_algorithm()
             def _update_crc(newdata, eof):
                 _update_crc_orig(newdata, eof)
