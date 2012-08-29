@@ -56,7 +56,7 @@ class WheelKeys(object):
     def save(self):
         # Try not to call this a very long time after load() 
         path = dirspec.basedir.save_config_path('wheel')
-        conf = os.path.join(path, 'wheel.json')
+        conf = os.path.join(native(path), 'wheel.json')
         with open(conf, 'w+') as out:
             json.dump(self.data, out, indent=2)
         return self
