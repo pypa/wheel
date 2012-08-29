@@ -155,6 +155,10 @@ Signing is done in a subprocess because it is not convenient for
 the build environment to contain bindings to the keyring and 
 cryptography libraries.
 
+A future version of `wheel sign` will be able to choose different signing
+keys depending on the package name, in case a user wishes to reserve a more
+widely trusted key for packages they intend to distribute.
+
 Signed wheel files
 ------------------
 
