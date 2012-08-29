@@ -23,8 +23,8 @@ def keygen():
     wk = wheel.keys.WheelKeys().load()
     
     keypair = ed25519ll.crypto_sign_keypair()
-    vk = binary(urlsafe_b64encode(keypair.vk))
-    sk = binary(urlsafe_b64encode(keypair.sk))
+    vk = native(urlsafe_b64encode(keypair.vk))
+    sk = native(urlsafe_b64encode(keypair.sk))
     kr = keyring.get_keyring()
     kr.set_password("wheel", vk, sk)
     sys.stdout.write("Created Ed25519 keypair with vk={0}\n".format(vk))
