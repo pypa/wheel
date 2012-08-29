@@ -7,6 +7,7 @@ import csv
 import hashlib
 import os
 import sys
+import subprocess
 
 try:
     import sysconfig
@@ -204,6 +205,10 @@ class bdist_wheel(Command):
         if not os.path.exists(self.dist_dir):
             os.makedirs(self.dist_dir)
         wheel_name = archive_wheelfile(pseudoinstall_root, archive_root)
+        
+        # Sign the archive
+        if 'WHEEL_TOOL' in os.environ:
+            subprocess.call([os.environ['WHEEL_TOOL'], 'sign', wheel_name])
 
         # Add to 'Distribution.dist_files' so that the "upload" command works
         getattr(self.distribution, 'dist_files', []).append(

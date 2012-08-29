@@ -137,6 +137,24 @@ implementation tags by preference, e.g. CPython might prefer cp33m,
 py33, py32. Second, choose the multi-wheel with the smallest arity. If
 all else fails, rebuild from source.
 
+Automatically sign wheel files
+------------------------------
+
+`bdist_wheel` will automatically sign wheel files if the environment variable
+`WHEEL_TOOL` is set to the path of the `wheel` command line tool::
+
+	# Install the wheel tool and its dependencies
+	$ pip install wheel[tool]
+	# Generate a signing key (only once)
+	$ wheel keygen
+	    
+	$ export WHEEL_TOOL=/path/to/wheel	
+	$ python setup.py bdist_wheel
+	
+Signing is done in a subprocess because it is not convenient for 
+the build environment to contain bindings to the keyring and 
+cryptography libraries.
+
 Signed wheel files
 ------------------
 

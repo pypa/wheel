@@ -7,7 +7,7 @@ README = codecs.open(os.path.join(here, 'README.txt'), encoding='utf8').read()
 CHANGES = codecs.open(os.path.join(here, 'CHANGES.txt'), encoding='utf8').read()
 
 setup(name='wheel',
-      version='0.9.1',
+      version='0.9.2',
       description='A built-package format for Python.',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
@@ -29,7 +29,7 @@ setup(name='wheel',
       packages=['wheel', 'wheel.test', 'wheel.tool'],
       install_requires=['distribute>=0.6.28', 'markerlib'],
       extras_require={'signatures': ['ed25519ll'], 
-                      'tool': ['baker', 'keyring', 'dirspec']},
+                      'tool': ['baker', 'keyring', 'dirspec', 'ed25519ll']},
       include_package_data=True,
       zip_safe=False,
       test_suite = 'nose.collector',
