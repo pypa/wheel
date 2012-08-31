@@ -263,11 +263,8 @@ class bdist_wheel(Command):
         return " (%s)" % ','.join(requires_dist)
 
     def _pkginfo_to_metadata(self, egg_info_path, pkginfo_path):
-        # XXX does Requires: become Requires-Dist: ?
-        # (very few source packages include Requires: (644) or
-        # Requires-Dist: (5) in PKG-INFO); packaging treats both identically
         pkg_info = read_pkg_info(pkginfo_path)
-        pkg_info.replace_header('Metadata-Version', '1.2')
+        pkg_info.replace_header('Metadata-Version', '1.3')
         requires_path = os.path.join(egg_info_path, 'requires.txt')
         if os.path.exists(requires_path):
             requires = open(requires_path).read()
