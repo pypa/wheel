@@ -133,8 +133,11 @@ class WheelFile(object):
         
         record_name = '/'.join((self.distinfo_name, 'RECORD'))
         sig_name = '/'.join((self.distinfo_name, 'RECORD.jws'))
+        # tolerate s/mime signatures: 
+        smime_sig_name = '/'.join((self.distinfo_name, 'RECORD.p7s'))
         zipfile.set_expected_hash(record_name, None)
         zipfile.set_expected_hash(sig_name, None)
+        zipfile.set_expected_hash(smime_sig_name, None)
         record = zipfile.read(record_name)
                 
         record_digest = urlsafe_b64encode(hashlib.sha256(record).digest())
