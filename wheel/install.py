@@ -9,12 +9,12 @@ import re
 import zipfile
 import hashlib
 import csv
-from email.parser import Parser
 
 from wheel.decorator import reify
 from wheel.util import urlsafe_b64encode, from_json,\
     urlsafe_b64decode, native, binary
 from wheel import signatures
+from wheel.pkginfo import read_pkg_info_bytes
 
 # The next major version after this version of the 'wheel' tool:
 VERSION_TOO_HIGH = (1, 0)
@@ -114,7 +114,7 @@ class WheelFile(object):
     @reify
     def parsed_wheel_info(self):
         """Parse wheel metadata"""
-        return Parser().parse(self.zipfile.open(self.wheelinfo_name))
+        return read_pkg_info_bytes(self.zipfile.read(self.wheelinfo_name))
 
     def check_version(self):
         version = self.parsed_wheel_info['Wheel-Version']

@@ -12,6 +12,9 @@ except NameError:
 if not _PY3:
     from email.generator import Generator
     
+    def read_pkg_info_bytes(bytestr):
+        return Parser().parsestr(bytestr)
+
     def read_pkg_info(path):
         with open(path, "r") as headers:
             message = Parser().parse(headers)
@@ -23,6 +26,11 @@ if not _PY3:
 
 else:
     from email.generator import BytesGenerator
+    def read_pkg_info_bytes(bytestr):
+        headers = bytestr.decode(encoding="ascii", errors="surrogateescape")
+        message = Parser().parsestr(headers)
+        return message
+
     def read_pkg_info(path):
         with open(path, "r", 
                   encoding="ascii", 
