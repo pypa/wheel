@@ -42,67 +42,47 @@ Usage
 
 The current version of wheel can be used to speed up repeated
 installations by reducing the number of times you have to compile your
-software. When you are creating a virtualenv for each new version of your
-software, the savings can be
-dramatic. This script from the wheel source code builds a virtualenv
-that can build and understand wheels, packages pyramid and all its
-dependencies as wheels, and then installs pyramid from the built packages.
+software. When you are creating a virtualenv for each revision of your
+software, the savings can be dramatic. This example packages pyramid
+and all its dependencies as wheels, and then installs pyramid from the
+built packages::
 
-wheeldemo.sh::
+        # Install pip, wheel
+        pip install git+https://github.com/dholth/pip#egg=pip wheel
 
-        #!/bin/sh
-        set -e
+        # Build a directory of wheels
+        mkdir /tmp/wheel-cache
+        pip install --wheel-cache=/tmp/wheel-cache --no-install pyramid
+        
+        # Install from cached wheels
+        pip install --use-wheel --no-index --find-links=file:///tmp/wheel-cache pyramid
 
-        # bdist_wheel demo
-
-        # Create environment
-        virtualenv --distribute /tmp/wheeldemo
-        cd /tmp/wheeldemo
-
-        # Install wheel and patched pip
-        bin/pip install --upgrade --ignore-installed \
-                git+https://github.com/dholth/pip.git#egg=pip
-        bin/pip install hg+https://bitbucket.org/dholth/wheel#egg=wheel
-
-        # Make sure it worked
-        bin/python -c "import pkg_resources; pkg_resources.DistInfoDistribution"
-
-        # Download an unpack a package and its dependencies into build/
-        bin/pip install --build build --no-install --ignore-installed pyramid
-        cd build
-
-        # Make wheels for each package
-        for i in `find . -maxdepth 1 -mindepth 1 -type d`; do
-                (cd $i; ../../bin/python -c "import setuptools, sys; sys.argv = ['', 'bdist_wheel']; __file__ = 'setup.py'; exec(compile(open('setup.py').read(), 'setup.py', 'exec'))")
-        done
-
-        # Copy them into a repository
-        mkdir -p ../wheelbase
-        find . -name *.whl -exec mv {} ../wheelbase \;
-        cd ..
-
-        # Remove build dir or pip will look there first
-        rm -rf build
-
-        # Install from saved wheels
-        bin/pip install --no-index --find-links=file://$PWD/wheelbase pyramid
+For lxml, an up to 3-minute "search for the newest version and compile"
+can become a less-than-1 second "unpack from wheel".
 
 File Contents
 -------------
 
-Wheel files contain a folder `{distribution}-{version}.dist-info/` with the PEP 376 metadata and an additional file `WHEEL` with metadata about the package itself.
+Wheel files contain a folder `{distribution}-{version}.dist-info/` with
+the PEP 376 metadata and an additional file `WHEEL` with metadata about
+the package itself.
 
 The root of a .whl is either purelib or platlib.
 
-If a .whl contains scripts, both purelib and platlib, or any other files that 
-are not installed on sys.path, they are found in `{distribution}-{version}.data/{key}`.
+If a .whl contains scripts, both purelib and platlib, or any
+other files that are not installed on sys.path, they are found in
+`{distribution}-{version}.data/{key}`.
 
-Wheel files contain metadata about the wheel format itself in `{distribution}-{version}/WHEEL` ::
+Wheel files contain metadata about the wheel format itself in
+`{distribution}-{version}/WHEEL` ::
 
         Wheel-Version: 0.9
-        Packager: bdist_wheel-0.1
+        Packager: bdist_wheel
         Root-Is-Purelib: true
 
+A wheel installer should warn if `Wheel-Version` is greater than the
+version it supports, and fail if `Wheel-Version` has a greater major
+version than the version it supports.
 
 File name convention
 --------------------
@@ -122,7 +102,8 @@ abi tag
 platform tag
 	'linux_x86_64', 'any'
 	
-For example, package-1.0-py27-none-any.whl is compatible with Python 2.7 (any Python 2.7 implementation) on any CPU architecture.
+For example, package-1.0-py27-none-any.whl is compatible with Python 2.7
+(any Python 2.7 implementation) on any CPU architecture.
 
 The last three components of the file are called "compatibility tags."  The
 compatibility tags express the package's basic interpreter requirements, and
@@ -131,17 +112,19 @@ are detailed in PEP 485 [http://hg.python.org/peps/file/tip/pep-0425.txt].
 Ranking wheels with the same version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Installers will sometimes have to choose the best wheel among several
-for the same version of a distribution. First, rank the supported
-implementation tags by preference, e.g. CPython might prefer cp33m,
-py33, py32. Second, choose the multi-wheel with the smallest arity. If
-all else fails, rebuild from source.
+Installers will sometimes have to choose the best wheel among
+several for the same version of a distribution. First, rank the
+supported implementation tags by preference, e.g. CPython might
+prefer cp33m, py33, py32. Second, choose the wheel with the smallest
+arity (``len(python_tag.split('.')) * len(abi_tag.split('.')) *
+len(platform_tag.split('.'))``). If all else fails, rebuild from source.
 
 Automatically sign wheel files
 ------------------------------
 
-`bdist_wheel` will automatically sign wheel files if the environment variable
-`WHEEL_TOOL` is set to the path of the `wheel` command line tool::
+`python setup.py bdist_wheel` will automatically sign wheel files if
+the environment variable `WHEEL_TOOL` is set to the path of the `wheel`
+command line tool::
 
 	# Install the wheel tool and its dependencies
 	$ pip install wheel[tool]
@@ -164,36 +147,20 @@ Signed wheel files
 
 Wheel files include an extended RECORD that enables
 digital signatures. PEP 376’s RECORD is altered to include
-digestname=urlsafe_b64encode_nopad(digest) (base64 encoding with no
-trailing = characters) as the second column instead of an md5sum. All
-possible entries are hashed, including .pyc and other generated files,
-but not RECORD. For example::
+``digestname=urlsafe_b64encode_nopad(digest)`` (urlsafe base64 encoding
+with no trailing = characters) as the second column instead of an
+md5sum. All possible entries are hashed, including .pyc and other
+generated files, but not RECORD. For example::
 
         file.py,sha256=AVTFPZpEKzuHr7OvQZmhaU3LvwKz06AJw8mT_pNh2yI,3144
+        distribution-1.0.dist-info/RECORD,,
+
+RECORD.jws is not mentioned in RECORD at all. Every other file in the
+archive must have a correct sha256 digest in RECORD, or the ``wheel
+unpack`` command will fail.
 
 The signature is one or more JSON Web Signature JSON Serialization
-(JWS-JS) signatures stored in a file RECORD.jws in the
-.dist-info directory adjacent to RECORD. The JSON Web Signature
-payload is an object with one key “hash” with a value of a
-hash of RECORD stored in the same format as entries in RECORD:
-digestname=urlsafe_b64encode_nopad(digest), but need not use the same
-hash function as RECORD. The only supported signing algorithm is ‘JWS
-using Ed25519’ and the only currently supported hash algorithm is sha256.
-
-To verify, first verify the signature, then hash RECORD with the hashing
-algorithm used in the signed payload and check for equality with the
-signed payload, and finally verify that all the files contained in RECORD
-actually hash to the values listed in RECORD.
-
-Remember that files can be included in the wheel file without being
-included in the signed RECORD; an implementation could choose to unpack
-only the verified files. Verification must also reject signatures that
-use hashing algorithms outside a list of trusted algorithms.
-
-Public-key signed wheels bundle the (short) public key in the signature. A
-wheel installer should always verify the internal consistency of any
-bundled signatures and the hashes in RECORD while unpacking, and may
-check that signatures come from a trusted signer.
+(JWS-JS) signatures stored in a file RECORD.jws adjacent to RECORD.
 
 A signature-aware installer can be instructed to check for a particular
 Ed25519 public key by using an extended "extras" syntax.::
@@ -210,20 +177,55 @@ dependencies came from the correct publishers.
 
 Applications that wish to "fail open" for backwards compatibility with
 non-signature-aware installers should specify that their package provides
-the extra `ed25519=(key)` with no associated dependencies.
+the extra ``ed25519=(key)`` with no associated dependencies.
 
 Key distribution is outside the scope of this spec. Public wheel signing
 keys could be signed with the packager’s GPG key, or stored at an
 https://-protected URL.
 
 The `wheel` command line tool can create signed wheel files with
-`wheel sign wheelfilename.whl`. It generates a new signing key for each
-invocation because it is not smart enough to remember them yet. `wheel
-verify wheelfilename.whl` will check the signature for internal
-consistentcy, but does not yet check that `RECORD` hashes to the correct
-value, or that the files in the wheel hash to the values in `RECORD`.
+``wheel sign wheelfile.whl``. ``wheel verify wheelfile.whl`` checks
+the signatures for internal consistency and lists the decoded signature
+headers and payloads. ``wheel unpack wheelfile.whl`` extracts the archive
+and verifies the sha256 hashes of each file. ``wheel keygen`` creates
+a keypair, remembers the signing key with the Python keyring library,
+and remembers that you trust the key in a platform-specific location;
+on Linux, ``~/.config/wheel/wheel.json``.
 
-See http://self-issued.info/docs/draft-ietf-jose-json-web-signature.html, http://self-issued.info/docs/draft-jones-json-web-signature-json-serialization-01.html
+JSON Web Signatures Extensions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Ed25519 algorithm is used as an extension to the JSON Web Signatures
+specification. Wheel uses ``alg="Ed25519"`` in the header. The ``key``
+attribute holds the signature's public JSON Web Key. For JSON Web Key /
+JSON Private Key the verifying (public) key is called ``vk`` and the
+signing (private) key is called ``sk``.
+
+Example header::
+
+    {
+      "alg": "Ed25519", 
+      "typ": "JWT", 
+      "key": {
+        "alg": "Ed25519", 
+        "vk": "tmAYCrSfj8gtJ10v3VkvW7jOndKmQIYE12hgnFu3cvk"
+      }
+    }
+
+A future version of wheel may omit ``typ``.
+
+Example payload::
+
+    { "hash": "sha256=ADD-r2urObZHcxBW3Cr-vDCu5RJwT4CaRTHiFmbcIYY" }
+
+A future version of wheel may include timestamps in the payload or in
+the signature.
+
+See http://self-issued.info/docs/draft-ietf-jose-json-web-signature.html,
+http://self-issued.info/docs/draft-jones-json-web-signature-json-serialization-01.html,
+http://self-issued.info/docs/draft-ietf-jose-json-web-key-05.html,
+http://self-issued.info/docs/draft-jones-jose-json-private-key-00.html
+
 
 Slogans
 -------
