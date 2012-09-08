@@ -99,6 +99,12 @@ def unpack(wheelfile, dest='.'):
     wf.zipfile.extractall(destination)
     wf.zipfile.close()
 
+@wb.command
+def install(wheelfile, force=False):
+    wf = wheel.install.WheelFile(wheelfile)
+    wf.install(force)
+    wf.zipfile.close()
+
 def main():
     wb.run()
     

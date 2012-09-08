@@ -9,12 +9,16 @@ import re
 import zipfile
 import hashlib
 import csv
+import sysconfig
+import shutil
 
 from wheel.decorator import reify
 from wheel.util import urlsafe_b64encode, from_json,\
-    urlsafe_b64decode, native, binary
+    urlsafe_b64decode, native, binary, generate_supported, \
+    HashingFile, compatibility_match
 from wheel import signatures
 from wheel.pkginfo import read_pkg_info_bytes
+from wheel.bdist_wheel import open_for_csv
 
 # The next major version after this version of the 'wheel' tool:
 VERSION_TOO_HIGH = (1, 0)
@@ -72,6 +76,10 @@ class WheelFile(object):
         return "%s.data" % self.parsed_filename.group('namever')
 
     @property
+    def record_name(self):
+        return "%s/%s" % (self.distinfo_name, 'RECORD')
+
+    @property
     def wheelinfo_name(self):
         return "%s/%s" % (self.distinfo_name, self.WHEEL_INFO)
 
@@ -115,6 +123,104 @@ class WheelFile(object):
     def parsed_wheel_info(self):
         """Parse wheel metadata"""
         return read_pkg_info_bytes(self.zipfile.read(self.wheelinfo_name))
+
+    def supports_current_python(self):
+        for tags in generate_supported():
+            for dtags in self.compatibility_tags:
+                if compatibility_match(dtags, tags):
+                    return True
+        return False
+
+    def install(self, force=False, overrides={}):
+        """Install the wheel into site-packages"""
+
+        # Utility to get the target directory for a particular key
+        def get_path(key):
+            return overrides.get(key) or sysconfig.get_path(key)
+
+        # The base target location is either purelib or platlib
+        if self.parsed_wheel_info['Root-Is-Purelib'] == 'true':
+            root = get_path('purelib')
+        else:
+            root = get_path('platlib')
+
+        # Parse all the names in the archive
+        name_trans = {}
+        for name in self.zipfile.namelist():
+            # Zip files can contain entries representing directories.
+            # These end in a '/'.
+            # We ignore these, as we create directories on demand.
+            if name.endswith('/'):
+                continue
+
+            # Pathnames in a zipfile namelist are always /-separated.
+            # In theory, paths could start with ./ or have other oddities
+            # but this won't happen in practical cases of well-formed wheels.
+            # We'll cover the simple case of an initial './' as it's both easy
+            # to do and more common than most other oddities.
+            if name.startswith('./'):
+                name = name[2:]
+
+            # Split off the base directory to identify files that are to be
+            # installed in non-root locations
+            basedir, sep, filename = name.partition('/')
+            if sep and basedir == self.datadir_name:
+                # Data file. Target destination is elsewhere
+                key, sep, filename = filename.partition('/')
+                if not sep:
+                    raise ValueError("Invalid filename in wheel: {}".format(name))
+                target = get_path(key)
+            else:
+                # Normal file. Target destination is root
+                target = root
+                filename = name
+
+            # Map the actual filename from the zipfile to its intended target
+            # directory and the pathname relative to that directory.
+            dest = os.path.normpath(os.path.join(target, filename))
+            name_trans[name] = (target, filename, dest)
+
+        # We're now ready to start processing the actual install. The process
+        # is as follows:
+        #   1. Prechecks - is the wheel valid, is its declared architecture
+        #      OK, etc. [[Should probably have already been done]]
+        #   2. Overwrite check - do any of the files to be installed already
+        #      exist?
+        #   3. Actual install - put the files in their target locations.
+        #   4. Update RECORD - write a suitably modified RECORD file to
+        #      reflect the actual installed paths.
+        self.check_version()
+        if not self.supports_current_python():
+            raise ValueError("Wheel was not built for this version of Python")
+
+        if not force:
+            for k, v in name_trans.items():
+                target, filename, dest = v
+                if os.path.exists(dest):
+                    raise ValueError("Wheel file {} would overwrite an existing file. Use force is this is intended".format(k))
+
+        record_data = []
+        for name, (target, filename, dest) in name_trans.items():
+            source = HashingFile(self.zipfile.open(name))
+            # Skip the RECORD file
+            if name == self.distinfo_name + '/RECORD':
+                continue
+            ddir = os.path.dirname(dest)
+            if not os.path.isdir(ddir):
+                os.makedirs(ddir)
+            destination = open(dest, 'wb')
+            shutil.copyfileobj(source, destination)
+            destination.close()
+            reldest = os.path.relpath(dest, root)
+            reldest.replace(os.sep, '/')
+            record_data.append((reldest, source.digest(), source.length))
+            source.close()
+
+        record_name = os.path.join(root, self.distinfo_name, 'RECORD')
+        writer = csv.writer(open_for_csv(record_name, 'w+'))
+        for reldest, digest, length in sorted(record_data):
+            writer.writerow((reldest, digest, length))
+        writer.writerow((self.distinfo_name + '/RECORD', '', ''))
 
     def check_version(self):
         version = self.parsed_wheel_info['Wheel-Version']
