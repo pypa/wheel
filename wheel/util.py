@@ -102,21 +102,38 @@ def generate_supported(versions=None):
     Returned tags are sorted from best-matching tags to worst. All tags
     returned should be compatible with the machine.
     '''
-    # XXX: Only a draft
     supported = []
-    current_ver = get_impl_ver()
+    
     # Versions must be given with respect to the preference
     if versions is None:
-        versions = [''.join(map(str, sys.version_info[:2]))]
+        versions = []
+        major = sys.version_info[0]
+        # Support all previous minor Python versions.
+        for minor in range(sys.version_info[1], -1, -1):
+            versions.append(''.join(map(str, (major, minor))))
+            
     impl = get_abbr_impl()
     abis = ['none']  # XXX: Should add more depending on the implementation
     arch = get_platform().replace('.', '_').replace('-', '_')
-    for version in versions:
-        for abi in abis:
-            supported.append(('%s%s' % (impl, version), abi, arch))
-        if not impl.startswith('py'):
-            # Add pure Python distributions if not already done so
-            supported.append(('py%s' % (version), 'none', 'any'))
+    
+    # Current version, current API (built specifically for our Python):
+    for abi in abis:
+        supported.append(('%s%s' % (impl, versions[0]), abi, arch))
+        
+    # Tagged specifically as being cross-version compatible 
+    # (with just the major version specified)
+    supported.append(('%s%s' % (impl, versions[0][0]), 'none', 'any')) 
+    
+    # No abi / arch, but requires our implementation:
+    for version in versions[1:]:
+        supported.append(('%s%s' % (impl, version), 'none', 'any'))
+    
+    # No abi / arch, generic Python
+    for i, version in enumerate(versions):
+        supported.append(('py%s' % (version,), 'none', 'any'))
+        if i == 0:
+            supported.append(('py%s' % (version[0]), 'none', 'any'))
+        
     return supported
 
 def compatibility_match(declared, tag):

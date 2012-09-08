@@ -30,7 +30,7 @@ setup(name='wheel',
       install_requires=['distribute>=0.6.28', 'markerlib'],
       extras_require={
           'signatures': [],
-          'faster_signatures': ['ed25519ll'], 
+          'faster-signatures': ['ed25519ll'], 
           'tool': ['baker', 'keyring', 'dirspec']
           },
       include_package_data=True,
