@@ -5,16 +5,28 @@ Create and verify jws-js format Ed25519 signatures.
 __all__ = [ 'sign', 'verify' ]
 
 import json
-try:
-    import ed25519ll
-except ImportError:
-    ed25519ll = None
-from wheel.util import urlsafe_b64decode, urlsafe_b64encode, native, binary
+from ..util import urlsafe_b64decode, urlsafe_b64encode, native, binary
 
+ed25519ll = None
+
+def get_ed25519ll():
+    """Lazy import-and-test of ed25519 module"""
+    global ed25519ll
+    
+    if not ed25519ll:
+        try:
+            import ed25519ll # fast (thousands / s)
+        except (ImportError, OSError):
+            from . import ed25519py as ed25519ll # pure Python (hundreds / s)
+        test()
+    
+    return ed25519ll
 
 def sign(payload, keypair):
     """Return a JWS-JS format signature given a JSON-serializable payload and 
     an Ed25519 keypair."""
+    get_ed25519ll()
+    #
     header = {"typ": "JWT",
               "alg": "Ed25519",
               "key": {"alg": "Ed25519",
@@ -36,6 +48,7 @@ def verify(jwsjs):
     consistent, else raise ValueError.
     
     Caller must decide whether the keys are actually trusted."""
+    get_ed25519ll()    
     # XXX forbid duplicate keys in JSON input
     encoded_headers = jwsjs["headers"]
     encoded_payload = binary(jwsjs["payload"])
@@ -65,9 +78,6 @@ def verify(jwsjs):
     return headers, payload
 
 def test():
-    if ed25519ll is None:
-        return
-    # Takes less than 25 milliseconds.
     kp = ed25519ll.crypto_sign_keypair()
     payload = {'test': 'onstartup'}
     jwsjs = json.loads(json.dumps(sign(payload, kp)))
@@ -79,5 +89,4 @@ def test():
         pass
     else: # pragma no cover
         raise RuntimeError("No error from bad wheel.signatures payload.")
-    
-test()
+

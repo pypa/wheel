@@ -18,7 +18,7 @@ wb = baker.Baker()
 def keygen():
     """Generate a public/private key pair."""
     import keyring
-    import ed25519ll
+    ed25519ll = wheel.signatures.get_ed25519ll()
 
     wk = wheel.keys.WheelKeys().load()
     
@@ -46,7 +46,7 @@ def keygen():
 def sign(wheelfile, replace=False):
     """Sign a wheel"""
     import keyring
-    import ed25519ll
+    ed25519ll = wheel.signatures.get_ed25519ll()
     
     wf = wheel.install.WheelFile(wheelfile, append=True)
     wk = wheel.keys.WheelKeys().load()
@@ -101,6 +101,10 @@ def unpack(wheelfile, dest='.'):
 
 @wb.command
 def install(wheelfile, force=False):
+    """Install a wheel.
+    
+    :param wheelfile: The path to the wheel.
+    """
     wf = wheel.install.WheelFile(wheelfile)
     wf.install(force)
     wf.zipfile.close()

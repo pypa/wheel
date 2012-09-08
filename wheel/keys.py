@@ -34,9 +34,11 @@ wheel export key
 import json
 import dirspec.basedir
 import os.path
-from wheel.util import urlsafe_b64encode, urlsafe_b64decode, native, binary
+from wheel.util import native
 
 class WheelKeys(object):
+    SCHEMA = 1
+    
     def __init__(self):
         self.data = {'signers':[], 'verifiers':[]}
         
@@ -50,6 +52,12 @@ class WheelKeys(object):
                     for x in ('signers', 'verifiers'):
                         if not x in self.data:
                             self.data[x] = []
+                    if 'schema' not in self.data:
+                        self.data['schema'] = self.SCHEMA
+                    if self.data['schema'] != self.SCHEMA:
+                        raise ValueError(
+                            "Bad wheel.json version {}, expected {}".format((
+                                self.data['schema'], self.SCHEMA)))
                 break
         return self
 
@@ -74,14 +82,14 @@ class WheelKeys(object):
     def trusted(self, scope=None):
         """Return list of [(scope, trusted key), ...] for given scope."""
         trust = [(x['scope'], x['vk']) for x in self.data['verifiers'] if x['scope'] in (scope, '+')]
-        trust.sort() # hack '+' will usually sort before all valid package names
+        trust.sort(key=lambda x: x[0])
         trust.reverse()
         return trust
     
     def signers(self, scope):
         """Return list of signing key(s)."""
         sign = [(x['scope'], x['vk']) for x in self.data['verifiers'] if x['scope'] in (scope, '+')]
-        sign.sort() # XXX ONLY SORT BY SCOPE (most recently added signer should win)
+        sign.sort(key=lambda x: x[0])
         sign.reverse()
         return sign
     
