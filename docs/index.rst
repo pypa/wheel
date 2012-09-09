@@ -60,6 +60,11 @@ built packages::
 For lxml, an up to 3-minute "search for the newest version and compile"
 can become a less-than-1 second "unpack from wheel".
 
+To build an individual wheel, run ``python setup.py bdist_wheel``.  Note that
+``bdist_wheel`` only works with distribute (``import setuptools``); plain
+``distutils`` does not support pluggable commands like ``bdist_wheel``.  On
+the other hand ``pip`` always runs ``setup.py`` with setuptools enabled. 
+
 File Contents
 -------------
 

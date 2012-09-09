@@ -136,27 +136,6 @@ def generate_supported(versions=None):
         
     return supported
 
-def compatibility_match(declared, tag):
-    dpyver, dabi, dplat = declared
-    pyver, abi, plat = tag
-
-    # Platform: declared 'any' or matches
-    if dplat != 'any' and dplat != plat:
-        return False
-    # ABI: declared 'none' or matches
-    if dabi != 'none' and dabi != abi:
-        return False
-
-    # Python version: Implementation must match unless declared as 'py'
-    # (generic), major version must match, and if declared as for a specific
-    # minor version this must match too.
-    if dpyver[:2] != 'py' and dpyver[:2] != pyver[:2]:
-        return False
-    if dpyver[2] != pyver[2]:
-        return False
-    if len(dpyver) > 3 and dpyver[3] != pyver[3]:
-        return False
-    return True
 
 class HashingFile(object):
     def __init__(self, fd, hashtype='sha256'):

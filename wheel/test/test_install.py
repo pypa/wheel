@@ -12,6 +12,7 @@
 # The root is PLATLIB
 # So, some in PLATLIB, and one in each of DATA, HEADERS and SCRIPTS.
 
+import wheel.util
 from wheel.install import WheelFile
 from tempfile import mkdtemp
 import shutil
@@ -26,6 +27,9 @@ def check(*path):
 def test_install():
     whl = WheelFile(TESTWHEEL)
     tempdir = mkdtemp()
+    def generate_supported():
+        return list(wheel.util.generate_supported()) + [('py3', 'none', 'win32')]
+    assert whl.supports_current_python(generate_supported)
     try:
         locs = {}
         for key in ('purelib', 'platlib', 'scripts', 'headers', 'data'):

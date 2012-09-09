@@ -15,7 +15,7 @@ import shutil
 from wheel.decorator import reify
 from wheel.util import urlsafe_b64encode, from_json,\
     urlsafe_b64decode, native, binary, generate_supported, \
-    HashingFile, compatibility_match
+    HashingFile
 from wheel import signatures
 from wheel.pkginfo import read_pkg_info_bytes
 from wheel.bdist_wheel import open_for_csv
@@ -64,6 +64,11 @@ class WheelFile(object):
             self.verify(vzf)
         return vzf
 
+    @reify
+    def parsed_wheel_info(self):
+        """Parse wheel metadata"""
+        return read_pkg_info_bytes(self.zipfile.read(self.wheelinfo_name))
+
     def get_metadata(self):
         pass
 
@@ -101,15 +106,15 @@ class WheelFile(object):
 
     @property
     def arity(self):
-        '''The number of compatibility tags the wheel declares.'''
+        """The number of compatibility tags the wheel declares."""
         return len(list(self.compatibility_tags))
 
     def compatibility_rank(self, supported):
-        '''Rank the wheel against the supported ones.
+        """Rank the wheel against the supported ones.
 
         :param supported: A list of compatibility tags that the current
             Python implemenation can run.
-        '''
+        """
         preferences = []
         for tag in self.compatibility_tags:
             try:
@@ -119,20 +124,16 @@ class WheelFile(object):
                 pass
         return (min(preferences), self.arity)
 
-    @reify
-    def parsed_wheel_info(self):
-        """Parse wheel metadata"""
-        return read_pkg_info_bytes(self.zipfile.read(self.wheelinfo_name))
-
-    def supports_current_python(self):
-        for tags in generate_supported():
-            for dtags in self.compatibility_tags:
-                if compatibility_match(dtags, tags):
-                    return True
+    def supports_current_python(self, generate_supported=generate_supported):
+        supported = generate_supported()
+        for dtag in self.compatibility_tags:
+            if dtag in supported:
+                return True
         return False
 
     def install(self, force=False, overrides={}):
-        """Install the wheel into site-packages"""
+        """Install the wheel into site-packages.
+        """
 
         # Utility to get the target directory for a particular key
         def get_path(key):
@@ -183,21 +184,18 @@ class WheelFile(object):
         # We're now ready to start processing the actual install. The process
         # is as follows:
         #   1. Prechecks - is the wheel valid, is its declared architecture
-        #      OK, etc. [[Should probably have already been done]]
+        #      OK, etc. [[Responsibility of the caller]]
         #   2. Overwrite check - do any of the files to be installed already
         #      exist?
         #   3. Actual install - put the files in their target locations.
         #   4. Update RECORD - write a suitably modified RECORD file to
         #      reflect the actual installed paths.
-        self.check_version()
-        if not self.supports_current_python():
-            raise ValueError("Wheel was not built for this version of Python")
-
+        
         if not force:
             for k, v in name_trans.items():
                 target, filename, dest = v
                 if os.path.exists(dest):
-                    raise ValueError("Wheel file {} would overwrite an existing file. Use force is this is intended".format(k))
+                    raise ValueError("Wheel file {} would overwrite an existing file. Use force if this is intended".format(k))
 
         record_data = []
         for name, (target, filename, dest) in name_trans.items():
