@@ -113,7 +113,13 @@ def generate_supported(versions=None):
             versions.append(''.join(map(str, (major, minor))))
             
     impl = get_abbr_impl()
-    abis = ['none']  # XXX: Should add more depending on the implementation
+    
+    abis = ['none']
+    
+    soabi = sysconfig.get_config_var('SOABI')
+    if soabi and soabi.startswith('cpython-'):
+        abis[0:0] = ['cp' + soabi.split('-', 1)[-1]]
+    
     arch = get_platform().replace('.', '_').replace('-', '_')
     
     # Current version, current API (built specifically for our Python):
