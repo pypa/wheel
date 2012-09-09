@@ -9,7 +9,10 @@ import re
 import zipfile
 import hashlib
 import csv
-import sysconfig
+try:
+    import sysconfig
+except ImportError:
+    import distutils.sysconfig as sysconfig
 import shutil
 
 from wheel.decorator import reify
