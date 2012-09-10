@@ -312,11 +312,18 @@ class VerifyingZipFile(zipfile.ZipFile):
                               'file hash verification (in Python >= 2.7)')
                 return ef
             running_hash = self._hash_algorithm()
-            def _update_crc(newdata, eof):
-                _update_crc_orig(newdata, eof)
-                running_hash.update(newdata)
-                if eof and running_hash.digest() != expected_hash:
-                    raise BadWheelFile("Bad hash for file %r" % ef.name)
+            if hasattr(ef, '_eof'): # py33
+                def _update_crc(data):
+                    _update_crc_orig(data)
+                    running_hash.update(data)
+                    if ef._eof and running_hash.digest() != expected_hash:
+                        raise BadWheelFile("Bad hash for file %r" % ef.name)
+            else:
+                def _update_crc(data, eof=None):
+                    _update_crc_orig(data, eof=eof)
+                    running_hash.update(data)
+                    if eof and running_hash.digest() != expected_hash:
+                        raise BadWheelFile("Bad hash for file %r" % ef.name)
             ef._update_crc = _update_crc
         elif self.strict and name not in self._expected_hashes:
             raise BadWheelFile("No expected hash for file %r" % ef.name)
