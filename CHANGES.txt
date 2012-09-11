@@ -1,3 +1,7 @@
+0.9.4
+=====
+- Fix wheel.signatures in sdist
+
 0.9.3
 =====
 - Integrated digital signatures support without C extensions.

@@ -7,7 +7,7 @@ README = codecs.open(os.path.join(here, 'README.txt'), encoding='utf8').read()
 CHANGES = codecs.open(os.path.join(here, 'CHANGES.txt'), encoding='utf8').read()
 
 setup(name='wheel',
-      version='0.9.3',
+      version='0.9.4',
       description='A built-package format for Python.',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
@@ -26,7 +26,7 @@ setup(name='wheel',
       url='http://bitbucket.org/dholth/wheel/',
       keywords='wheel packaging',
       license='MIT',
-      packages=['wheel', 'wheel.test', 'wheel.tool'],
+      packages=['wheel', 'wheel.test', 'wheel.tool', 'wheel.signatures'],
       install_requires=['distribute>=0.6.28', 'markerlib'],
       extras_require={
           'signatures': [],
