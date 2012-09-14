@@ -125,15 +125,15 @@ def generate_supported(versions=None):
     # Current version, current API (built specifically for our Python):
     for abi in abis:
         supported.append(('%s%s' % (impl, versions[0]), abi, arch))
-        
-    # Tagged specifically as being cross-version compatible 
-    # (with just the major version specified)
-    supported.append(('%s%s' % (impl, versions[0][0]), 'none', 'any')) 
-    
+            
     # No abi / arch, but requires our implementation:
-    for version in versions[1:]:
+    for i, version in enumerate(versions):
         supported.append(('%s%s' % (impl, version), 'none', 'any'))
-    
+        if i == 0:
+            # Tagged specifically as being cross-version compatible 
+            # (with just the major version specified)
+            supported.append(('%s%s' % (impl, versions[0][0]), 'none', 'any')) 
+            
     # No abi / arch, generic Python
     for i, version in enumerate(versions):
         supported.append(('py%s' % (version,), 'none', 'any'))
