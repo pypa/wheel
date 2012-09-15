@@ -28,18 +28,9 @@ from distutils.sysconfig import get_python_version
 from distutils import log as logger
 import shutil
 
-from .util import get_abbr_impl, get_impl_ver, native
+from .util import get_abbr_impl, get_impl_ver, native, open_for_csv
 from .archive import archive_wheelfile
 from .pkginfo import read_pkg_info, write_pkg_info
-
-def open_for_csv(name, mode):
-    if sys.version_info[0] < 3:
-        nl = {}
-        bin = 'b'
-    else:
-        nl = { 'newline': '' }
-        bin = ''
-    return open(name, mode + bin, **nl)
 
 def safer_name(name):
     return safe_name(name).replace('-', '_')

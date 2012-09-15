@@ -21,7 +21,7 @@ from wheel.util import urlsafe_b64encode, from_json,\
     HashingFile
 from wheel import signatures
 from wheel.pkginfo import read_pkg_info_bytes
-from wheel.bdist_wheel import open_for_csv
+from wheel.util import open_for_csv
 
 # The next major version after this version of the 'wheel' tool:
 VERSION_TOO_HIGH = (1, 0)

@@ -18,7 +18,7 @@ __all__ = ['urlsafe_b64encode', 'urlsafe_b64decode', 'utf8', 'to_json',
 
 def urlsafe_b64encode(data):
     """urlsafe_b64encode without padding"""
-    return base64.urlsafe_b64encode(data).rstrip(b'=')
+    return base64.urlsafe_b64encode(data).rstrip(binary('='))
 
 
 def urlsafe_b64decode(data):
@@ -36,6 +36,14 @@ def from_json(j):
     '''Decode a JSON payload.'''
     return json.loads(j)
 
+def open_for_csv(name, mode):
+    if sys.version_info[0] < 3:
+        nl = {}
+        bin = 'b'
+    else:
+        nl = { 'newline': '' }
+        bin = ''
+    return open(name, mode + bin, **nl)
 
 try:
     unicode
