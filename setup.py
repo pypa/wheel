@@ -31,7 +31,7 @@ setup(name='wheel',
       extras_require={
           'signatures': [],
           'faster-signatures': ['ed25519ll'], 
-          'tool': ['baker', 'keyring', 'dirspec']
+          'tool': ['keyring', 'dirspec'] # argparse if Python < 2.7
           },
       include_package_data=True,
       zip_safe=False,

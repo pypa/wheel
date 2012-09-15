@@ -3,20 +3,18 @@ Wheel command-line utility.
 """
 
 import os
-import baker
 import hashlib
 import sys
 import wheel.install
 import wheel.signatures
-import wheel.keys
 import json
 from ..util import urlsafe_b64decode, urlsafe_b64encode, native, binary
 
-wb = baker.Baker()
+import argparse
 
-@wb.command
 def keygen():
     """Generate a public/private key pair."""
+    import wheel.keys
     import keyring
     ed25519ll = wheel.signatures.get_ed25519ll()
 
@@ -42,9 +40,9 @@ def keygen():
     wk.trust('+', vk)
     wk.save()
 
-@wb.command
 def sign(wheelfile, replace=False):
     """Sign a wheel"""
+    import wheel.keys
     import keyring
     ed25519ll = wheel.signatures.get_ed25519ll()
     
@@ -72,7 +70,6 @@ def sign(wheelfile, replace=False):
     wf.zipfile.writestr(sig_name, json.dumps(sig, sort_keys=True))
     wf.zipfile.close()
 
-@wb.command
 def verify(wheelfile):
     """Verify a wheel."""
     import pprint
@@ -82,7 +79,6 @@ def verify(wheelfile):
     sys.stdout.write("Signatures are internally consistent.\n%s\n" % (
                      pprint.pformat(wheel.signatures.verify(sig),)))
 
-@wb.command(shortopts={'dest': 'd'})
 def unpack(wheelfile, dest='.'):
     """Unpack a wheel.
 
@@ -97,18 +93,49 @@ def unpack(wheelfile, dest='.'):
     destination = os.path.join(dest, namever)
     sys.stdout.write("Unpacking to: %s\n" % (destination))
     wf.zipfile.extractall(destination)
-    wf.zipfile.close()
+    wf.zipfile.close()    
 
-@wb.command
 def install(wheelfile, force=False):
     """Install a wheel.
     
     :param wheelfile: The path to the wheel.
     """
     wf = wheel.install.WheelFile(wheelfile)
+    if not force:
+        if not wf.supports_current_python():
+            msg = ("{} is not compatible with this Python. " 
+                   "--force to install anyway.".format(wheelfile))
+            raise Exception(msg)
     wf.install(force)
     wf.zipfile.close()
 
+def parser():
+    p = argparse.ArgumentParser()
+    s = p.add_subparsers(help="commands")
+    
+    keygen_parser = s.add_parser('keygen', help='Generate signing key')
+    keygen_parser.set_defaults(func=keygen)
+    
+    sign_parser = s.add_parser('sign', help='Sign wheel')
+    sign_parser.set_defaults(func=sign)
+    
+    verify_parser = s.add_parser('verify', help='Verify signed wheel')
+    verify_parser.set_defaults(func=verify)
+    
+    unpack_parser = s.add_parser('unpack', help='Unpack wheel')
+    unpack_parser.add_argument('--dest', '-d', help='Destination directory')
+    unpack_parser.set_defaults(func=unpack)
+    
+    install_parser = s.add_parser('install', help='Install wheel')
+    install_parser.add_argument('--force', '-f', default=False, 
+                                action='store_true',
+                                help='Install incompatible wheel files and '
+                                'overwrite any files that are in the way.')
+    install_parser.set_defaults(func=install)
+    
+    return p
+
 def main():
-    wb.run()
+    p = parser()
+    p.parse_args(sys.argv)
     
