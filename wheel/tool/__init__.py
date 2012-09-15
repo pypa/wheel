@@ -113,29 +113,46 @@ def parser():
     p = argparse.ArgumentParser()
     s = p.add_subparsers(help="commands")
     
+    def keygen_f(args):
+        keygen()
     keygen_parser = s.add_parser('keygen', help='Generate signing key')
-    keygen_parser.set_defaults(func=keygen)
+    keygen_parser.add_argument('wheelfile', help='Wheel file') 
+    keygen_parser.set_defaults(func=keygen_f)
     
+    def sign_f(args):
+        sign(args.wheelfile)    
     sign_parser = s.add_parser('sign', help='Sign wheel')
-    sign_parser.set_defaults(func=sign)
+    sign_parser.add_argument('wheelfile', help='Wheel file')
+    sign_parser.set_defaults(func=sign_f)
     
+    def verify_f(args):
+        verify(args.wheelfile)
     verify_parser = s.add_parser('verify', help='Verify signed wheel')
-    verify_parser.set_defaults(func=verify)
+    verify_parser.add_argument('wheelfile', help='Wheel file')
+    verify_parser.set_defaults(func=verify_f)
     
+    def unpack_f(args):
+        unpack(args.wheelfile, args.dest)
     unpack_parser = s.add_parser('unpack', help='Unpack wheel')
-    unpack_parser.add_argument('--dest', '-d', help='Destination directory')
-    unpack_parser.set_defaults(func=unpack)
+    unpack_parser.add_argument('--dest', '-d', help='Destination directory',
+                               default='.')
+    unpack_parser.add_argument('wheelfile', help='Wheel file')
+    unpack_parser.set_defaults(func=unpack_f)
     
+    def install_f(args):
+        install(args.wheelfile, args.force)
     install_parser = s.add_parser('install', help='Install wheel')
+    install_parser.add_argument('wheelfile', help='Wheel file')
     install_parser.add_argument('--force', '-f', default=False, 
                                 action='store_true',
                                 help='Install incompatible wheel files and '
                                 'overwrite any files that are in the way.')
-    install_parser.set_defaults(func=install)
+    install_parser.set_defaults(func=install_f)
     
     return p
 
 def main():
     p = parser()
-    p.parse_args(sys.argv)
+    args = p.parse_args()
+    args.func(args)
     
