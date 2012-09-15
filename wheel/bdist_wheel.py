@@ -53,7 +53,7 @@ class bdist_wheel(Command):
 
     description = 'create a wheel distribution'
 
-    user_options = [('bdist-dir=', 'd',
+    user_options = [('bdist-dir=', 'b',
                      "temporary directory for creating the distribution"),
                     ('plat-name=', 'p',
                      "platform name to embed in generated filenames "
@@ -220,11 +220,11 @@ class bdist_wheel(Command):
             else:
                 rmtree(self.bdist_dir)
 
-    def write_wheelfile(self, wheelfile_base, packager='bdist_wheel'):
+    def write_wheelfile(self, wheelfile_base, generator='bdist_wheel'):
         from email.message import Message
         msg = Message()
         msg['Wheel-Version'] = '0.1'  # of the spec
-        msg['Packager'] = packager
+        msg['Generator'] = generator
         msg['Root-Is-Purelib'] = str(self.root_is_purelib).lower()
         wheelfile_path = os.path.join(wheelfile_base, 'WHEEL')
         logger.info('creating %s', wheelfile_path)

@@ -36,7 +36,7 @@ def main():
     dist_info_dir = os.path.join(dir, '%s.dist-info' % dist_info)
     bw.egg2dist(os.path.join(dir, 'EGG-INFO'),
                 dist_info_dir)
-    bw.write_wheelfile(dist_info_dir, packager='egg2wheel')
+    bw.write_wheelfile(dist_info_dir, generator='egg2wheel')
     bw.write_record(dir, dist_info_dir)
     filename = make_archive(wheel_name, 'zip', root_dir=dir)
     os.rename(filename, filename[:-3] + 'whl')

@@ -69,8 +69,8 @@ File Contents
 -------------
 
 Wheel files contain a folder `{distribution}-{version}.dist-info/` with
-the PEP 376 metadata and an additional file `WHEEL` with metadata about
-the package itself.
+the PEP 426 metadata (metadata version 1.3 or greater) and an additional
+file `WHEEL` with metadata about the archive itself.
 
 The root of a .whl is either purelib or platlib.
 
@@ -81,9 +81,15 @@ other files that are not installed on sys.path, they are found in
 Wheel files contain metadata about the wheel format itself in
 `{distribution}-{version}/WHEEL` ::
 
-        Wheel-Version: 0.9
-        Packager: bdist_wheel
+        Wheel-Version: 0.1
+        Generator: bdist_wheel 0.7
         Root-Is-Purelib: true
+
+``Wheel-Version`` is the version number of the Wheel
+specification. ``Generator`` is the name and optionally the version of
+the software that produced the archive. ``Root-Is-Purelib`` is ``true``
+if the top level directory of the archive should be installed into
+``purelib``; otherwise the root should be installed into platlib.
 
 A wheel installer should warn if `Wheel-Version` is greater than the
 version it supports, and fail if `Wheel-Version` has a greater major
