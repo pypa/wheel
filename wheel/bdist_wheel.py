@@ -6,7 +6,6 @@ A wheel is a built archive format.
 import csv
 import hashlib
 import os
-import sys
 import subprocess
 
 try:
@@ -187,6 +186,9 @@ class bdist_wheel(Command):
                                          '%s.dist-info' % self.wheel_dist_name)
         self.egg2dist(self.egginfo_dir,
                       self.distinfo_dir)
+                
+        metadata_path = os.path.join(self.distinfo_dir, 'METADATA')
+        self.add_requirements(metadata_path)
 
         self.write_wheelfile(self.distinfo_dir)
 
@@ -270,7 +272,44 @@ class bdist_wheel(Command):
                     pkg_info['Requires-Dist'] = parsed_requirement.key + \
                         spec + condition
         return pkg_info
-
+    
+    def setupcfg_requirements(self):
+        """Generate requirements from setup.cfg as 
+        ('Requires-Dist', 'requirement; qualifier') tuples. From a metadata
+        section in setup.cfg:
+        
+        [metadata]
+        requires_dist = requirement; qualifier
+            another; qualifier2
+            unqualified
+            
+        Yields
+        
+        ('Requires-Dist', 'requirement; qualifier'),
+        ('Requires-Dist', 'another; qualifier2'),
+        ('Requires-Dist', 'unqualified')
+        """
+        requires = []
+        try:
+            metadata = self.distribution.get_option_dict('metadata')
+            requires = metadata['requires_dist']
+            for req in requires[1].splitlines():
+                req = req.strip()
+                if not req:
+                    continue
+                yield ('Requires-Dist', req)                 
+        except KeyError:
+            return
+    
+    def add_requirements(self, metadata_path):
+        """Add additional requirements from setup.cfg to file metadata_path"""
+        additional = list(self.setupcfg_requirements())
+        if not additional: return
+        pkg_info = read_pkg_info(metadata_path)
+        for k, v in additional:
+            pkg_info[k] = v
+        write_pkg_info(metadata_path, pkg_info)
+        
     def egg2dist(self, egginfo_path, distinfo_path):
         """Convert an .egg-info directory into a .dist-info directory"""
         def adios(p):
@@ -318,7 +357,7 @@ class bdist_wheel(Command):
             # delete dependency_links if it is only whitespace
             dependency_links = os.path.join(distinfo_path, 'dependency_links.txt')
             if not open(dependency_links, 'r').read().strip(): 
-                adios(dependency_links)
+                adios(dependency_links)        
 
         write_pkg_info(os.path.join(distinfo_path, 'METADATA'), pkg_info)
 

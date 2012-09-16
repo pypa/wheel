@@ -1,3 +1,13 @@
+0.9.5
+=====
+- Wheel's own wheel file can be executed by Python, and can install itself: 
+  ``python wheel-0.9.5-py27-none-any/wheel install ...`` 
+- Use argparse; basic ``wheel install`` command should run with only stdlib
+  dependencies.
+- Allow requires_dist in setup.cfg's [metadata] section. In addition to
+  dependencies in setup.py, but will only be interpreted when installing
+  from wheel, not from sdist. Can be qualified with environment markers.
+
 0.9.4
 =====
 - Fix wheel.signatures in sdist
