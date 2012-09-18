@@ -9,6 +9,8 @@ import distutils.dist
 from distutils.archive_util import make_archive
 from shutil import rmtree
 from wheel.archive import archive_wheelfile
+from argparse import ArgumentParser
+from glob import iglob
 
 egg_info_re = re.compile(r'''(^|/)(?P<name>[^/]+?)-(?P<ver>.+?)
     (-(?P<pyver>.+?))?(-(?P<arch>.+?))?.egg-info(/|$)''', re.VERBOSE)
@@ -73,7 +75,7 @@ def parse_info(wininfo_name, egginfo_name):
 
     return dict(name=w_name, ver=w_ver, arch=w_arch, pyver=w_pyver)
 
-def bdist_wininst2wheel(path):
+def bdist_wininst2wheel(path, dest_dir=os.path.curdir):
     bdw = zipfile.ZipFile(path)
 
     # Search for egg-info in the archive
@@ -145,11 +147,23 @@ def bdist_wininst2wheel(path):
     bw.write_wheelfile(dist_info_dir, generator='egg2wheel')
     bw.write_record(dir, dist_info_dir)
     
-    archive_wheelfile(wheel_name, dir)
+    archive_wheelfile(os.path.join(dest_dir, wheel_name), dir)
     rmtree(dir)
 
 def main():
-    bdist_wininst2wheel(sys.argv[1])
+    parser = ArgumentParser()
+    parser.add_argument('installers', nargs='*', help="Installers to convert")
+    parser.add_argument('--dest-dir', '-d', default=os.path.curdir,
+            help="Directory to store wheels (default %(default)s)")
+    parser.add_argument('--verbose', '-v', action='store_true')
+    args = parser.parse_args()
+    for pat in args.installers:
+        for installer in iglob(pat):
+            if args.verbose:
+                print("{}... ".format(installer), end='')
+            bdist_wininst2wheel(installer, args.dest_dir)
+            if args.verbose:
+                print("OK")
 
 if __name__ == "__main__":
     main()
