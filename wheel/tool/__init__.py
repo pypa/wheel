@@ -8,7 +8,10 @@ import sys
 import wheel.install
 import wheel.signatures
 import json
+from glob import iglob
 from ..util import urlsafe_b64decode, urlsafe_b64encode, native, binary
+from ..wininst2wheel import bdist_wininst2wheel
+from ..egg2wheel import egg2wheel
 
 import argparse
 
@@ -109,6 +112,19 @@ def install(wheelfile, force=False):
     wf.install(force)
     wf.zipfile.close()
 
+def convert(installers, dest_dir, verbose):
+    for pat in installers:
+        for installer in iglob(pat):
+            if os.path.splitext(installer)[1] == '.egg':
+                conv = egg2wheel
+            else:
+                conv = bdist_wininst2wheel
+            if verbose:
+                print("{}... ".format(installer), end='')
+            conv(installer, dest_dir)
+            if verbose:
+                print("OK")
+
 def parser():
     p = argparse.ArgumentParser()
     s = p.add_subparsers(help="commands")
@@ -148,6 +164,15 @@ def parser():
                                 help='Install incompatible wheel files and '
                                 'overwrite any files that are in the way.')
     install_parser.set_defaults(func=install_f)
+
+    def convert_f(args):
+        convert(args.installers, args.dest_dir, args.verbose)
+    convert_parser = s.add_parser('convert', help='Convert egg or wininst to wheel')
+    convert_parser.add_argument('installers', nargs='*', help='Installers to convert')
+    convert_parser.add_argument('--dest-dir', '-d', default=os.path.curdir,
+            help="Directory to store wheels (default %(default)s)")
+    convert_parser.add_argument('--verbose', '-v', action='store_true')
+    convert_parser.set_defaults(func=convert_f)
     
     return p
 
