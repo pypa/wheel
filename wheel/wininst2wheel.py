@@ -160,10 +160,10 @@ def main():
     for pat in args.installers:
         for installer in iglob(pat):
             if args.verbose:
-                print("{}... ".format(installer), end='')
+                sys.stdout.write("{}... ".format(installer))
             bdist_wininst2wheel(installer, args.dest_dir)
             if args.verbose:
-                print("OK")
+                sys.stdout.write("OK\n")
 
 if __name__ == "__main__":
     main()

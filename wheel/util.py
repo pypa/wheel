@@ -122,12 +122,22 @@ def generate_supported(versions=None):
             
     impl = get_abbr_impl()
     
-    abis = ['none']
-    
+    abis = []
+
     soabi = sysconfig.get_config_var('SOABI')
     if soabi and soabi.startswith('cpython-'):
         abis[0:0] = ['cp' + soabi.split('-', 1)[-1]]
-    
+ 
+    abi3s = set()
+    import imp
+    for suffix in imp.get_suffixes():
+        if suffix[0].startswith('.abi'):
+            abi3s.add(suffix[0].split('.', 2)[1])
+
+    abis.extend(sorted(list(abi3s)))
+
+    abis.append('none')
+
     arch = get_platform().replace('.', '_').replace('-', '_')
     
     # Current version, current API (built specifically for our Python):

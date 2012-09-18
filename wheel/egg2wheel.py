@@ -53,10 +53,10 @@ def main():
     for pat in args.eggs:
         for egg in iglob(pat):
             if args.verbose:
-                print("{}... ".format(egg), end='')
+                sys.stdout.write("{}... ".format(egg))
             egg2wheel(egg, args.dest_dir)
             if args.verbose:
-                print("OK")
+                sys.stdout.write("OK\n")
 
 if __name__ == "__main__":
     main()

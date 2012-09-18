@@ -120,10 +120,10 @@ def convert(installers, dest_dir, verbose):
             else:
                 conv = bdist_wininst2wheel
             if verbose:
-                print("{}... ".format(installer), end='')
+                sys.stdout.write("{}... ".format(installer))
             conv(installer, dest_dir)
             if verbose:
-                print("OK")
+                sys.stdout.write("OK\n")
 
 def parser():
     p = argparse.ArgumentParser()
