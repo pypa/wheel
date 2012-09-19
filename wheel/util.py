@@ -1,6 +1,7 @@
 """Utility functions."""
 
 import sys
+import os
 import base64
 import json
 import hashlib
@@ -179,3 +180,31 @@ class HashingFile(object):
             return self.hash.hexdigest()
         digest = self.hash.digest()
         return self.hashtype + '=' + native(urlsafe_b64encode(digest))
+
+if sys.platform == 'win32':
+    import ctypes, ctypes.wintypes
+    # CSIDL_APPDATA for reference - not used here for compatibility with
+    # dirspec, which uses LOCAL_APPDATA and COMMON_APPDATA in that order
+    csidl = dict(CSIDL_APPDATA=26, CSIDL_LOCAL_APPDATA=28,
+            CSIDL_COMMON_APPDATA=35)
+    def get_path(name):
+        SHGFP_TYPE_CURRENT = 0
+        buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+        ctypes.windll.shell32.SHGetFolderPathW(0, csidl[name], 0, SHGFP_TYPE_CURRENT, buf)
+        return buf.value
+
+    def save_config_path(*resource):
+        appdata = get_path("CSIDL_LOCAL_APPDATA")
+        path = os.path.join(appdata, *resource)
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        return path
+    def load_config_paths(*resource):
+        ids = ["CSIDL_LOCAL_APPDATA", "CSIDL_COMMON_APPDATA"]
+        for id in ids:
+            base = get_path(id)
+            path = os.path.join(base, *resource)
+            if os.path.exists(path):
+                yield path
+else:
+    from dirspec.basedir import load_config_paths, save_config_path

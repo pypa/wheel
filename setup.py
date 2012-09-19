@@ -1,10 +1,14 @@
-import os, codecs
+import os, sys, codecs
 
 from setuptools import setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = codecs.open(os.path.join(here, 'README.txt'), encoding='utf8').read()
 CHANGES = codecs.open(os.path.join(here, 'CHANGES.txt'), encoding='utf8').read()
+
+tool_reqs = ['keyring']
+if sys.platform != 'win32':
+    tool_reqs.append('dirspec')
 
 setup(name='wheel',
       version='0.9.5',
@@ -31,7 +35,7 @@ setup(name='wheel',
       extras_require={
           'signatures': [],
           'faster-signatures': ['ed25519ll'], 
-          'tool': ['keyring', 'dirspec']
+          'tool': tool_reqs
           },
       include_package_data=True,
       zip_safe=False,

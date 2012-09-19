@@ -32,9 +32,8 @@ wheel export key
 """
 
 import json
-import dirspec.basedir
 import os.path
-from wheel.util import native
+from wheel.util import native, load_config_paths, save_config_path
 
 class WheelKeys(object):
     SCHEMA = 1
@@ -44,7 +43,7 @@ class WheelKeys(object):
         
     def load(self):
         # XXX JSON is not a great database
-        for path in dirspec.basedir.load_config_paths('wheel'):
+        for path in load_config_paths('wheel'):
             conf = os.path.join(native(path), 'wheel.json')
             if os.path.exists(conf):
                 with open(conf, 'r') as infile:
@@ -63,7 +62,7 @@ class WheelKeys(object):
 
     def save(self):
         # Try not to call this a very long time after load() 
-        path = dirspec.basedir.save_config_path('wheel')
+        path = save_config_path('wheel')
         conf = os.path.join(native(path), 'wheel.json')
         with open(conf, 'w+') as out:
             json.dump(self.data, out, indent=2)
