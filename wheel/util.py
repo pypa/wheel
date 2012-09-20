@@ -207,4 +207,10 @@ if sys.platform == 'win32':
             if os.path.exists(path):
                 yield path
 else:
-    from dirspec.basedir import load_config_paths, save_config_path
+    def save_config_path(*resource):
+        import dirspec.basedir
+        return dirspec.basedir.save_config_path(*resource)
+    def load_config_paths(*resource):
+        import dirspec.basedir
+        return dirspec.basedir.load_config_paths(*resource)
+
