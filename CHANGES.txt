@@ -1,3 +1,12 @@
+0.9.6
+=====
+- requires-dist from setup.cfg overwrites any requirements from setup.py
+  Care must be taken that the requirements are the same in both cases,
+  or just always install from wheel.
+- drop dirspec requirement on win32
+- improved command line utility, adds 'wheel convert [egg or wininst]' to
+  convert legacy binary formats to wheel
+
 0.9.5
 =====
 - Wheel's own wheel file can be executed by Python, and can install itself: 

@@ -7,6 +7,7 @@ import csv
 import hashlib
 import os
 import subprocess
+import warnings
 
 try:
     import sysconfig
@@ -279,33 +280,43 @@ class bdist_wheel(Command):
         section in setup.cfg:
         
         [metadata]
-        requires_dist = requirement; qualifier
+        provides-extra = extra1
+            extra2
+        requires-dist = requirement; qualifier
             another; qualifier2
             unqualified
             
         Yields
         
+        ('Provides-Extra', 'extra1'),
+        ('Provides-Extra', 'extra2'),
         ('Requires-Dist', 'requirement; qualifier'),
         ('Requires-Dist', 'another; qualifier2'),
         ('Requires-Dist', 'unqualified')
         """
-        requires = []
-        try:
-            metadata = self.distribution.get_option_dict('metadata')
-            requires = metadata['requires_dist']
-            for req in requires[1].splitlines():
-                req = req.strip()
-                if not req:
+        metadata = self.distribution.get_option_dict('metadata')
+
+        # our .ini parser folds - to _ in key names:
+        for key, title in (('provides_extra', 'Provides-Extra'), 
+                           ('requires_dist', 'Requires-Dist')):
+            if not key in metadata:
+                continue
+            field = metadata[key]
+            for line in field[1].splitlines():
+                line = line.strip()
+                if not line:
                     continue
-                yield ('Requires-Dist', req)                 
-        except KeyError:
-            return
+                yield (title, line) 
     
     def add_requirements(self, metadata_path):
         """Add additional requirements from setup.cfg to file metadata_path"""
         additional = list(self.setupcfg_requirements())
-        if not additional: return
+        if not additional: return        
         pkg_info = read_pkg_info(metadata_path)
+        if 'Provides-Extra' in pkg_info or 'Requires-Dist' in pkg_info:
+            warnings.warn('setup.cfg requirements overwrite values from setup.py')
+            del pkg_info['Provides-Extra']
+            del pkg_info['Requires-Dist'] 
         for k, v in additional:
             pkg_info[k] = v
         write_pkg_info(metadata_path, pkg_info)
