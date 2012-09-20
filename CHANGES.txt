@@ -1,3 +1,8 @@
+0.9.7
+=====
+- Only import dirspec when needed. dirspec is only needed to find the
+  configuration for keygen/signing operations.
+
 0.9.6
 =====
 - requires-dist from setup.cfg overwrites any requirements from setup.py
