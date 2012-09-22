@@ -47,6 +47,6 @@ def crypto_sign_open(signed, vk):
         raise ValueError("Bad verifying key length %d" % len(vk))
     rc = djbec.checkvalid(signed[:SIGNATUREBYTES], signed[SIGNATUREBYTES:], vk)
     if not rc:
-        raise ValueError("rc != 0", rc)    
+        raise ValueError("rc != True", rc)    
     return signed[SIGNATUREBYTES:]
 

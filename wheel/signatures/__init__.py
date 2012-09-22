@@ -16,7 +16,7 @@ def get_ed25519ll():
     if not ed25519ll:
         try:
             import ed25519ll # fast (thousands / s)
-        except (ImportError, OSError):
+        except (ImportError, OSError): # pragma nocover
             from . import ed25519py as ed25519ll # pure Python (hundreds / s)
         test()
     
