@@ -37,6 +37,7 @@ from wheel.util import native, load_config_paths, save_config_path
 
 class WheelKeys(object):
     SCHEMA = 1
+    CONFIG_NAME = 'wheel.json'
     
     def __init__(self):
         self.data = {'signers':[], 'verifiers':[]}
@@ -44,7 +45,7 @@ class WheelKeys(object):
     def load(self):
         # XXX JSON is not a great database
         for path in load_config_paths('wheel'):
-            conf = os.path.join(native(path), 'wheel.json')
+            conf = os.path.join(native(path), self.CONFIG_NAME)
             if os.path.exists(conf):
                 with open(conf, 'r') as infile:
                     self.data = json.load(infile)
@@ -53,17 +54,17 @@ class WheelKeys(object):
                             self.data[x] = []
                     if 'schema' not in self.data:
                         self.data['schema'] = self.SCHEMA
-                    if self.data['schema'] != self.SCHEMA:
+                    elif self.data['schema'] != self.SCHEMA:
                         raise ValueError(
-                            "Bad wheel.json version {}, expected {}".format((
-                                self.data['schema'], self.SCHEMA)))
+                            "Bad wheel.json version {}, expected {}".format(
+                                self.data['schema'], self.SCHEMA))
                 break
         return self
 
     def save(self):
         # Try not to call this a very long time after load() 
         path = save_config_path('wheel')
-        conf = os.path.join(native(path), 'wheel.json')
+        conf = os.path.join(native(path), self.CONFIG_NAME)
         with open(conf, 'w+') as out:
             json.dump(self.data, out, indent=2)
         return self
@@ -87,7 +88,7 @@ class WheelKeys(object):
     
     def signers(self, scope):
         """Return list of signing key(s)."""
-        sign = [(x['scope'], x['vk']) for x in self.data['verifiers'] if x['scope'] in (scope, '+')]
+        sign = [(x['scope'], x['vk']) for x in self.data['signers'] if x['scope'] in (scope, '+')]
         sign.sort(key=lambda x: x[0])
         sign.reverse()
         return sign
