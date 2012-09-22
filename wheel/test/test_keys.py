@@ -4,7 +4,6 @@ import unittest
 import json
 
 from wheel import keys
-import wheel.util
 
 wheel_json = """
 {

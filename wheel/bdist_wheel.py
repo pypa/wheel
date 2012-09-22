@@ -157,18 +157,12 @@ class bdist_wheel(Command):
             basedir_observed = os.path.join(self.data_dir, '..')
             self.install_libbase = self.install_lib = basedir_observed
 
-        if self.root_is_purelib:
-            setattr(install,
-                    'install_purelib',
-                    basedir_observed)
-        else:
-            setattr(install,
-                    'install_platlib',
-                    basedir_observed)
+        setattr(install,
+                ('install_platlib', 'install_purelib')[self.root_is_purelib],
+                basedir_observed)
 
         logger.info("installing to %s", self.bdist_dir)
-        if False:
-            self.fixup_data_files()
+        
         self.run_command('install')
 
         archive_basename = self.get_archive_basename()
@@ -224,19 +218,6 @@ class bdist_wheel(Command):
         logger.info('creating %s', wheelfile_path)
         with open(wheelfile_path, 'w') as f:
             Generator(f, maxheaderlen=0).flatten(msg)
-
-    def fixup_data_files(self):
-        """Put all resources in a .data directory"""
-        # (only useful in the packaging/distutils2 version of bdist_wheel)
-        data_files = {}
-        for k, v in self.distribution.data_files.items():
-            # {dist-info} is already in our directory tree
-            if v.startswith('{') and not v.startswith('{dist-info}'):
-                # XXX assert valid (in sysconfig.get_paths() or
-                # 'distribution.name')
-                data_files[k] = os.path.join(self.data_dir,
-                                             v.replace('{', '').replace('}', ''))
-        self.distribution.data_files.update(data_files)
 
     def _ensure_relative(self, path):
         # copied from dir_util, deleted
