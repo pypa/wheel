@@ -50,6 +50,9 @@ class TestWheelKeys(unittest.TestCase):
         self.wk = keys.WheelKeys()
         self.wk.CONFIG_NAME = self.config_filename
         
+    def tearDown(self):
+        os.unlink(self.config.name)
+        
     def test_load_save(self):
         self.wk.data = json.loads(wheel_json)
         
