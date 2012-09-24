@@ -6,9 +6,9 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = codecs.open(os.path.join(here, 'README.txt'), encoding='utf8').read()
 CHANGES = codecs.open(os.path.join(here, 'CHANGES.txt'), encoding='utf8').read()
 
-tool_reqs = ['keyring']
+signature_reqs = ['keyring']
 if sys.platform != 'win32':
-    tool_reqs.append('dirspec')
+    signature_reqs.append('dirspec')
 
 setup(name='wheel',
       version='0.9.7',
@@ -33,9 +33,9 @@ setup(name='wheel',
       packages=['wheel', 'wheel.test', 'wheel.tool', 'wheel.signatures'], 
       install_requires=['distribute>=0.6.28', 'markerlib'],
       extras_require={
-          'signatures': [],
+          'signatures': signature_reqs,
           'faster-signatures': ['ed25519ll'], 
-          'tool': tool_reqs
+          'tool': []
           },
       include_package_data=True,
       zip_safe=False,
