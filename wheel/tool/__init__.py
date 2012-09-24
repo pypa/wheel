@@ -174,6 +174,11 @@ def parser():
     convert_parser.add_argument('--verbose', '-v', action='store_true')
     convert_parser.set_defaults(func=convert_f)
     
+    def help_f(args):
+        p.print_help()
+    help_parser = s.add_parser('help', help='Show this help')
+    help_parser.set_defaults(func=help_f)
+
     return p
 
 def main():
