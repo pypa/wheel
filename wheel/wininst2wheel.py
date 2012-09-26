@@ -144,7 +144,7 @@ def bdist_wininst2wheel(path, dest_dir=os.path.curdir):
     bw.root_is_purelib = root_is_purelib
     dist_info_dir = os.path.join(dir, '%s.dist-info' % dist_info)
     bw.egg2dist(os.path.join(dir, egginfo_name), dist_info_dir)
-    bw.write_wheelfile(dist_info_dir, generator='egg2wheel')
+    bw.write_wheelfile(dist_info_dir, generator='wininst2wheel')
     bw.write_record(dir, dist_info_dir)
     
     archive_wheelfile(os.path.join(dest_dir, wheel_name), dir)
