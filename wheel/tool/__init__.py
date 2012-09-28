@@ -133,7 +133,6 @@ def parser():
     def keygen_f(args):
         keygen()
     keygen_parser = s.add_parser('keygen', help='Generate signing key')
-    keygen_parser.add_argument('wheelfile', help='Wheel file') 
     keygen_parser.set_defaults(func=keygen_f)
     
     def sign_f(args):
