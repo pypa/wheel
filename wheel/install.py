@@ -9,6 +9,7 @@ import re
 import zipfile
 import hashlib
 import csv
+from distutils.version import LooseVersion
 try:
     import sysconfig
 except ImportError:
@@ -133,6 +134,51 @@ class WheelFile(object):
             if dtag in supported:
                 return True
         return False
+
+    # Comparability.
+    # Wheels are equal if they refer to the same file.
+    # If two wheels are not equal, compare based on (in this order):
+    #   1. Name
+    #   2. Version
+    #   3. Compatibility rank
+    #   4. Filename (as a tiebreaker)
+    def __eq__(self, other):
+        return self.filename == other.filename
+    def __ne__(self, other):
+        return self.filename != other.filename
+    def __lt__(self, other):
+        sn = self.parsed_filename.group('name')
+        on = other.parsed_filename.group('name')
+        if sn != on:
+            return sn < on
+        sv = LooseVersion(self.parsed_filename.group('ver'))
+        ov = LooseVersion(other.parsed_filename.group('ver'))
+        if sv != ov:
+            return sv < ov
+        # Compatibility
+        supported = generate_supported()
+        sc = None
+        oc = None
+        try:
+            sc = self.compatibility_rank(supported)
+        except ValueError:
+            sc = None
+        try:
+            oc = other.compatibility_rank(supported)
+        except ValueError:
+            oc = None
+        if sc and oc and sc != oc:
+            # Smaller compatibility rangs are "better" than larger ones,
+            # so we have to reverse the sense of the comparison here!
+            return sc > oc
+        return self.filename < other.filename
+    def __gt__(self, other):
+        return other < self
+    def __le__(self, other):
+        return self == other or self < other
+    def __ge__(self, other):
+        return self == other or other < self
+
 
     def install(self, force=False, overrides={}):
         """Install the wheel into site-packages.

@@ -9,6 +9,7 @@ import wheel.install
 import wheel.signatures
 import json
 from glob import iglob
+from pkg_resources import Distribution, Requirement
 from ..util import urlsafe_b64decode, urlsafe_b64encode, native, binary
 from ..wininst2wheel import bdist_wininst2wheel
 from ..egg2wheel import egg2wheel
@@ -98,19 +99,76 @@ def unpack(wheelfile, dest='.'):
     wf.zipfile.extractall(destination)
     wf.zipfile.close()    
 
-def install(wheelfile, force=False):
-    """Install a wheel.
-    
-    :param wheelfile: The path to the wheel.
+def matches_requirement(req, wheels):
+    """List of wheels matching a requirement.
+
+    :param req: The requirement to satisfy
+    :param wheels: List of wheels to search.
     """
-    wf = wheel.install.WheelFile(wheelfile)
-    if not force:
-        if not wf.supports_current_python():
-            msg = ("{} is not compatible with this Python. " 
-                   "--force to install anyway.".format(wheelfile))
-            raise Exception(msg)
-    wf.install(force)
-    wf.zipfile.close()
+    selected =  []
+    for wf in wheels:
+        f = wf.parsed_filename
+        dist = Distribution(project_name=f.group("name"), version=f.group("ver"))
+        if dist in req:
+            selected.append(wf)
+    return selected
+
+def install(requirements, wheel_dirs=None, force=False, list_files=False):
+    """Install wheels.
+    
+    :param requirements: A list of requirements or wheel files to install.
+    :param wheel_dirs: A list of directories to search for wheels.
+    :param force: Install a wheel file even if it is not compatible.
+    :param list_files: Only list the files to install, don't install them.
+    """
+
+    # Use the current directory if no wheel directories specified
+    if not wheel_dirs:
+        wheel_dirs = [ os.path.curdir ]
+
+    # Get a list of all valid wheels in wheel_dirs
+    all_wheels = []
+    for d in wheel_dirs:
+        for w in os.listdir(d):
+            if w.endswith('.whl'):
+                wf = wheel.install.WheelFile(w)
+                if wf.supports_current_python():
+                    all_wheels.append(wf)
+
+    to_install = []
+    for req in requirements:
+        print(req)
+        if req.endswith('.whl'):
+            # Explicitly specified wheel filename
+            if os.path.exists(req):
+                wf = wheel.install.WheelFile(req)
+                if wf.supports_current_python() or force:
+                    to_install.append(wf)
+                else:
+                    msg = ("{} is not compatible with this Python. "
+                           "--force to install anyway.".format(wheelfile))
+                    raise Exception(msg)
+            else:
+                # We could search on wheel_dirs, but it's probably OK to
+                # assume the user has made an error.
+                raise Exception("No such wheel file: {}".format(req))
+            continue
+
+        # We have a requirement spec
+        req = Requirement.parse(req)
+        matches = matches_requirement(req, all_wheels)
+        print(matches)
+        to_install.append(max(matches))
+
+    # We now have a list of wheels to install
+    if list_files:
+        sys.stdout.write("Installing:\n")
+    for wf in to_install:
+        if list_files:
+            sys.stdout.write("    {}\n".format(wf.filename))
+            continue
+        wf.install()
+        wf.zipfile.close()
 
 def convert(installers, dest_dir, verbose):
     for pat in installers:
@@ -156,13 +214,21 @@ def parser():
     unpack_parser.set_defaults(func=unpack_f)
     
     def install_f(args):
-        install(args.wheelfile, args.force)
-    install_parser = s.add_parser('install', help='Install wheel')
-    install_parser.add_argument('wheelfile', help='Wheel file')
-    install_parser.add_argument('--force', '-f', default=False, 
+        install(args.requirements, args.wheel_dirs, args.force, args.list_files)
+    install_parser = s.add_parser('install', help='Install wheels')
+    install_parser.add_argument('requirements', nargs='*',
+                                help='Requirements to install.')
+    install_parser.add_argument('--force', default=False,
                                 action='store_true',
-                                help='Install incompatible wheel files and '
-                                'overwrite any files that are in the way.')
+                                help='Install incompatible wheel files.')
+    install_parser.add_argument('-wheel-dir', '-d', action='append',
+                                dest='wheel_dirs',
+                                help='Directories containing wheels.')
+    install_parser.add_argument('--list', '-l', default=False,
+                                dest='list_files',
+                                action='store_true',
+                                help="List wheels which would be installed, "
+                                "but don't actually install anything.")
     install_parser.set_defaults(func=install_f)
 
     def convert_f(args):
