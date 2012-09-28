@@ -121,6 +121,7 @@ def convert(installers, dest_dir, verbose):
                 conv = bdist_wininst2wheel
             if verbose:
                 sys.stdout.write("{}... ".format(installer))
+                sys.stdout.flush()
             conv(installer, dest_dir)
             if verbose:
                 sys.stdout.write("OK\n")
