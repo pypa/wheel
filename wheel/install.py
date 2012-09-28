@@ -9,7 +9,7 @@ import re
 import zipfile
 import hashlib
 import csv
-from distutils.version import LooseVersion
+import pkg_resources
 try:
     import sysconfig
 except ImportError:
@@ -151,8 +151,8 @@ class WheelFile(object):
         on = other.parsed_filename.group('name')
         if sn != on:
             return sn < on
-        sv = LooseVersion(self.parsed_filename.group('ver'))
-        ov = LooseVersion(other.parsed_filename.group('ver'))
+        sv = pkg_resources.parse_version(self.parsed_filename.group('ver'))
+        ov = pkg_resources.parse_version(other.parsed_filename.group('ver'))
         if sv != ov:
             return sv < ov
         # Compatibility
