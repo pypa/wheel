@@ -124,16 +124,21 @@ def install(requirements, requirements_file=None,
     :param list_files: Only list the files to install, don't install them.
     """
 
-    # Use the current directory if no wheel directories specified
+    # If no wheel directories specified, use the WHEELPATH environment
+    # variable, or the current directory if that is not set.
     if not wheel_dirs:
-        wheel_dirs = [ os.path.curdir ]
+        wheelpath = os.getenv("WHEELPATH")
+        if wheelpath:
+            wheel_dirs = wheelpath.split(os.pathsep)
+        else:
+            wheel_dirs = [ os.path.curdir ]
 
     # Get a list of all valid wheels in wheel_dirs
     all_wheels = []
     for d in wheel_dirs:
         for w in os.listdir(d):
             if w.endswith('.whl'):
-                wf = wheel.install.WheelFile(w)
+                wf = wheel.install.WheelFile(os.path.join(d, w))
                 if wf.supports_current_python():
                     all_wheels.append(wf)
 
