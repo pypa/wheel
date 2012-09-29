@@ -113,10 +113,12 @@ def matches_requirement(req, wheels):
             selected.append(wf)
     return selected
 
-def install(requirements, wheel_dirs=None, force=False, list_files=False):
+def install(requirements, requirements_file=None,
+            wheel_dirs=None, force=False, list_files=False):
     """Install wheels.
     
     :param requirements: A list of requirements or wheel files to install.
+    :param requirements_file: A file containint requirements to install.
     :param wheel_dirs: A list of directories to search for wheels.
     :param force: Install a wheel file even if it is not compatible.
     :param list_files: Only list the files to install, don't install them.
@@ -135,9 +137,23 @@ def install(requirements, wheel_dirs=None, force=False, list_files=False):
                 if wf.supports_current_python():
                     all_wheels.append(wf)
 
+    # If there is a requirements file, add it to the list of requirements
+    if requirements_file:
+        # If the file doesn't exist, search for it in wheel_dirs
+        # This allows standard requirements files to be stored with the
+        # wheels.
+        if not os.path.exists(requirements_file):
+            for d in wheel_dirs:
+                name = os.path.join(d, requirements_file)
+                if os.path.exists(name):
+                    requirements_file = name
+                    break
+
+        with open(requirements_file) as fd:
+            requirements.extend(fd)
+
     to_install = []
     for req in requirements:
-        print(req)
         if req.endswith('.whl'):
             # Explicitly specified wheel filename
             if os.path.exists(req):
@@ -157,7 +173,8 @@ def install(requirements, wheel_dirs=None, force=False, list_files=False):
         # We have a requirement spec
         req = Requirement.parse(req)
         matches = matches_requirement(req, all_wheels)
-        print(matches)
+        if not matches:
+            raise Exception("No match for requirement {}".format(req))
         to_install.append(max(matches))
 
     # We now have a list of wheels to install
@@ -214,16 +231,20 @@ def parser():
     unpack_parser.set_defaults(func=unpack_f)
     
     def install_f(args):
-        install(args.requirements, args.wheel_dirs, args.force, args.list_files)
+        install(args.requirements, args.requirements_file,
+                args.wheel_dirs, args.force, args.list_files)
     install_parser = s.add_parser('install', help='Install wheels')
     install_parser.add_argument('requirements', nargs='*',
                                 help='Requirements to install.')
     install_parser.add_argument('--force', default=False,
                                 action='store_true',
                                 help='Install incompatible wheel files.')
-    install_parser.add_argument('-wheel-dir', '-d', action='append',
+    install_parser.add_argument('--wheel-dir', '-d', action='append',
                                 dest='wheel_dirs',
                                 help='Directories containing wheels.')
+    install_parser.add_argument('--requirements-file', '-r', 
+                                help="A file containing requirements to "
+                                "install.")
     install_parser.add_argument('--list', '-l', default=False,
                                 dest='list_files',
                                 action='store_true',
