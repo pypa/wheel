@@ -168,11 +168,10 @@ class HashingFile(object):
         self.hashtype = hashtype
         self.hash = hashlib.new(hashtype)
         self.length = 0
-    def read(self, n):
-        data = self.fd.read(n)
+    def write(self, data):
         self.hash.update(data)
         self.length += len(data)
-        return data
+        self.fd.write(data)
     def close(self):
         self.fd.close()
     def digest(self):

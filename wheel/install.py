@@ -222,13 +222,14 @@ class WheelFile(object):
                 target = get_path(key)
             else:
                 # Normal file. Target destination is root
+                key = ''
                 target = root
                 filename = name
 
             # Map the actual filename from the zipfile to its intended target
             # directory and the pathname relative to that directory.
             dest = os.path.normpath(os.path.join(target, filename))
-            name_trans[name] = (target, filename, dest)
+            name_trans[name] = (key, target, filename, dest)
 
         # We're now ready to start processing the actual install. The process
         # is as follows:
@@ -242,25 +243,36 @@ class WheelFile(object):
         
         if not force:
             for k, v in name_trans.items():
-                target, filename, dest = v
+                key, target, filename, dest = v
                 if os.path.exists(dest):
                     raise ValueError("Wheel file {} would overwrite an existing file. Use force if this is intended".format(k))
 
+        # Get the name of our executable, for use when replacing script
+        # wrapper hashbang lines.
+        # We encode it using getfilesystemencoding, as that is "the name of
+        # the encoding used to convert Unicode filenames into system file
+        # names".
+        exename = sys.executable.encode(sys.getfilesystemencoding())
         record_data = []
-        for name, (target, filename, dest) in name_trans.items():
-            source = HashingFile(self.zipfile.open(name))
+        for name, (key, target, filename, dest) in name_trans.items():
+            source = self.zipfile.open(name)
             # Skip the RECORD file
             if name == self.distinfo_name + '/RECORD':
                 continue
             ddir = os.path.dirname(dest)
             if not os.path.isdir(ddir):
                 os.makedirs(ddir)
-            destination = open(dest, 'wb')
+            destination = HashingFile(open(dest, 'wb'))
+            if key == 'scripts' and filename.endswith('.py'):
+                hashbang = source.readline()
+                if hashbang.startswith(b'#!python'):
+                    hashbang = b'#!' + exename + b'\r\n'
+                destination.write(hashbang)
             shutil.copyfileobj(source, destination)
-            destination.close()
             reldest = os.path.relpath(dest, root)
             reldest.replace(os.sep, '/')
-            record_data.append((reldest, source.digest(), source.length))
+            record_data.append((reldest, destination.digest(), destination.length))
+            destination.close()
             source.close()
 
         record_name = os.path.join(root, self.distinfo_name, 'RECORD')
