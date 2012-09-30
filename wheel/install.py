@@ -22,12 +22,12 @@ except ImportError:
 import shutil
 
 from wheel.decorator import reify
-from wheel.util import urlsafe_b64encode, from_json,\
-    urlsafe_b64decode, native, binary, generate_supported, \
-    HashingFile
+from wheel.util import (urlsafe_b64encode, from_json,
+    urlsafe_b64decode, native, binary, HashingFile)
 from wheel import signatures
 from wheel.pkginfo import read_pkg_info_bytes
 from wheel.util import open_for_csv
+from .pep425tags import get_supported as generate_supported
 
 # The next major version after this version of the 'wheel' tool:
 VERSION_TOO_HIGH = (1, 0)

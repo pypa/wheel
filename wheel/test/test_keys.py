@@ -3,7 +3,7 @@ import os.path
 import unittest
 import json
 
-from wheel import keys
+from wheel.signatures import keys
 
 wheel_json = """
 {

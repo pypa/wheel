@@ -5,7 +5,6 @@ Wheel command-line utility.
 import os
 import hashlib
 import sys
-import wheel.install
 import wheel.signatures
 import json
 from glob import iglob
@@ -13,13 +12,14 @@ from pkg_resources import Distribution, Requirement
 from ..util import urlsafe_b64decode, urlsafe_b64encode, native, binary
 from ..wininst2wheel import bdist_wininst2wheel
 from ..egg2wheel import egg2wheel
+from ..install import WheelFile
 
 import argparse
 
 def keygen():
     """Generate a public/private key pair."""
     try:
-        import wheel.keys
+        from ..signatures import keys
         import keyring
     except ImportError:
         raise Exception("Install wheel[signatures] (keyring, dirspec) for signatures")
@@ -50,14 +50,14 @@ def keygen():
 def sign(wheelfile, replace=False):
     """Sign a wheel"""
     try:
-        import wheel.keys
+        from ..signatures import keys
         import keyring
     except ImportError:
         raise Exception("Install wheel[signatures] (keyring, dirspec) for signatures")
     ed25519ll = wheel.signatures.get_ed25519ll()
     
     wf = wheel.install.WheelFile(wheelfile, append=True)
-    wk = wheel.keys.WheelKeys().load()
+    wk = keys.WheelKeys().load()
     
     name = wf.parsed_filename.group('name')
     sign_with = wk.signers(name)[0]
