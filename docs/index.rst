@@ -65,10 +65,28 @@ To build an individual wheel, run ``python setup.py bdist_wheel``.  Note that
 ``distutils`` does not support pluggable commands like ``bdist_wheel``.  On
 the other hand ``pip`` always runs ``setup.py`` with setuptools enabled.
 
-Wheel also includes its own installer that has the advantage of working even when
-distribute has not been installed, and that can be invoked directly from wheel's
-own wheel.
+Wheel also includes its own installer that can only install wheels (not
+sdists) from a local file or folder, but has the advantage of working
+even when distribute or pip has not been installed.
 
+Wheel's builtin utility can be invoked directly from wheel's own wheel::
+
+    $ python wheel-0.10.0-py2.py3-none-any.whl/wheel -h
+    usage: wheel [-h] {keygen,sign,verify,unpack,install,convert,help} ...
+
+    positional arguments:
+      {keygen,sign,verify,unpack,install,convert,help}
+                            commands
+        keygen              Generate signing key
+        sign                Sign wheel
+        verify              Verify signed wheel
+        unpack              Unpack wheel
+        install             Install wheels
+        convert             Convert egg or wininst to wheel
+        help                Show this help
+
+    optional arguments:
+      -h, --help            show this help message and exit
 
 
 Automatically sign wheel files

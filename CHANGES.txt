@@ -3,7 +3,8 @@
 - Include a copy of pkg_resources. Wheel can now install into a virtualenv
   that does not have distribute (though most packages still require
   pkg_resources to actually work; wheel install distribute)
-- 
+- Define a new setup.cfg section [wheel]. universal=1 will
+  apply the py2.py3-none-any tag for pure python wheels.
 
 0.9.7
 =====
