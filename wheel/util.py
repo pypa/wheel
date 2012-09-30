@@ -182,7 +182,7 @@ class HashingFile(object):
         return self.hashtype + '=' + native(urlsafe_b64encode(digest))
 
 if sys.platform == 'win32':
-    import ctypes, ctypes.wintypes
+    import ctypes.wintypes
     # CSIDL_APPDATA for reference - not used here for compatibility with
     # dirspec, which uses LOCAL_APPDATA and COMMON_APPDATA in that order
     csidl = dict(CSIDL_APPDATA=26, CSIDL_LOCAL_APPDATA=28,

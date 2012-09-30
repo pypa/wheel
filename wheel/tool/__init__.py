@@ -18,8 +18,11 @@ import argparse
 
 def keygen():
     """Generate a public/private key pair."""
-    import wheel.keys
-    import keyring
+    try:
+        import wheel.keys
+        import keyring
+    except ImportError:
+        raise Exception("Install wheel[signatures] (keyring, dirspec) for signatures")
     ed25519ll = wheel.signatures.get_ed25519ll()
 
     wk = wheel.keys.WheelKeys().load()
@@ -46,8 +49,11 @@ def keygen():
 
 def sign(wheelfile, replace=False):
     """Sign a wheel"""
-    import wheel.keys
-    import keyring
+    try:
+        import wheel.keys
+        import keyring
+    except ImportError:
+        raise Exception("Install wheel[signatures] (keyring, dirspec) for signatures")
     ed25519ll = wheel.signatures.get_ed25519ll()
     
     wf = wheel.install.WheelFile(wheelfile, append=True)
@@ -276,5 +282,8 @@ def parser():
 def main():
     p = parser()
     args = p.parse_args()
-    args.func(args)
-    
+    if not hasattr(args, 'func'):
+        p.print_help()
+    else:
+        # XXX on Python 3.3 we get 'args has no func' rather than short help.
+        args.func(args)

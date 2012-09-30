@@ -11,7 +11,7 @@ if sys.platform != 'win32':
     signature_reqs.append('dirspec')
 
 setup(name='wheel',
-      version='0.9.7',
+      version='0.10.0',
       description='A built-package format for Python.',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
@@ -30,8 +30,13 @@ setup(name='wheel',
       url='http://bitbucket.org/dholth/wheel/',
       keywords='wheel packaging',
       license='MIT',
-      packages=['wheel', 'wheel.test', 'wheel.tool', 'wheel.signatures'], 
-      install_requires=['distribute>=0.6.28', 'markerlib'],
+      packages=[
+          'wheel', 
+          'wheel.test', 
+          'wheel.tool', 
+          'wheel.signatures',
+          'wheel.pkg_resources'
+          ],
       extras_require={
           'signatures': signature_reqs,
           'faster-signatures': ['ed25519ll'], 

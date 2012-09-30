@@ -9,7 +9,12 @@ import re
 import zipfile
 import hashlib
 import csv
-import pkg_resources
+
+try:
+    import pkg_resources
+except ImportError:
+    from . import pkg_resources
+
 try:
     import sysconfig
 except ImportError:

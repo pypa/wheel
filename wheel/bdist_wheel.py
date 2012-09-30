@@ -15,8 +15,15 @@ except ImportError:  # pragma nocover
     # Python < 2.7
     import distutils.sysconfig as sysconfig
 
-import pkg_resources
-from pkg_resources import safe_name, safe_version
+try:
+    import pkg_resources
+except ImportError:
+    # this dance makes the unit tests happy
+    # bdist_wheel won't really work without distribute
+    from wheel import pkg_resources
+    
+safe_name = pkg_resources.safe_name
+safe_version = pkg_resources.safe_version
 
 from shutil import rmtree
 from email.generator import Generator
@@ -111,7 +118,15 @@ class bdist_wheel(Command):
         abi_tag = 'none'
         plat_name = 'any'
         impl_name = 'py'
-        if not purity:
+        if purity:
+            wheel = self.distribution.get_option_dict('wheel')
+            if 'universal' in wheel:
+                # please don't define this in your global configs
+                val = wheel['universal'][1].split('#', 1)[0].strip()
+                if val == '1':
+                    impl_name = 'py2.py3'
+                    impl_ver = ''
+        else:
             plat_name = self.plat_name.replace('-', '_').replace('.', '_')
             impl_name = get_abbr_impl()
             # PEP 3149 -- no SOABI in Py 2

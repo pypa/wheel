@@ -3,8 +3,6 @@ import unittest
 from wheel.util import generate_supported
 from wheel.install import WheelFile
 
-import wheel
-
 WHEELPAT = "%(name)s-%(ver)s-%(pyver)s-%(abi)s-%(arch)s.whl"
 def make_wheel(name, ver, pyver, abi, arch):
     name = WHEELPAT % dict(name=name, ver=ver, pyver=pyver, abi=abi,
@@ -42,4 +40,4 @@ class TestRanking(unittest.TestCase):
     def test_comparison(self):
         for i in range(len(WHEELS)-1):
             for j in range(i):
-                self.assertLess(WHEELS[j],WHEELS[i])
+                self.assertTrue(WHEELS[j]<WHEELS[i])
