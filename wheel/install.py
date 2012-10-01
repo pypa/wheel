@@ -201,7 +201,8 @@ class WheelFile(object):
 
         # Parse all the names in the archive
         name_trans = {}
-        for name in self.zipfile.namelist():
+        for info in self.zipfile.infolist():
+            name = info.filename
             # Zip files can contain entries representing directories.
             # These end in a '/'.
             # We ignore these, as we create directories on demand.
@@ -234,7 +235,7 @@ class WheelFile(object):
             # Map the actual filename from the zipfile to its intended target
             # directory and the pathname relative to that directory.
             dest = os.path.normpath(os.path.join(target, filename))
-            name_trans[name] = (key, target, filename, dest)
+            name_trans[info] = (key, target, filename, dest)
 
         # We're now ready to start processing the actual install. The process
         # is as follows:
@@ -247,7 +248,8 @@ class WheelFile(object):
         #      reflect the actual installed paths.
         
         if not force:
-            for k, v in name_trans.items():
+            for info, v in name_trans.items():
+                k = info.filename
                 key, target, filename, dest = v
                 if os.path.exists(dest):
                     raise ValueError("Wheel file {} would overwrite {}. Use force if this is intended".format(k, dest))
@@ -259,16 +261,18 @@ class WheelFile(object):
         # names".
         exename = sys.executable.encode(sys.getfilesystemencoding())
         record_data = []
-        for name, (key, target, filename, dest) in name_trans.items():
-            source = self.zipfile.open(name)
+        record_name = self.distinfo_name + '/RECORD'
+        for info, (key, target, filename, dest) in name_trans.items():
+            name = info.filename
+            source = self.zipfile.open(info)
             # Skip the RECORD file
-            if name == self.distinfo_name + '/RECORD':
+            if name == record_name:
                 continue
             ddir = os.path.dirname(dest)
             if not os.path.isdir(ddir):
                 os.makedirs(ddir)
             destination = HashingFile(open(dest, 'wb'))
-            if key == 'scripts' and filename.endswith('.py'):
+            if key == 'scripts':
                 hashbang = source.readline()
                 if hashbang.startswith(b'#!python'):
                     hashbang = b'#!' + exename + b'\r\n'
@@ -279,6 +283,8 @@ class WheelFile(object):
             record_data.append((reldest, destination.digest(), destination.length))
             destination.close()
             source.close()
+            # preserve attributes (especially +x bit for scripts)
+            os.chmod(dest, info.external_attr >> 16)
 
         record_name = os.path.join(root, self.distinfo_name, 'RECORD')
         writer = csv.writer(open_for_csv(record_name, 'w+'))

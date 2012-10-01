@@ -1,3 +1,7 @@
+0.10.1
+======
+- Preserve attributes on install.
+
 0.10.0
 ======
 - Include a copy of pkg_resources. Wheel can now install into a virtualenv

@@ -195,7 +195,7 @@ def install(requirements, requirements_file=None,
         if list_files:
             sys.stdout.write("    {}\n".format(wf.filename))
             continue
-        wf.install()
+        wf.install(force=force)
         wf.zipfile.close()
 
 def convert(installers, dest_dir, verbose):
