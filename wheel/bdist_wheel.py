@@ -358,7 +358,6 @@ class bdist_wheel(Command):
                             ignore=lambda x, y: set(('PKG-INFO', 
                                                      'requires.txt',
                                                      'SOURCES.txt',
-                                                     'top_level.txt',
                                                      'not-zip-safe',)))
             
             # delete dependency_links if it is only whitespace
