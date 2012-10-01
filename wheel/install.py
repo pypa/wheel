@@ -250,7 +250,7 @@ class WheelFile(object):
             for k, v in name_trans.items():
                 key, target, filename, dest = v
                 if os.path.exists(dest):
-                    raise ValueError("Wheel file {} would overwrite an existing file. Use force if this is intended".format(k))
+                    raise ValueError("Wheel file {} would overwrite {}. Use force if this is intended".format(k, dest))
 
         # Get the name of our executable, for use when replacing script
         # wrapper hashbang lines.
