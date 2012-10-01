@@ -57,6 +57,8 @@ built packages::
         # Install from cached wheels
         pip install --use-wheel --no-index --find-links=file:///tmp/wheel-cache pyramid
 
+(Newer versions of the pip fork may use 'pip build' to produce wheels.)
+
 For lxml, an up to 3-minute "search for the newest version and compile"
 can become a less-than-1 second "unpack from wheel".
 
