@@ -5,10 +5,10 @@ Wheel command-line utility.
 import os
 import hashlib
 import sys
-import wheel.signatures
 import json
 from glob import iglob
 from pkg_resources import Distribution, Requirement
+from .. import signatures
 from ..util import urlsafe_b64decode, urlsafe_b64encode, native, binary
 from ..wininst2wheel import bdist_wininst2wheel
 from ..egg2wheel import egg2wheel
@@ -16,16 +16,22 @@ from ..install import WheelFile
 
 import argparse
 
-def keygen():
-    """Generate a public/private key pair."""
+# For testability
+def get_keyring():    
     try:
         from ..signatures import keys
         import keyring
     except ImportError:
         raise Exception("Install wheel[signatures] (keyring, dirspec) for signatures")
-    ed25519ll = wheel.signatures.get_ed25519ll()
+    return keys.WheelKeys, keyring
 
-    wk = wheel.keys.WheelKeys().load()
+def keygen(get_keyring=get_keyring):
+    """Generate a public/private key pair."""
+    WheelKeys, keyring = get_keyring()
+    
+    ed25519ll = signatures.get_ed25519ll()
+
+    wk = WheelKeys().load()
     
     keypair = ed25519ll.crypto_sign_keypair()
     vk = native(urlsafe_b64encode(keypair.vk))
@@ -47,17 +53,14 @@ def keygen():
     wk.trust('+', vk)
     wk.save()
 
-def sign(wheelfile, replace=False):
+def sign(wheelfile, replace=False, get_keyring=get_keyring):
     """Sign a wheel"""
-    try:
-        from ..signatures import keys
-        import keyring
-    except ImportError:
-        raise Exception("Install wheel[signatures] (keyring, dirspec) for signatures")
-    ed25519ll = wheel.signatures.get_ed25519ll()
+    WheelKeys, keyring = get_keyring()
+
+    ed25519ll = signatures.get_ed25519ll()
     
-    wf = wheel.install.WheelFile(wheelfile, append=True)
-    wk = keys.WheelKeys().load()
+    wf = WheelFile(wheelfile, append=True)
+    wk = WheelKeys().load()
     
     name = wf.parsed_filename.group('name')
     sign_with = wk.signers(name)[0]
@@ -76,18 +79,18 @@ def sign(wheelfile, replace=False):
         raise NotImplementedError("Wheel is already signed")
     record_data = wf.zipfile.read(record_name)
     payload = {"hash":"sha256="+native(urlsafe_b64encode(hashlib.sha256(record_data).digest()))}
-    sig = wheel.signatures.sign(payload, keypair)
+    sig = signatures.sign(payload, keypair)
     wf.zipfile.writestr(sig_name, json.dumps(sig, sort_keys=True))
     wf.zipfile.close()
 
 def verify(wheelfile):
     """Verify a wheel."""
     import pprint
-    wf = wheel.install.WheelFile(wheelfile)
+    wf = install.WheelFile(wheelfile)
     sig_name = wf.distinfo_name + '/RECORD.jws'
     sig = json.loads(native(wf.zipfile.open(sig_name).read()))
     sys.stdout.write("Signatures are internally consistent.\n%s\n" % (
-                     pprint.pformat(wheel.signatures.verify(sig),)))
+                     pprint.pformat(signatures.verify(sig),)))
 
 def unpack(wheelfile, dest='.'):
     """Unpack a wheel.
@@ -98,7 +101,7 @@ def unpack(wheelfile, dest='.'):
     :param wheelfile: The path to the wheel.
     :param dest: Destination directory (default to current directory).
     """
-    wf = wheel.install.WheelFile(wheelfile)
+    wf = WheelFile(wheelfile)
     namever = wf.parsed_filename.group('namever')
     destination = os.path.join(dest, namever)
     sys.stdout.write("Unpacking to: %s\n" % (destination))
@@ -144,7 +147,7 @@ def install(requirements, requirements_file=None,
     for d in wheel_dirs:
         for w in os.listdir(d):
             if w.endswith('.whl'):
-                wf = wheel.install.WheelFile(os.path.join(d, w))
+                wf = WheelFile(os.path.join(d, w))
                 if wf.supports_current_python():
                     all_wheels.append(wf)
 
@@ -168,12 +171,12 @@ def install(requirements, requirements_file=None,
         if req.endswith('.whl'):
             # Explicitly specified wheel filename
             if os.path.exists(req):
-                wf = wheel.install.WheelFile(req)
+                wf = WheelFile(req)
                 if wf.supports_current_python() or force:
                     to_install.append(wf)
                 else:
                     msg = ("{} is not compatible with this Python. "
-                           "--force to install anyway.".format(wheelfile))
+                           "--force to install anyway.".format(req))
                     raise Exception(msg)
             else:
                 # We could search on wheel_dirs, but it's probably OK to
