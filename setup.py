@@ -11,7 +11,7 @@ if sys.platform != 'win32':
     signature_reqs.append('dirspec')
 
 setup(name='wheel',
-      version='0.10.2',
+      version='0.10.3',
       description='A built-package format for Python.',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[

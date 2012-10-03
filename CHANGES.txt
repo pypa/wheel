@@ -1,3 +1,7 @@
+0.10.3
+======
+- Scripts fixer fix
+
 0.10.2
 ======
 - Fix keygen
