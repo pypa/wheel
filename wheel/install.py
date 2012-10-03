@@ -275,7 +275,7 @@ class WheelFile(object):
             if key == 'scripts':
                 hashbang = source.readline()
                 if hashbang.startswith(b'#!python'):
-                    hashbang = b'#!' + exename + os.linesep
+                    hashbang = b'#!' + exename + binary(os.linesep)
                 destination.write(hashbang)
             shutil.copyfileobj(source, destination)
             reldest = os.path.relpath(dest, root)
