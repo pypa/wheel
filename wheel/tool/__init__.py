@@ -148,7 +148,7 @@ def install(requirements, requirements_file=None,
         for w in os.listdir(d):
             if w.endswith('.whl'):
                 wf = WheelFile(os.path.join(d, w))
-                if wf.supports_current_python():
+                if wf.supported:
                     all_wheels.append(wf)
 
     # If there is a requirements file, add it to the list of requirements
@@ -172,7 +172,7 @@ def install(requirements, requirements_file=None,
             # Explicitly specified wheel filename
             if os.path.exists(req):
                 wf = WheelFile(req)
-                if wf.supports_current_python() or force:
+                if wf.supported or force:
                     to_install.append(wf)
                 else:
                     msg = ("{} is not compatible with this Python. "

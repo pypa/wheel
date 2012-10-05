@@ -1,4 +1,5 @@
-"""Install a wheel
+"""
+Operations on existing wheel files, including basic installation. 
 """
 # XXX see patched pip to install
 
@@ -21,13 +22,18 @@ except ImportError:
     import distutils.sysconfig as sysconfig
 import shutil
 
+try:
+    _big_number = sys.maxsize
+except NameError:
+    _big_number = sys.maxint
+
 from wheel.decorator import reify
 from wheel.util import (urlsafe_b64encode, from_json,
     urlsafe_b64decode, native, binary, HashingFile)
 from wheel import signatures
 from wheel.pkginfo import read_pkg_info_bytes
 from wheel.util import open_for_csv
-from .pep425tags import get_supported as generate_supported
+from .pep425tags import get_supported
 
 # The next major version after this version of the 'wheel' tool:
 VERSION_TOO_HIGH = (1, 0)
@@ -46,15 +52,30 @@ class BadWheelFile(ValueError):
 
 
 class WheelFile(object):
-    """Parse wheel-specific attributes from a wheel (.whl) file"""
+    """Parse wheel-specific attributes from a wheel (.whl) file and offer
+    basic installation and verification support.
+    
+    WheelFile can be used to simply parse a wheel filename by avoiding the
+    methods that require the actual file contents."""
+    
     WHEEL_INFO = "WHEEL"
+    RECORD = "RECORD"
 
-    def __init__(self, filename, append=False):
+    def __init__(self, 
+                 filename, 
+                 fp=None, 
+                 append=False, 
+                 context=get_supported):
         """
+        :param fp: A seekable file-like object or None to open(filename).
         :param append: Open archive in append mode.
+        :param context: Function returning list of supported tags. Wheels
+        must have the same context to be sortable.
         """
         self.filename = filename
+        self.fp = fp
         self.append = append
+        self.context = context
         basename = os.path.basename(filename)
         self.parsed_filename = WHEEL_INFO_RE(basename)
         if not basename.endswith('.whl') or self.parsed_filename is None:
@@ -62,24 +83,6 @@ class WheelFile(object):
 
     def __repr__(self):
         return self.filename
-
-    @reify
-    def zipfile(self):
-        mode = "r"
-        if self.append:
-            mode = "a"
-        vzf = VerifyingZipFile(self.filename, mode)
-        if not self.append:
-            self.verify(vzf)
-        return vzf
-
-    @reify
-    def parsed_wheel_info(self):
-        """Parse wheel metadata"""
-        return read_pkg_info_bytes(self.zipfile.read(self.wheelinfo_name))
-
-    def get_metadata(self):
-        pass
 
     @property
     def distinfo_name(self):
@@ -91,14 +94,14 @@ class WheelFile(object):
 
     @property
     def record_name(self):
-        return "%s/%s" % (self.distinfo_name, 'RECORD')
+        return "%s/%s" % (self.distinfo_name, self.RECORD)
 
     @property
     def wheelinfo_name(self):
         return "%s/%s" % (self.distinfo_name, self.WHEEL_INFO)
 
     @property
-    def compatibility_tags(self):
+    def tags(self):
         """A wheel file is compatible with the Cartesian product of the
         period-delimited tags in its filename.
         To choose a wheel file among several candidates having the same
@@ -112,14 +115,26 @@ class WheelFile(object):
             for abi in tags['abi'].split('.'):
                 for plat in tags['plat'].split('.'):
                     yield (pyver, abi, plat)
+    
+    compatibility_tags = tags
 
     @property
     def arity(self):
         """The number of compatibility tags the wheel declares."""
         return len(list(self.compatibility_tags))
+    
+    @property
+    def rank(self):
+        """
+        Lowest index of any of this wheel's tags in self.context(), and the
+        arity e.g. (0, 1)
+        """
+        return self.compatibility_rank(self.context())
 
+    # deprecated:
     def compatibility_rank(self, supported):
-        """Rank the wheel against the supported ones.
+        """Rank the wheel against the supported tags. Smaller ranks are more
+        compatible!
 
         :param supported: A list of compatibility tags that the current
             Python implemenation can run.
@@ -131,14 +146,18 @@ class WheelFile(object):
             # Tag not present
             except ValueError:
                 pass
-        return (min(preferences), self.arity)
+        if len(preferences):
+            return (min(preferences), self.arity)
+        return (_big_number, 0)
 
-    def supports_current_python(self, generate_supported=generate_supported):
-        supported = generate_supported()
-        for dtag in self.compatibility_tags:
-            if dtag in supported:
-                return True
-        return False
+    @property
+    def supported(self):
+        return self.rank[0] != _big_number # bad API!
+    
+    # deprecated
+    def supports_current_python(self, x):
+        assert self.context == x, 'context mismatch'
+        return self.supported
 
     # Comparability.
     # Wheels are equal if they refer to the same file.
@@ -146,12 +165,28 @@ class WheelFile(object):
     #   1. Name
     #   2. Version
     #   3. Compatibility rank
-    #   4. Filename (as a tiebreaker)
+    #   4. Filename (as a tiebreaker)        
+    @property
+    def _sort_key(self):
+        return (self.parsed_filename.group('name'),
+                pkg_resources.parse_version(self.parsed_filename.group('ver')),
+                tuple(-x for x in self.rank),
+                self.filename)
+    
     def __eq__(self, other):
         return self.filename == other.filename
+    
     def __ne__(self, other):
         return self.filename != other.filename
+    
     def __lt__(self, other):
+        # Compatibility
+        if self.context != other.context:
+            raise TypeError("{}.context != {}.context".format(self, other))
+        return self._sort_key < other._sort_key
+    
+        # XXX prune
+        
         sn = self.parsed_filename.group('name')
         on = other.parsed_filename.group('name')
         if sn != on:
@@ -161,29 +196,50 @@ class WheelFile(object):
         if sv != ov:
             return sv < ov
         # Compatibility
-        supported = generate_supported()
-        sc = None
-        oc = None
-        try:
-            sc = self.compatibility_rank(supported)
-        except ValueError:
-            sc = None
-        try:
-            oc = other.compatibility_rank(supported)
-        except ValueError:
-            oc = None
-        if sc and oc and sc != oc:
-            # Smaller compatibility rangs are "better" than larger ones,
+        if self.context != other.context:
+            raise TypeError("{}.context != {}.context".format(self, other))
+        sc = self.rank
+        oc = other.rank
+        if sc != None and oc != None and sc != oc:
+            # Smaller compatibility ranks are "better" than larger ones,
             # so we have to reverse the sense of the comparison here!
             return sc > oc
+        elif sc == None and oc != None:
+            return False
         return self.filename < other.filename
+    
     def __gt__(self, other):
         return other < self
+    
     def __le__(self, other):
         return self == other or self < other
+    
     def __ge__(self, other):
         return self == other or other < self
 
+    #
+    # Methods using the file's contents:
+    # 
+    
+    @reify
+    def zipfile(self):
+        mode = "r"
+        if self.append:
+            mode = "a"
+        vzf = VerifyingZipFile(self.fp if self.fp else self.filename, mode)
+        if not self.append:
+            self.verify(vzf)
+        return vzf
+
+    @reify
+    def parsed_wheel_info(self):
+        """Parse wheel metadata (the .data/WHEEL file)"""
+        return read_pkg_info_bytes(self.zipfile.read(self.wheelinfo_name))
+
+    def check_version(self):
+        version = self.parsed_wheel_info['Wheel-Version']
+        if tuple(map(int, version.split('.'))) >= VERSION_TOO_HIGH:
+            raise ValueError("Wheel version is too high")
 
     def install(self, force=False, overrides={}):
         """Install the wheel into site-packages.
@@ -284,18 +340,15 @@ class WheelFile(object):
             destination.close()
             source.close()
             # preserve attributes (especially +x bit for scripts)
-            os.chmod(dest, info.external_attr >> 16)
+            attrs = info.external_attr >> 16
+            if attrs: # tends to be 0 if Windows.
+                os.chmod(dest, info.external_attr >> 16)
 
-        record_name = os.path.join(root, self.distinfo_name, 'RECORD')
+        record_name = os.path.join(root, self.record_name)
         writer = csv.writer(open_for_csv(record_name, 'w+'))
         for reldest, digest, length in sorted(record_data):
             writer.writerow((reldest, digest, length))
-        writer.writerow((self.distinfo_name + '/RECORD', '', ''))
-
-    def check_version(self):
-        version = self.parsed_wheel_info['Wheel-Version']
-        if tuple(map(int, version.split('.'))) >= VERSION_TOO_HIGH:
-            raise ValueError("Wheel version is too high")
+        writer.writerow((self.record_name, '', ''))
         
     def verify(self, zipfile=None):
         """Configure the VerifyingZipFile `zipfile` by verifying its signature 
@@ -410,33 +463,3 @@ class VerifyingZipFile(zipfile.ZipFile):
         self.fp.seek(last.header_offset, os.SEEK_SET)
         self.fp.truncate()
         self._didModify = True
-
-def pick_best(candidates, supported, top=True):
-    '''Pick the best supported wheel among the candidates.
-
-    The algorithm ranks each candidate wheel with respect to the supported
-    ones. A list of supported tags can be automatically generated with
-    :func:`wheel.util.generate_supported`.
-
-    :param candidates: A list of wheels that can be installed.
-    :param supported: A list of tags which represent wheels that can be
-        installed on the current system. Each tag is as follows::
-
-            (python_implementation, abi, architecture)
-
-        For example: ``('cp27', 'cp27m', 'linux_i686')``.
-    :param top: If True, only return the best wheel. Otherwise return all the
-        wheels among the candidates which are supported, sorted from best to
-        worst.
-    '''
-    ranked = []
-    for whl in candidates:
-        try:
-            preference, arity = whl.compatibility_rank(supported)
-        except ValueError:  # When preferences is empty
-            continue
-        ranked.append((preference, arity, whl))
-    if top:
-        return min(ranked)
-    return sorted(ranked)
-

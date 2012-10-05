@@ -7,7 +7,7 @@ from nose.tools import assert_true, assert_false, assert_equal, raises
 
 import wheel.util
 from wheel import egg2wheel
-from wheel.install import WheelFile, pick_best
+from wheel.install import WheelFile
 
 
 def test_findable():
@@ -80,9 +80,14 @@ def test_pick_best():
                   ('cp27', 'noabi', 'linux_i686'), ('py27', 'noabi', 'noarch')]
 
     for supp in (supported, supported2, supported3):
-        assert_equal(get_tags(pick_best(cand_wheels, supp)), supp[0])
-        assert_equal(
-            list(map(get_tags, pick_best(cand_wheels, supp, top=False))), supp)
+        context = lambda: list(supp)
+        for wheel in cand_wheels:
+            wheel.context = context
+        best = max(cand_wheels)
+        assert_equal(list(best.tags)[0], supp[0])
+        
+        # assert_equal(
+        #     list(map(get_tags, pick_best(cand_wheels, supp, top=False))), supp)
 
 
 if __name__ == '__main__':

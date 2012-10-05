@@ -25,11 +25,11 @@ def check(*path):
     return os.path.exists(os.path.join(*path))
 
 def test_install():
-    whl = WheelFile(TESTWHEEL)
     tempdir = mkdtemp()
-    def generate_supported():
-        return list(wheel.util.generate_supported()) + [('py3', 'none', 'win32')]
-    assert whl.supports_current_python(generate_supported)
+    def get_supported():
+        return list(wheel.pep425tags.get_supported()) + [('py3', 'none', 'win32')]
+    whl = WheelFile(TESTWHEEL, context=get_supported)
+    assert whl.supports_current_python(get_supported)
     try:
         locs = {}
         for key in ('purelib', 'platlib', 'scripts', 'headers', 'data'):
