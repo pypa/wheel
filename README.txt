@@ -16,6 +16,12 @@ The wheel project provides a `bdist_wheel` command for setuptools
 (requires distribute >= 0.6.28). Wheel files can be installed with a
 patched `pip` from https://github.com/dholth/pip.
 
+*The pip patch is in flux and is being split into separate `install` and
+a `build` patches. Check the branch called `wheel` for the most features.*
+
+The wheel documentation is at http://wheel.rtfd.org/. The file format is
+documented in the draft PEP 427 (http://www.python.org/dev/peps/pep-0427/).
+
 Why not egg?
 ------------
 
