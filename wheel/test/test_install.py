@@ -12,7 +12,8 @@
 # The root is PLATLIB
 # So, some in PLATLIB, and one in each of DATA, HEADERS and SCRIPTS.
 
-import wheel.util
+import wheel.tool
+import wheel.pep425tags
 from wheel.install import WheelFile
 from tempfile import mkdtemp
 import shutil
@@ -46,3 +47,9 @@ def test_install():
         assert check(locs['platlib'], 'test-1.0.dist-info', 'RECORD')
     finally:
         shutil.rmtree(tempdir)
+
+def test_install_tool():
+    """Slightly improve coverage of wheel.install"""
+    wheel.tool.install([TESTWHEEL], force=True, dry_run=True)
+
+    

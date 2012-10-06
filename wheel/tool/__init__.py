@@ -123,7 +123,8 @@ def matches_requirement(req, wheels):
     return selected
 
 def install(requirements, requirements_file=None,
-            wheel_dirs=None, force=False, list_files=False):
+            wheel_dirs=None, force=False, list_files=False,
+            dry_run=False):
     """Install wheels.
     
     :param requirements: A list of requirements or wheel files to install.
@@ -131,6 +132,7 @@ def install(requirements, requirements_file=None,
     :param wheel_dirs: A list of directories to search for wheels.
     :param force: Install a wheel file even if it is not compatible.
     :param list_files: Only list the files to install, don't install them.
+    :param dry_run: Do everything but the actual install.
     """
 
     # If no wheel directories specified, use the WHEELPATH environment
@@ -148,7 +150,7 @@ def install(requirements, requirements_file=None,
         for w in os.listdir(d):
             if w.endswith('.whl'):
                 wf = WheelFile(os.path.join(d, w))
-                if wf.supported:
+                if wf.compatible:
                     all_wheels.append(wf)
 
     # If there is a requirements file, add it to the list of requirements
@@ -172,7 +174,7 @@ def install(requirements, requirements_file=None,
             # Explicitly specified wheel filename
             if os.path.exists(req):
                 wf = WheelFile(req)
-                if wf.supported or force:
+                if wf.compatible or force:
                     to_install.append(wf)
                 else:
                     msg = ("{} is not compatible with this Python. "
@@ -194,6 +196,10 @@ def install(requirements, requirements_file=None,
     # We now have a list of wheels to install
     if list_files:
         sys.stdout.write("Installing:\n")
+        
+    if dry_run:
+        return
+    
     for wf in to_install:
         if list_files:
             sys.stdout.write("    {}\n".format(wf.filename))
