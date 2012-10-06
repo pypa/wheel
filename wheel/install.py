@@ -131,6 +131,10 @@ class WheelFile(object):
         """
         return self.compatibility_rank(self.context())
 
+    @property
+    def compatible(self):
+        return self.rank[0] != _big_number # bad API!
+
     # deprecated:
     def compatibility_rank(self, supported):
         """Rank the wheel against the supported tags. Smaller ranks are more
@@ -149,15 +153,11 @@ class WheelFile(object):
         if len(preferences):
             return (min(preferences), self.arity)
         return (_big_number, 0)
-
-    @property
-    def supported(self):
-        return self.rank[0] != _big_number # bad API!
     
     # deprecated
     def supports_current_python(self, x):
         assert self.context == x, 'context mismatch'
-        return self.supported
+        return self.compatible
 
     # Comparability.
     # Wheels are equal if they refer to the same file.
@@ -180,13 +180,13 @@ class WheelFile(object):
         return self.filename != other.filename
     
     def __lt__(self, other):
-        # Compatibility
         if self.context != other.context:
             raise TypeError("{}.context != {}.context".format(self, other))
+
         return self._sort_key < other._sort_key
     
         # XXX prune
-        
+
         sn = self.parsed_filename.group('name')
         on = other.parsed_filename.group('name')
         if sn != on:
