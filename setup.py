@@ -34,8 +34,7 @@ setup(name='wheel',
           'wheel', 
           'wheel.test', 
           'wheel.tool', 
-          'wheel.signatures',
-          'wheel.pkg_resources'
+          'wheel.signatures'
           ],
       extras_require={
           'signatures': signature_reqs,

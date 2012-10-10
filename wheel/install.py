@@ -12,9 +12,9 @@ import hashlib
 import csv
 
 try:
-    import pkg_resources
+    from pkg_resources import parse_version
 except ImportError:
-    from . import pkg_resources
+    from distutils.version import LooseVersion as parse_version
 
 try:
     import sysconfig
@@ -169,7 +169,7 @@ class WheelFile(object):
     @property
     def _sort_key(self):
         return (self.parsed_filename.group('name'),
-                pkg_resources.parse_version(self.parsed_filename.group('ver')),
+                parse_version(self.parsed_filename.group('ver')),
                 tuple(-x for x in self.rank),
                 self.filename)
     
@@ -191,8 +191,8 @@ class WheelFile(object):
         on = other.parsed_filename.group('name')
         if sn != on:
             return sn < on
-        sv = pkg_resources.parse_version(self.parsed_filename.group('ver'))
-        ov = pkg_resources.parse_version(other.parsed_filename.group('ver'))
+        sv = parse_version(self.parsed_filename.group('ver'))
+        ov = parse_version(other.parsed_filename.group('ver'))
         if sv != ov:
             return sv < ov
         # Compatibility

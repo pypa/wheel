@@ -7,12 +7,19 @@ import hashlib
 import sys
 import json
 from glob import iglob
-from pkg_resources import Distribution, Requirement
+try:
+    from pkg_resources import Distribution, Requirement
+    have_pkgresources = True
+except ImportError:
+    have_pkgresources = False
 from .. import signatures
 from ..util import urlsafe_b64decode, urlsafe_b64encode, native, binary
-from ..wininst2wheel import bdist_wininst2wheel
-from ..egg2wheel import egg2wheel
 from ..install import WheelFile
+
+if have_pkgresources:
+    # Only support wheel convert if pkg_resources is present
+    from ..wininst2wheel import bdist_wininst2wheel
+    from ..egg2wheel import egg2wheel
 
 import argparse
 
@@ -114,6 +121,10 @@ def matches_requirement(req, wheels):
     :param req: The requirement to satisfy
     :param wheels: List of wheels to search.
     """
+    # If we don't have pkg_resources, raise an error
+    if not have_pkgresources:
+        raise RuntimeError("matches_requirement called without pkg_resources")
+
     selected =  []
     for wf in wheels:
         f = wf.parsed_filename
@@ -187,11 +198,13 @@ def install(requirements, requirements_file=None,
             continue
 
         # We have a requirement spec
-        req = Requirement.parse(req)
-        matches = matches_requirement(req, all_wheels)
-        if not matches:
-            raise Exception("No match for requirement {}".format(req))
-        to_install.append(max(matches))
+        # We can only handle this if we have pkg_resources available
+        if have_pkgresources:
+            req = Requirement.parse(req)
+            matches = matches_requirement(req, all_wheels)
+            if not matches:
+                raise Exception("No match for requirement {}".format(req))
+            to_install.append(max(matches))
 
     # We now have a list of wheels to install
     if list_files:
@@ -208,6 +221,9 @@ def install(requirements, requirements_file=None,
         wf.zipfile.close()
 
 def convert(installers, dest_dir, verbose):
+    if not have_pkgresources:
+        raise RuntimeError("wheel convert needs pkg_resources")
+
     for pat in installers:
         for installer in iglob(pat):
             if os.path.splitext(installer)[1] == '.egg':
