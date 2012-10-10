@@ -7,13 +7,9 @@ import hashlib
 import sys
 import json
 from glob import iglob
-try:
-    from pkg_resources import Distribution, Requirement
-    have_pkgresources = True
-except ImportError:
-    have_pkgresources = False
 from .. import signatures
-from ..util import urlsafe_b64decode, urlsafe_b64encode, native, binary
+from ..util import (urlsafe_b64decode, urlsafe_b64encode, native, binary,
+        have_pkgresources, matches_requirement)
 from ..install import WheelFile
 
 if have_pkgresources:
@@ -115,24 +111,6 @@ def unpack(wheelfile, dest='.'):
     wf.zipfile.extractall(destination)
     wf.zipfile.close()    
 
-def matches_requirement(req, wheels):
-    """List of wheels matching a requirement.
-
-    :param req: The requirement to satisfy
-    :param wheels: List of wheels to search.
-    """
-    # If we don't have pkg_resources, raise an error
-    if not have_pkgresources:
-        raise RuntimeError("matches_requirement called without pkg_resources")
-
-    selected =  []
-    for wf in wheels:
-        f = wf.parsed_filename
-        dist = Distribution(project_name=f.group("name"), version=f.group("ver"))
-        if dist in req:
-            selected.append(wf)
-    return selected
-
 def install(requirements, requirements_file=None,
             wheel_dirs=None, force=False, list_files=False,
             dry_run=False):
@@ -198,13 +176,11 @@ def install(requirements, requirements_file=None,
             continue
 
         # We have a requirement spec
-        # We can only handle this if we have pkg_resources available
-        if have_pkgresources:
-            req = Requirement.parse(req)
-            matches = matches_requirement(req, all_wheels)
-            if not matches:
-                raise Exception("No match for requirement {}".format(req))
-            to_install.append(max(matches))
+        # If we don't have pkg_resources, this will raise an exception
+        matches = matches_requirement(req, all_wheels)
+        if not matches:
+            raise Exception("No match for requirement {}".format(req))
+        to_install.append(max(matches))
 
     # We now have a list of wheels to install
     if list_files:

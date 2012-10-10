@@ -12,11 +12,6 @@ import hashlib
 import csv
 
 try:
-    from pkg_resources import parse_version
-except ImportError:
-    from distutils.version import LooseVersion as parse_version
-
-try:
     import sysconfig
 except ImportError:
     import distutils.sysconfig as sysconfig
@@ -29,7 +24,7 @@ except NameError:
 
 from wheel.decorator import reify
 from wheel.util import (urlsafe_b64encode, from_json,
-    urlsafe_b64decode, native, binary, HashingFile)
+    urlsafe_b64decode, native, binary, HashingFile, parse_version)
 from wheel import signatures
 from wheel.pkginfo import read_pkg_info_bytes
 from wheel.util import open_for_csv

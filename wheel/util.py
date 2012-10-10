@@ -9,9 +9,17 @@ import hashlib
 from .pep425tags import (get_abbr_impl, get_impl_ver, get_supported,
                          get_supported as generate_supported) # b/c
 
+try:
+    from pkg_resources import Distribution, Requirement, parse_version
+    have_pkgresources = True
+except ImportError:
+    from distutils.version import LooseVersion as parse_version
+    have_pkgresources = False
+
 __all__ = ['urlsafe_b64encode', 'urlsafe_b64decode', 'utf8', 'to_json',
            'from_json', 'generate_supported', 'get_abbr_impl', 'get_impl_ver',
-           'compatibility_match']
+           'compatibility_match', 'parse_version', 'matches_requirement',
+           'have_pkgresources']
 
 
 def urlsafe_b64encode(data):
@@ -129,3 +137,23 @@ else:
         import dirspec.basedir
         return dirspec.basedir.load_config_paths(*resource)
 
+if have_pkgresources:
+    def matches_requirement(req, wheels):
+        """List of wheels matching a requirement.
+
+        :param req: The requirement to satisfy
+        :param wheels: List of wheels to search.
+        """
+        # If we don't have pkg_resources, raise an error
+        req = Requirement.parse(req)
+
+        selected =  []
+        for wf in wheels:
+            f = wf.parsed_filename
+            dist = Distribution(project_name=f.group("name"), version=f.group("ver"))
+            if dist in req:
+                selected.append(wf)
+        return selected
+else:
+    def matches_requirement(req, wheels):
+        raise RuntimeError("Cannot use requirements without pkg_resources")
