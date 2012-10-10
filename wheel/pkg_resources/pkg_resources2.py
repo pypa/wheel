@@ -44,7 +44,7 @@ from os.path import isdir, split
 # attribute is present to decide wether to reinstall the package
 _distribute = True
 
-def _bypass_ensure_directory(name, mode=0777):
+def _bypass_ensure_directory(name, mode=int('777', 8)):
     # Sandbox-bypassing version of ensure_directory()
     if not WRITE_SUPPORT:
         raise IOError('"os.mkdir" not supported on this platform.')
