@@ -11,10 +11,6 @@ import zipfile
 import hashlib
 import csv
 
-try:
-    import sysconfig
-except ImportError:
-    import distutils.sysconfig as sysconfig
 import shutil
 
 try:
@@ -28,7 +24,9 @@ from wheel.util import (urlsafe_b64encode, from_json,
 from wheel import signatures
 from wheel.pkginfo import read_pkg_info_bytes
 from wheel.util import open_for_csv
+
 from .pep425tags import get_supported
+from .paths import get_install_paths
 
 # The next major version after this version of the 'wheel' tool:
 VERSION_TOO_HIGH = (1, 0)
@@ -56,10 +54,10 @@ class WheelFile(object):
     WHEEL_INFO = "WHEEL"
     RECORD = "RECORD"
 
-    def __init__(self, 
-                 filename, 
-                 fp=None, 
-                 append=False, 
+    def __init__(self,
+                 filename,
+                 fp=None,
+                 append=False,
                  context=get_supported):
         """
         :param fp: A seekable file-like object or None to open(filename).
@@ -236,13 +234,27 @@ class WheelFile(object):
         if tuple(map(int, version.split('.'))) >= VERSION_TOO_HIGH:
             raise ValueError("Wheel version is too high")
 
+    @reify
+    def install_paths(self):
+        """
+        Consult distutils to get the install paths for our dist.  A dict with
+        ('purelib', 'platlib', 'headers', 'scripts', 'data').
+        
+        We use the name from our filename as the dist name, which means headers
+        could be installed in the wrong place if the filesystem-escaped name
+        is different than the Name.  Who cares? 
+        """
+        name = self.parsed_filename.group('name')
+        return get_install_paths(name)
+
     def install(self, force=False, overrides={}):
-        """Install the wheel into site-packages.
+        """
+        Install the wheel into site-packages.
         """
 
         # Utility to get the target directory for a particular key
         def get_path(key):
-            return overrides.get(key) or sysconfig.get_path(key)
+            return overrides.get(key) or self.install_paths[key]
 
         # The base target location is either purelib or platlib
         if self.parsed_wheel_info['Root-Is-Purelib'] == 'true':
@@ -373,7 +385,7 @@ class WheelFile(object):
             headers, payload = signatures.verify(sig)
             if payload['hash'] != "sha256=" + native(record_digest):
                 msg = "RECORD.sig claimed RECORD hash {0} != computed hash {1}."
-                raise BadWheelFile(msg.format(payload['hash'], 
+                raise BadWheelFile(msg.format(payload['hash'],
                                               native(record_digest)))
         
         reader = csv.reader((native(r) for r in record.splitlines()))
@@ -395,8 +407,8 @@ class VerifyingZipFile(zipfile.ZipFile):
     an expected sha256 hash. Note that each file must be completly read in 
     order for its hash to be checked."""
     
-    def __init__(self, file, mode="r", 
-                 compression=zipfile.ZIP_STORED, 
+    def __init__(self, file, mode="r",
+                 compression=zipfile.ZIP_STORED,
                  allowZip64=False):
         zipfile.ZipFile.__init__(self, file, mode, compression, allowZip64)
 
