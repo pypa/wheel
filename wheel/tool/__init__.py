@@ -89,7 +89,7 @@ def sign(wheelfile, replace=False, get_keyring=get_keyring):
 def verify(wheelfile):
     """Verify a wheel."""
     import pprint
-    wf = install.WheelFile(wheelfile)
+    wf = WheelFile(wheelfile)
     sig_name = wf.distinfo_name + '/RECORD.jws'
     sig = json.loads(native(wf.zipfile.open(sig_name).read()))
     sys.stdout.write("Signatures are internally consistent.\n%s\n" % (
