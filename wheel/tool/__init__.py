@@ -88,13 +88,14 @@ def sign(wheelfile, replace=False, get_keyring=get_keyring):
 
 def verify(wheelfile):
     """Verify a wheel."""
-    import pprint
     wf = WheelFile(wheelfile)
     sig_name = wf.distinfo_name + '/RECORD.jws'
     sig = json.loads(native(wf.zipfile.open(sig_name).read()))
-    sys.stdout.write("Signatures are internally consistent.\n%s\n" % (
-                     pprint.pformat(signatures.verify(sig),)))
-
+    verified = signatures.verify(sig)
+    sys.stderr.write("Signatures are internally consistent.\n")
+    sys.stdout.write(json.dumps(verified, indent=2))
+    sys.stdout.write('\n')
+                     
 def unpack(wheelfile, dest='.'):
     """Unpack a wheel.
 
