@@ -24,12 +24,13 @@ def get_install_paths(name):
     for key in install.SCHEME_KEYS:
         paths[key] = getattr(i, 'install_'+key)
         
-    # pip uses this path as an alternative to the system's (read-only) 
+    # pip uses a similar path as an alternative to the system's (read-only) 
     # include directory:
     if hasattr(sys, 'real_prefix'): # virtualenv
         paths['headers'] = os.path.join(sys.prefix, 
                                         'include', 
                                         'site', 
-                                        'python' + sys.version[:3])
+                                        'python' + sys.version[:3],
+                                        name)
 
     return paths
