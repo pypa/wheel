@@ -87,7 +87,12 @@ def sign(wheelfile, replace=False, get_keyring=get_keyring):
     wf.zipfile.close()
 
 def verify(wheelfile):
-    """Verify a wheel."""
+    """Verify a wheel.
+    
+    The signature will be verified for internal consistency ONLY and printed. 
+    Wheel's own unpack/install commands verify the manifest against the
+    signature and file contents.
+    """
     wf = WheelFile(wheelfile)
     sig_name = wf.distinfo_name + '/RECORD.jws'
     sig = json.loads(native(wf.zipfile.open(sig_name).read()))
@@ -231,7 +236,7 @@ def parser():
     
     def verify_f(args):
         verify(args.wheelfile)
-    verify_parser = s.add_parser('verify', help='Verify signed wheel')
+    verify_parser = s.add_parser('verify', help=verify.__doc__)
     verify_parser.add_argument('wheelfile', help='Wheel file')
     verify_parser.set_defaults(func=verify_f)
     

@@ -49,7 +49,7 @@ def verify(jwsjs):
     
     Caller must decide whether the keys are actually trusted."""
     get_ed25519ll()    
-    # XXX forbid duplicate keys in JSON input
+    # XXX forbid duplicate keys in JSON input using object_pairs_hook
     encoded_headers = jwsjs["headers"]
     encoded_payload = binary(jwsjs["payload"])
     encoded_signatures = jwsjs["signatures"]
