@@ -4,23 +4,23 @@ Wheel
 
 A built-package format for Python.
 
-A wheel is a ZIP-format archive with a specially formatted filename and
-the .whl extension. It is designed to contain all the files for a PEP 376
-compatible install in a way that is very close to the on-disk format. Many
-packages will be properly installed with only the "Unpack" step
-(simply extracting the file onto sys.path), and the unpacked archive
+A wheel is a ZIP-format archive with a specially formatted filename
+and the .whl extension. It is designed to contain all the files for a
+PEP 376 compatible install in a way that is very close to the on-disk
+format. Many packages will be properly installed with only the "Unpack"
+step (simply extracting the file onto sys.path), and the unpacked archive
 preserves enough information to "Spread" (copy data and scripts to their
 final locations) at any later time.
 
 The wheel project provides a `bdist_wheel` command for setuptools
 (requires distribute >= 0.6.28). Wheel files can be installed with a
-patched `pip` from https://github.com/dholth/pip.
+patched `pip`.
 
-*The pip patch is in flux and is being split into separate `install` and
-a `build` patches. Check the branch called `wheel` for the most features.*
+*The pip patch is in flux. See http://wheel.rtfd.org/ for the details.*
 
-The wheel documentation is at http://wheel.rtfd.org/. The file format is
-documented in the draft PEP 427 (http://www.python.org/dev/peps/pep-0427/).
+The wheel documentation is at http://wheel.rtfd.org/. The
+file format is documented in the draft PEP 427
+(http://www.python.org/dev/peps/pep-0427/).
 
 Why not egg?
 ------------
