@@ -85,6 +85,22 @@ def sign(wheelfile, replace=False, get_keyring=get_keyring):
     sig = signatures.sign(payload, keypair)
     wf.zipfile.writestr(sig_name, json.dumps(sig, sort_keys=True))
     wf.zipfile.close()
+    
+def unsign(wheelfile):
+    """
+    Remove RECORD.jws from a wheel by truncating the zip file.
+    
+    RECORD.jws must be at the end of the archive. The zip file must be an 
+    ordinary archive, with the compressed files and the directory in the same 
+    order, and without any non-zip content after the truncation point.
+    """
+    import wheel.install
+    vzf = wheel.install.VerifyingZipFile(wheelfile, "a")
+    info = vzf.infolist()
+    if not (len(info) and info[-1].filename.endswith('/RECORD.jws')):
+        raise NotImplementedError("RECORD.jws not found at end of archive.")
+    vzf.pop()
+    vzf.close()
 
 def verify(wheelfile):
     """Verify a wheel.
@@ -233,6 +249,12 @@ def parser():
     sign_parser = s.add_parser('sign', help='Sign wheel')
     sign_parser.add_argument('wheelfile', help='Wheel file')
     sign_parser.set_defaults(func=sign_f)
+    
+    def unsign_f(args):
+        unsign(args.wheelfile)
+    unsign_parser = s.add_parser('unsign', help=unsign.__doc__)
+    unsign_parser.add_argument('wheelfile', help='Wheel file')
+    unsign_parser.set_defaults(func=unsign_f)
     
     def verify_f(args):
         verify(args.wheelfile)
