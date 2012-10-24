@@ -7,6 +7,7 @@ import csv
 import hashlib
 import os
 import subprocess
+import textwrap
 import warnings
 
 try:
@@ -268,6 +269,17 @@ class bdist_wheel(Command):
                     spec = self._to_requires_dist(parsed_requirement)
                     pkg_info['Requires-Dist'] = parsed_requirement.key + \
                         spec + condition
+        description = pkg_info['Description']
+        if description:
+            del pkg_info['Description']
+            description_lines = description.splitlines()
+            description_dedent = '\n'.join(
+                    # if the first line of long_description is blank,
+                    # the first line here will be indented.
+                    (description_lines[0].lstrip(),
+                     textwrap.dedent('\n'.join(description_lines[1:])),
+                     '\n'))
+            pkg_info.set_payload(description_dedent)
         return pkg_info
     
     def setupcfg_requirements(self):
