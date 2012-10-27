@@ -1,3 +1,11 @@
+0.14.0
+======
+- Changed the signature format to better comply with the current JWS spec.
+  Breaks all existing signatures.
+- Include ``wheel unsign`` command to remove RECORD.jws from an archive.
+- Put the description in the newly allowed payload section of PKG-INFO
+  (METADATA) files.
+
 0.13.0
 ======
 - Use distutils instead of sysconfig to get installation paths; can install

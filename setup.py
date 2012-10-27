@@ -44,6 +44,13 @@ setup(name='wheel',
       include_package_data=True,
       zip_safe=False,
       test_suite = 'nose.collector',
-      entry_points = open(os.path.join(here, 'entry_points.txt')).read()
+      entry_points = """\
+[console_scripts]
+wininst2wheel = wheel.wininst2wheel:main
+egg2wheel = wheel.egg2wheel:main
+wheel = wheel.__main__:main
+
+[distutils.commands]
+bdist_wheel = wheel.bdist_wheel:bdist_wheel"""
       )
 

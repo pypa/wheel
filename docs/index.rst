@@ -21,7 +21,7 @@ built packages::
         pip install wheel
 
         # Build a directory of wheels for pyramid and all its dependencies
-        pip install --wheel-dir=/tmp/wheelhouse pyramid
+        pip wheel --wheel-dir=/tmp/wheelhouse pyramid
         
         # Install from cached wheels
         pip install --use-wheel --no-index --find-links=/tmp/wheelhouse pyramid
@@ -40,7 +40,7 @@ even when distribute or pip has not been installed.
 
 Wheel's builtin utility can be invoked directly from wheel's own wheel::
 
-    $ python wheel-0.13.0-py2.py3-none-any.whl/wheel -h
+    $ python wheel-0.14.0-py2.py3-none-any.whl/wheel -h
     usage: wheel [-h] {keygen,sign,verify,unpack,install,convert,help} ...
 
     positional arguments:
@@ -48,6 +48,7 @@ Wheel's builtin utility can be invoked directly from wheel's own wheel::
                             commands
         keygen              Generate signing key
         sign                Sign wheel
+        unsign              Remove signature from wheel
         verify              Verify signed wheel
         unpack              Unpack wheel
         install             Install wheels
@@ -87,7 +88,7 @@ Format
 ------
 
 The wheel format is being documented as PEP 427 "The Wheel Binary Package
-Format 1.0" (http://www.python.org/dev/peps/pep-0427/).
+Format..." (http://www.python.org/dev/peps/pep-0427/).
 
 Slogans
 -------

@@ -9,6 +9,8 @@ from ..util import urlsafe_b64decode, urlsafe_b64encode, native, binary
 
 ed25519ll = None
 
+ALG = "Ed25519"
+
 def get_ed25519ll():
     """Lazy import-and-test of ed25519 module"""
     global ed25519ll
@@ -27,10 +29,13 @@ def sign(payload, keypair):
     an Ed25519 keypair."""
     get_ed25519ll()
     #
-    header = {"typ": "JWT",
-              "alg": "Ed25519",
-              "key": {"alg": "Ed25519",
-                      "vk": native(urlsafe_b64encode(keypair.vk))}}
+    header = {
+                "alg": ALG,
+                "jwk": {
+                    "alg": ALG,
+                    "vk": native(urlsafe_b64encode(keypair.vk))
+                }
+             }
     
     encoded_header = urlsafe_b64encode(binary(json.dumps(header, sort_keys=True)))
     encoded_payload = urlsafe_b64encode(binary(json.dumps(payload, sort_keys=True)))
@@ -39,9 +44,14 @@ def sign(payload, keypair):
     signature = sig_msg[:ed25519ll.SIGNATUREBYTES]
     encoded_signature = urlsafe_b64encode(signature)
     
-    return {"headers": [native(encoded_header)],
-            "payload": native(encoded_payload),
-            "signatures": [native(encoded_signature)]}
+    return {"recipients": 
+            [{"header":native(encoded_header),
+             "signature":native(encoded_signature)}],
+            "payload": native(encoded_payload)}
+
+def assertTrue(condition, message=""):
+    if not condition:
+        raise ValueError(message)
     
 def verify(jwsjs):
     """Return (decoded headers, payload) if all signatures in jwsjs are
@@ -49,26 +59,28 @@ def verify(jwsjs):
     
     Caller must decide whether the keys are actually trusted."""
     get_ed25519ll()    
-    # XXX forbid duplicate keys in JSON input using object_pairs_hook
-    encoded_headers = jwsjs["headers"]
+    # XXX forbid duplicate keys in JSON input using object_pairs_hook (2.7+)
+    recipients = jwsjs["recipients"]
     encoded_payload = binary(jwsjs["payload"])
-    encoded_signatures = jwsjs["signatures"]
     headers = []
-    for h, s in zip(encoded_headers, encoded_signatures):
-        h = binary(h)
-        s = binary(s)
+    for recipient in recipients:
+        assertTrue(len(recipient) == 2, "Unknown recipient key {0}".format(recipient))
+        h = binary(recipient["header"])
+        s = binary(recipient["signature"])
         header = json.loads(native(urlsafe_b64decode(h)))
-        assert header["alg"] == "Ed25519"
-        assert header["key"]["alg"] == "Ed25519"
-        vk = urlsafe_b64decode(binary(header["key"]["vk"]))
+        assertTrue(header["alg"] == ALG, 
+                "Unexpected algorithm {0}".format(header["alg"]))
+        assertTrue(header["jwk"]["alg"] == ALG, 
+                "Unexpected key algorithm {0}".format(header["jwk"]["alg"]))
+        vk = urlsafe_b64decode(binary(header["jwk"]["vk"]))
         secured_input = b".".join((h, encoded_payload))
         sig = urlsafe_b64decode(s)
         sig_msg = sig+secured_input
         verified_input = native(ed25519ll.crypto_sign_open(sig_msg, vk))
         verified_header, verified_payload = verified_input.split('.')
         verified_header = binary(verified_header)
-        decoded_payload = native(urlsafe_b64decode(verified_header))
-        headers.append(json.loads(decoded_payload))
+        decoded_header = native(urlsafe_b64decode(verified_header))
+        headers.append(json.loads(decoded_header))
 
     verified_payload = binary(verified_payload)
 

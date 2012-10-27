@@ -13,9 +13,9 @@ final locations) at any later time.
 
 The wheel project provides a `bdist_wheel` command for setuptools
 (requires distribute >= 0.6.28). Wheel files can be installed with a
-patched `pip`.
+patched `pip` from https://github.com/qwcode/pip
 
-*The pip patch is in flux. See http://wheel.rtfd.org/ for the details.*
+*The pip patch is in flux.*
 
 The wheel documentation is at http://wheel.rtfd.org/. The
 file format is documented in the draft PEP 427
