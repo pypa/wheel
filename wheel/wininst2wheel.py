@@ -39,6 +39,9 @@ def parse_info(wininfo_name, egginfo_name):
        the point that when it's not there, any version is implied).
     4. The architecture must be taken from the installer filename, as it is
        not included in the egg-info data.
+    5. Architecture-neutral installers still have an architecture because the
+       installer format itself (being executable) is architecture-specific. We
+       should therefore ignore the architecture if the content is pure-python.
     """
 
     egginfo = None
@@ -60,9 +63,14 @@ def parse_info(wininfo_name, egginfo_name):
     rest2, sep, w_pyver = rest.rpartition('-')
     if sep and w_pyver.startswith('py'):
         rest = rest2
+        w_pyver = w_pyver.replace('.', '')
     else:
-        # Should be 'any' but wheel format doesn't support this...
-        w_pyver = 'py9.9' # Dummy to see what happens...
+        # Not version specific - use py2.py3. While it is possible that
+        # pure-Python code is not compatible with both Python 2 and 3, there
+        # is no way of knowing from the wininst format, so we assume the best
+        # here (the user can always manually rename the wheel to be more
+        # restrictive if needed).
+        w_pyver = 'py2.py3'
     # 3. Version and architecture
     w_ver, sep, w_arch = rest.rpartition('.')
     if not sep:
@@ -129,11 +137,17 @@ def bdist_wininst2wheel(path, dest_dir=os.path.curdir):
 
     # egg2wheel
     abi = 'none'
-    pyver = info['pyver'].replace('.', '')
+    pyver = info['pyver']
     arch = (info['arch'] or 'any').replace('.', '_').replace('-', '_')
+    # Wininst installers always have arch even if they are not
+    # architecture-specific (because the format itself is).
+    # So, assume the content is architecture-neutral if root is purelib.
+    if root_is_purelib:
+        arch = 'any'
+    # If the installer is architecture-specific, it's almost certainly also
+    # CPython-specific.
     if arch != 'any':
-        # assume all binary eggs are for CPython
-        pyver = 'cp' + pyver[2:]
+        pyver = pyver.replace('py', 'cp')
     wheel_name = '-'.join((
                           dist_info,
                           pyver,
