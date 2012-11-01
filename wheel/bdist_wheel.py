@@ -192,7 +192,12 @@ class bdist_wheel(Command):
                                          '%s.dist-info' % self.wheel_dist_name)
         self.egg2dist(self.egginfo_dir,
                       self.distinfo_dir)
-                
+        
+        # XXX heuristically copy any LICENSE/LICENSE.txt?
+        license = self.license_file()
+        if license:
+            shutil.copy(license, os.path.join(self.distinfo_dir, 'LICENSE.txt'))
+
         metadata_path = os.path.join(self.distinfo_dir, 'METADATA')
         self.add_requirements(metadata_path)
 
@@ -282,6 +287,13 @@ class bdist_wheel(Command):
                      '\n'))
             pkg_info.set_payload(description_dedent)
         return pkg_info
+    
+    def license_file(self):
+        """Return license filename from a license-file key in setup.cfg, or None."""
+        metadata = self.distribution.get_option_dict('metadata')
+        if not 'license_file' in metadata:
+            return None
+        return metadata['license_file'][1]
     
     def setupcfg_requirements(self):
         """Generate requirements from setup.cfg as 
