@@ -6,12 +6,19 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = codecs.open(os.path.join(here, 'README.txt'), encoding='utf8').read()
 CHANGES = codecs.open(os.path.join(here, 'CHANGES.txt'), encoding='utf8').read()
 
+#
+# All these requirements are overridden by setup.cfg when wheel is built
+# as a wheel:
+#
 signature_reqs = ['keyring']
 if sys.platform != 'win32':
     signature_reqs.append('dirspec')
+install_requires = []
+if sys.version_info[:2] < (2, 7):
+    install_requires.append('argparse')
 
 setup(name='wheel',
-      version='0.14.0',
+      version='0.15.0',
       description='A built-package format for Python.',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
@@ -36,6 +43,7 @@ setup(name='wheel',
           'wheel.tool', 
           'wheel.signatures'
           ],
+      install_requires=install_requires,
       extras_require={
           'signatures': signature_reqs,
           'faster-signatures': ['ed25519ll'], 
