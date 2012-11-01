@@ -16,13 +16,8 @@ except ImportError:  # pragma nocover
     # Python < 2.7
     import distutils.sysconfig as sysconfig
 
-try:
-    import pkg_resources
-except ImportError:
-    # this dance makes the unit tests happy
-    # bdist_wheel won't really work without distribute
-    from wheel import pkg_resources
-    
+import pkg_resources
+
 safe_name = pkg_resources.safe_name
 safe_version = pkg_resources.safe_version
 
@@ -243,6 +238,7 @@ class bdist_wheel(Command):
         return path
 
     def _to_requires_dist(self, requirement):
+        """Compose the version predicates for requirement in PEP 345 fashion."""
         requires_dist = []
         for op, ver in requirement.specs:
             # PEP 345 specifies but does not use == as part of a version spec
@@ -267,8 +263,13 @@ class bdist_wheel(Command):
                 for req in reqs:
                     parsed_requirement = pkg_resources.Requirement.parse(req)
                     spec = self._to_requires_dist(parsed_requirement)
-                    pkg_info['Requires-Dist'] = parsed_requirement.key + \
-                        spec + condition
+                    extras = ",".join(parsed_requirement.extras)
+                    if extras:
+                        extras = "[%s]" % extras 
+                    pkg_info['Requires-Dist'] = (parsed_requirement.project_name 
+                                                 + extras 
+                                                 + spec 
+                                                 + condition)
         description = pkg_info['Description']
         if description:
             del pkg_info['Description']
