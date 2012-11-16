@@ -15,8 +15,8 @@ software, the savings can be dramatic. This example packages pyramid
 and all its dependencies as wheels, and then installs pyramid from the
 built packages::
 
-        # Install pip (the wheel_build branch)
-        pip install -e git+https://github.com/qwcode/pip@wheel_build#egg=pip
+        # Install a version of pip that supports wheel
+        pip install -e git+https://github.com/qwcode/pip#egg=pip
         # Install wheel
         pip install wheel
 
