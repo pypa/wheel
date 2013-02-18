@@ -17,7 +17,7 @@ patched `pip` from https://github.com/qwcode/pip or with wheel's own
 command line utility.
 
 The wheel documentation is at http://wheel.rtfd.org/. The
-file format is documented in the draft PEP 427
+file format is documented in PEP 427
 (http://www.python.org/dev/peps/pep-0427/).
 
 Why not egg?

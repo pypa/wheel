@@ -107,8 +107,7 @@ class bdist_wheel(Command):
         return '-'.join((safer_name(self.distribution.get_name()),
                          safer_version(self.distribution.get_version())))
 
-    def get_archive_basename(self):
-        """Return archive name without extension"""
+    def get_tag(self):
         purity = self.distribution.is_pure()
         impl_ver = get_impl_ver()
         abi_tag = 'none'
@@ -131,12 +130,19 @@ class bdist_wheel(Command):
             # sys.pypy_version_info.minor)
             abi_tag = sysconfig.get_config_vars().get('SOABI', abi_tag)
             abi_tag = abi_tag.rsplit('-', 1)[-1]
-        archive_basename = "%s-%s%s-%s-%s" % (
+
+        return (impl_name+impl_ver, abi_tag, plat_name)
+
+    def get_archive_basename(self):
+        """Return archive name without extension"""
+
+        impl_tag, abi_tag, plat_tag = self.get_tag()
+
+        archive_basename = "%s-%s-%s-%s" % (
             self.wheel_dist_name,
-            impl_name,
-            impl_ver,
+            impl_tag,
             abi_tag,
-            plat_name)
+            plat_tag)
         return archive_basename
 
     def run(self):
@@ -227,9 +233,16 @@ class bdist_wheel(Command):
     def write_wheelfile(self, wheelfile_base, generator='bdist_wheel'):
         from email.message import Message
         msg = Message()
-        msg['Wheel-Version'] = '0.1'  # of the spec
+        msg['Wheel-Version'] = '1.0'  # of the spec
         msg['Generator'] = generator
         msg['Root-Is-Purelib'] = str(self.root_is_purelib).lower()
+        
+        impl_tag, abi_tag, plat_tag = self.get_tag()
+        for impl in impl_tag.split('.'):
+            for abi in abi_tag.split('.'):
+                for plat in plat_tag.split('.'):
+                    msg['Tag'] = '-'.join((impl, abi, plat))
+
         wheelfile_path = os.path.join(wheelfile_base, 'WHEEL')
         logger.info('creating %s', wheelfile_path)
         with open(wheelfile_path, 'w') as f:
@@ -256,7 +269,7 @@ class bdist_wheel(Command):
 
     def _pkginfo_to_metadata(self, egg_info_path, pkginfo_path):
         pkg_info = read_pkg_info(pkginfo_path)
-        pkg_info.replace_header('Metadata-Version', '1.3')
+        pkg_info.replace_header('Metadata-Version', '2.0')
         requires_path = os.path.join(egg_info_path, 'requires.txt')
         if os.path.exists(requires_path):
             requires = open(requires_path).read()
