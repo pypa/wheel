@@ -291,6 +291,12 @@ class bdist_wheel(Command):
         description = pkg_info['Description']
         if description:
             del pkg_info['Description']
+
+            # Python 3 Unicode handling, sorta.
+            # There is a double-encoding bug in here somewhere.
+            use_surrogates = not isinstance(description, str)
+            description = str(description)
+
             description_lines = description.splitlines()
             description_dedent = '\n'.join(
                     # if the first line of long_description is blank,
@@ -298,6 +304,12 @@ class bdist_wheel(Command):
                     (description_lines[0].lstrip(),
                      textwrap.dedent('\n'.join(description_lines[1:])),
                      '\n'))
+
+            if use_surrogates:
+                description_dedent = description_dedent\
+                        .encode("utf8")\
+                        .decode("ascii", "surrogateescape")
+
             pkg_info.set_payload(description_dedent)
         return pkg_info
     
