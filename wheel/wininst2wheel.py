@@ -22,12 +22,16 @@ def parse_info(wininfo_name, egginfo_name):
     the installer filename and the name of the egg-info directory embedded in
     the zipfile (if any).
 
-    The egginfo filename has the format
+    The egginfo filename has the format::
+
         name-ver(-pyver)(-arch).egg-info
-    The installer filename has the format
+
+    The installer filename has the format::
+
         name-ver.arch(-pyver).exe
 
     Some things to note:
+
     1. The installer filename is not definitive. An installer can be renamed
        and work perfectly well as an installer. So more reliable data should
        be used whenever possible.
