@@ -290,12 +290,17 @@ class bdist_wheel(Command):
                                                  + condition)
         description = pkg_info['Description']
         if description:
+            # Python 3 Unicode handling, sorta. 
+            # See the wheel pep for a much better Python 3.3+ strategy.
+            surrogates = False
+            if not isinstance(description, str):
+                surrogates = True
+                for item in pkg_info.raw_items():
+                    if item[0].lower() == 'description':
+                        description = item[1].encode('ascii', 'surrogateescape')\
+                                                     .decode('utf-8')
+                        break
             del pkg_info['Description']
-
-            # Python 3 Unicode handling, sorta.
-            # There is a double-encoding bug in here somewhere.
-            use_surrogates = not isinstance(description, str)
-            description = str(description)
 
             description_lines = description.splitlines()
             description_dedent = '\n'.join(
@@ -305,7 +310,7 @@ class bdist_wheel(Command):
                      textwrap.dedent('\n'.join(description_lines[1:])),
                      '\n'))
 
-            if use_surrogates:
+            if surrogates:
                 description_dedent = description_dedent\
                         .encode("utf8")\
                         .decode("ascii", "surrogateescape")
