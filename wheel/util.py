@@ -18,7 +18,7 @@ except ImportError:
 
 __all__ = ['urlsafe_b64encode', 'urlsafe_b64decode', 'utf8', 'to_json',
            'from_json', 'generate_supported', 'get_abbr_impl', 'get_impl_ver',
-           'compatibility_match', 'parse_version', 'matches_requirement',
+           'parse_version', 'matches_requirement',
            'have_pkgresources']
 
 
