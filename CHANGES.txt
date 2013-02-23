@@ -1,6 +1,8 @@
-1.0.0
-=====
+1.0.0a0
+=======
 - Update for version 1.0 of Wheel (PEP accepted).
+- Python 3 fix for moving Unicode Description to metadata body
+- Include rudimentary API documentation in Sphinx (thanks Kevin Horn)
 
 0.15.0
 ======
