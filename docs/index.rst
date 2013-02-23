@@ -16,7 +16,7 @@ and all its dependencies as wheels, and then installs pyramid from the
 built packages::
 
         # Install a version of pip that supports wheel
-        pip install -e git+https://github.com/qwcode/pip#egg=pip
+        pip install -e git+https://github.com/pypa/pip/tree/wheel#egg=pip
         # Install wheel
         pip install wheel
 
