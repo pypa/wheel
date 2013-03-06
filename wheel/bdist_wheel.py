@@ -175,7 +175,7 @@ class bdist_wheel(Command):
             self.install_libbase = self.install_lib = basedir_observed
 
         setattr(install,
-                ('install_platlib', 'install_purelib')[self.root_is_purelib],
+                'install_purelib' if self.root_is_purelib else 'install_platlib',
                 basedir_observed)
 
         logger.info("installing to %s", self.bdist_dir)
