@@ -122,7 +122,10 @@ class bdist_wheel(Command):
                     impl_name = 'py2.py3'
                     impl_ver = ''
         else:
-            plat_name = self.plat_name.replace('-', '_').replace('.', '_')
+            plat_name = self.plat_name
+            if plat_name is None:
+                plat_name = get_platform()
+            plat_name = plat_name.replace('-', '_').replace('.', '_')
             impl_name = get_abbr_impl()
             # PEP 3149 -- no SOABI in Py 2
             # For PyPy?
@@ -236,7 +239,8 @@ class bdist_wheel(Command):
         msg['Wheel-Version'] = '1.0'  # of the spec
         msg['Generator'] = generator
         msg['Root-Is-Purelib'] = str(self.root_is_purelib).lower()
-        
+       
+        # Doesn't work for bdist_wininst
         impl_tag, abi_tag, plat_tag = self.get_tag()
         for impl in impl_tag.split('.'):
             for abi in abi_tag.split('.'):
