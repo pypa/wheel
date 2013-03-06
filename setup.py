@@ -18,7 +18,7 @@ if sys.version_info[:2] < (2, 7):
     install_requires.append('argparse')
 
 setup(name='wheel',
-      version='1.0.0a0',
+      version='1.0.0a1',
       description='A built-package format for Python.',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[

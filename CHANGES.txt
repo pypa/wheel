@@ -1,3 +1,8 @@
+1.0.0a1
+=======
+- Bugfix for bdist_wininst converter "wheel convert"
+- Bugfix for dists where "is pure" is None instead of True or False
+
 1.0.0a0
 =======
 - Update for version 1.0 of Wheel (PEP accepted).
