@@ -16,7 +16,7 @@ and all its dependencies as wheels, and then installs pyramid from the
 built packages::
 
         # Install a version of pip that supports wheel
-        pip install -e git+https://github.com/pypa/pip/tree/wheel#egg=pip
+        pip install -e git+https://github.com/pypa/pip#egg=pip
         # Install wheel
         pip install wheel
 
@@ -87,7 +87,7 @@ more widely trusted key for packages they intend to distribute.
 Format
 ------
 
-The wheel format is being documented as PEP 427 "The Wheel Binary Package
+The wheel format is documented as PEP 427 "The Wheel Binary Package
 Format..." (http://www.python.org/dev/peps/pep-0427/).
 
 Slogans

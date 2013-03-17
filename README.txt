@@ -12,8 +12,8 @@ preserves enough information to "Spread" (copy data and scripts to their
 final locations) at any later time.
 
 The wheel project provides a `bdist_wheel` command for setuptools
-(requires distribute >= 0.6.28, released July 2012). Wheel files can be
-installed with a patched `pip` from https://github.com/pypa/pip/tree/wheel
+(requires distribute >= 0.6.34). Wheel files can be
+installed with a newer `pip` from https://github.com/pypa/pip
 or with wheel's own command line utility.
 
 The wheel documentation is at http://wheel.rtfd.org/. The
