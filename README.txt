@@ -20,6 +20,8 @@ The wheel documentation is at http://wheel.rtfd.org/. The
 file format is documented in PEP 427
 (http://www.python.org/dev/peps/pep-0427/).
 
+The reference implementation is at http://bitbucket.org/dholth/wheel/
+
 Why not egg?
 ------------
 
