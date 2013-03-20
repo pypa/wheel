@@ -32,7 +32,7 @@ def sign(payload, keypair):
     header = {
                 "alg": ALG,
                 "jwk": {
-                    "alg": ALG,
+                    "kty": ALG, # alg -> kty in jwk-08.
                     "vk": native(urlsafe_b64encode(keypair.vk))
                 }
              }
@@ -70,8 +70,10 @@ def verify(jwsjs):
         header = json.loads(native(urlsafe_b64decode(h)))
         assertTrue(header["alg"] == ALG, 
                 "Unexpected algorithm {0}".format(header["alg"]))
-        assertTrue(header["jwk"]["alg"] == ALG, 
-                "Unexpected key algorithm {0}".format(header["jwk"]["alg"]))
+        if "alg" in header["jwk"] and not "kty" in header["jwk"]:
+            header["jwk"]["kty"] = header["jwk"]["alg"] # b/w for JWK < -08
+        assertTrue(header["jwk"]["kty"] == ALG, # true for Ed25519
+                "Unexpected key type {0}".format(header["jwk"]["kty"]))
         vk = urlsafe_b64decode(binary(header["jwk"]["vk"]))
         secured_input = b".".join((h, encoded_payload))
         sig = urlsafe_b64decode(s)
