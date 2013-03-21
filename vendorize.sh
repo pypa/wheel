@@ -1,4 +1,3 @@
 #!/bin/sh
-# Vendorize pkg_resources and _markerlib from ../distribute/
-
+# Vendorize pep 425 tagging scheme
 cp ../pep425/pep425tags.py wheel
