@@ -118,7 +118,7 @@ class bdist_wheel(Command):
             if 'universal' in wheel:
                 # please don't define this in your global configs
                 val = wheel['universal'][1].split('#', 1)[0].strip()
-                if val == '1':
+                if val.lower() in ('1', 'true', 'yes'):
                     impl_name = 'py2.py3'
                     impl_ver = ''
         else:
