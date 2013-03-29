@@ -213,7 +213,7 @@ class bdist_wheel(Command):
         
         # XXX to be specified
         metadata_json_path = os.path.join(self.distinfo_dir, 'metadata.json')
-        with file(metadata_json_path, "w") as metadata_json:
+        with open(metadata_json_path, "w") as metadata_json:
             json.dump(pkginfo_to_dict(metadata_path), metadata_json)
 
         self.write_wheelfile(self.distinfo_dir)
@@ -364,7 +364,7 @@ class bdist_wheel(Command):
                 line = line.strip()
                 if not line:
                     continue
-                yield (title, line) 
+                yield (title, line)
     
     def add_requirements(self, metadata_path):
         """Add additional requirements from setup.cfg to file metadata_path"""
