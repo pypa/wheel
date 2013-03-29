@@ -9,6 +9,8 @@ import os
 import subprocess
 import textwrap
 import warnings
+import shutil
+import json
 
 try:
     import sysconfig
@@ -29,19 +31,17 @@ from distutils.core import Command
 from distutils.sysconfig import get_python_version
 
 from distutils import log as logger
-import shutil
 
 from .util import get_abbr_impl, get_impl_ver, native, open_for_csv
 from .archive import archive_wheelfile
 from .pkginfo import read_pkg_info, write_pkg_info
+from .metadata import pkginfo_to_dict
 
 def safer_name(name):
     return safe_name(name).replace('-', '_')
 
-
 def safer_version(version):
     return safe_version(version).replace('-', '_')
-
 
 class bdist_wheel(Command):
 
@@ -117,7 +117,7 @@ class bdist_wheel(Command):
             wheel = self.distribution.get_option_dict('wheel')
             if 'universal' in wheel:
                 # please don't define this in your global configs
-                val = wheel['universal'][1].split('#', 1)[0].strip()
+                val = wheel['universal'][1].strip()
                 if val.lower() in ('1', 'true', 'yes'):
                     impl_name = 'py2.py3'
                     impl_ver = ''
@@ -207,8 +207,14 @@ class bdist_wheel(Command):
         if license:
             shutil.copy(license, os.path.join(self.distinfo_dir, 'LICENSE.txt'))
 
+        # XXX deprecated
         metadata_path = os.path.join(self.distinfo_dir, 'METADATA')
         self.add_requirements(metadata_path)
+        
+        # XXX to be specified
+        metadata_json_path = os.path.join(self.distinfo_dir, 'metadata.json')
+        with file(metadata_json_path, "w") as metadata_json:
+            json.dump(pkginfo_to_dict(metadata_path), metadata_json)
 
         self.write_wheelfile(self.distinfo_dir)
 
@@ -263,9 +269,6 @@ class bdist_wheel(Command):
         """Compose the version predicates for requirement in PEP 345 fashion."""
         requires_dist = []
         for op, ver in requirement.specs:
-            # PEP 345 specifies but does not use == as part of a version spec
-            if op == '==':
-                op = ''
             requires_dist.append(op + ver)
         if not requires_dist:
             return ''
