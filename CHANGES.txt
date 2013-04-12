@@ -1,3 +1,6 @@
+1.0.0a2
+- Bugfix for C-extension tags for CPython 3.3 (using SOABI)
+
 1.0.0a1
 =======
 - Bugfix for bdist_wininst converter "wheel convert"
