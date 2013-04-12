@@ -36,6 +36,7 @@ from .util import get_abbr_impl, get_impl_ver, native, open_for_csv
 from .archive import archive_wheelfile
 from .pkginfo import read_pkg_info, write_pkg_info
 from .metadata import pkginfo_to_dict
+from . import pep425tags
 
 def safer_name(name):
     return safe_name(name).replace('-', '_')
@@ -108,6 +109,8 @@ class bdist_wheel(Command):
                          safer_version(self.distribution.get_version())))
 
     def get_tag(self):
+        supported_tags = pep425tags.get_supported()
+
         purity = self.distribution.is_pure()
         impl_ver = get_impl_ver()
         abi_tag = 'none'
@@ -121,6 +124,7 @@ class bdist_wheel(Command):
                 if val.lower() in ('1', 'true', 'yes'):
                     impl_name = 'py2.py3'
                     impl_ver = ''
+            tag = (impl_name+impl_ver, abi_tag, plat_name)
         else:
             plat_name = self.plat_name
             if plat_name is None:
@@ -132,9 +136,13 @@ class bdist_wheel(Command):
             # "pp%s%s" % (sys.pypy_version_info.major,
             # sys.pypy_version_info.minor)
             abi_tag = sysconfig.get_config_vars().get('SOABI', abi_tag)
-            abi_tag = abi_tag.rsplit('-', 1)[-1]
+            if abi_tag.startswith('cpython-'):
+                abi_tag = 'cp' + abi_tag.rsplit('-', 1)[-1]
 
-        return (impl_name+impl_ver, abi_tag, plat_name)
+            tag = (impl_name+impl_ver, abi_tag, plat_name)
+            # XXX switch to this alternate implementation for non-pure:
+            assert tag == supported_tags[0]
+        return tag
 
     def get_archive_basename(self):
         """Return archive name without extension"""
