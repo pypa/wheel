@@ -1,3 +1,8 @@
+0.16.0
+======
+- Python 2.6 compatibility bugfix (thanks John McFarlane)
+- Non-prerelease version number
+
 1.0.0a2
 =======
 - Bugfix for C-extension tags for CPython 3.3 (using SOABI)
