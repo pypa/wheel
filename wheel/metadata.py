@@ -5,10 +5,21 @@ from .pkginfo import read_pkg_info
 import re
 
 METADATA_VERSION = "2.0"
+
 PLURAL_FIELDS = { "classifier" : "classifiers", 
                   "provides_dist" : "provides",
                   "provides_extra" : "extras" }
+
 SKIP_FIELDS = set()
+
+CONTACT_FIELDS = (({"email":"author_email", "name": "author"}, 
+                    "author"),
+                  ({"email":"maintainer_email", "name": "maintainer"}, 
+                    "maintainer"))
+
+# commonly filled out as "UNKNOWN" by distutils:
+UNKNOWN_FIELDS = set(("author", "author_email", "platform", "home_page", 
+                      "license"))
 
 # Will only support markers-as-extras here. Wheel itself is probably
 # the only program that uses non-extras markers in METADATA/PKG-INFO.
@@ -37,6 +48,9 @@ def pkginfo_to_dict(path, distribution=None):
 
         if low_key in SKIP_FIELDS: 
             continue
+        
+        if low_key in UNKNOWN_FIELDS and pkg_info.get(key) == 'UNKNOWN':
+            continue
 
         if low_key in PLURAL_FIELDS:
             metadata[PLURAL_FIELDS[low_key]] = pkg_info.get_all(key)
@@ -60,16 +74,21 @@ def pkginfo_to_dict(path, distribution=None):
                         for key, value in sorted(extra_requirements.items())]
                 metadata['extras'] = [key for key in sorted(extra_requirements.keys())]
 
-        elif low_key == 'provides-extra':
+        elif low_key == 'provides_extra':
             if not 'extras' in metadata:
                 metadata['extras'] = []
             metadata['extras'].extend(pkg_info.get_all(key))
+            
+                
+        elif low_key == 'home_page':
+            metadata['project_urls'] = [{'Home':pkg_info[key]}]
 
         else:
             metadata[low_key] = pkg_info[key]
 
     metadata['metadata_version'] = METADATA_VERSION
     
+    # include extra information if distribution is available
     if distribution:
         for requires, attr in (('test_requires', 'tests_require'),):
             try:
@@ -79,6 +98,19 @@ def pkginfo_to_dict(path, distribution=None):
             except AttributeError:
                 pass
             
+    # handle contacts
+    contacts = []
+    for contact_type, role in CONTACT_FIELDS:
+        contact = {}
+        for key in contact_type:
+            if contact_type[key] in metadata:
+                contact[key] = metadata.pop(contact_type[key])
+        if contact:
+            contact['role'] = role
+            contacts.append(contact)
+    if contacts:
+        metadata['contacts'] = contacts
+        
     return metadata
 
 if __name__ == "__main__":

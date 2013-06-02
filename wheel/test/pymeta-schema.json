@@ -134,6 +134,7 @@
   },
 
   "required": ["metadata_version", "name", "version"],
+  "additionalProperties": false,
 
   "definitions": {
     "contact": {
@@ -151,7 +152,8 @@
         "role": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "may_requires": {
       "type": "array",
@@ -171,7 +173,8 @@
             }
           }
         },
-        "required": ["dependencies"]
+        "required": ["dependencies"],
+        "additionalProperties": false
       }
     }
   }
