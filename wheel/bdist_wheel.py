@@ -454,17 +454,18 @@ class bdist_wheel(Command):
             return (path.endswith('.pyc')
                     or path.endswith('.pyo') or path == record_relpath)
 
-        writer = csv.writer(open_for_csv(record_path, 'w+'))
-        for path in walk():
-            relpath = os.path.relpath(path, bdist_dir)
-            if skip(relpath):
-                hash = ''
-                size = ''
-            else:
-                data = open(path, 'rb').read()
-                digest = hashlib.sha256(data).digest()
-                hash = 'sha256='+native(urlsafe_b64encode(digest))
-                size = len(data)
-            record_path = os.path.relpath(
-                path, bdist_dir).replace(os.path.sep, '/')
-            writer.writerow((record_path, hash, size))
+        with open_for_csv(record_path, 'w+') as record_file:
+            writer = csv.writer(record_file)
+            for path in walk():
+                relpath = os.path.relpath(path, bdist_dir)
+                if skip(relpath):
+                    hash = ''
+                    size = ''
+                else:
+                    data = open(path, 'rb').read()
+                    digest = hashlib.sha256(data).digest()
+                    hash = 'sha256='+native(urlsafe_b64encode(digest))
+                    size = len(data)
+                record_path = os.path.relpath(
+                    path, bdist_dir).replace(os.path.sep, '/')
+                writer.writerow((record_path, hash, size))
