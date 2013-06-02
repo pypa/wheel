@@ -87,7 +87,9 @@ def pkginfo_to_dict(path, distribution=None):
             if extra_requirements:
                 metadata['may_require'] = [{'extra':key, 'dependencies':value} 
                         for key, value in sorted(extra_requirements.items())]
-                metadata['extras'] = [key for key in sorted(extra_requirements.keys())]
+                if not 'extras' in metadata:
+                    metadata['extras'] = []
+                metadata['extras'].extend([key for key in sorted(extra_requirements.keys())])
 
         elif low_key == 'provides_extra':
             if not 'extras' in metadata:
@@ -102,7 +104,9 @@ def pkginfo_to_dict(path, distribution=None):
 
     metadata['metadata_version'] = METADATA_VERSION
     
-    # include extra information if distribution is available
+    metadata['extras'] = sorted(unique(metadata['extras']))
+    
+    # include more information if distribution is available
     if distribution:
         for requires, attr in (('test_requires', 'tests_require'),):
             try:
