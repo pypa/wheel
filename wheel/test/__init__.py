@@ -55,9 +55,15 @@ def test_bdist_wheel():
 
 def test_pymeta():
     """Make sure pymeta.json exists and validates against our schema."""
+    # XXX this test may need manual cleanup of older wheels
+    
     import jsonschema
-    pymeta_schema = json.load(open(resource_filename('wheel.test',
-                                                     'pymeta-schema.json')))
+    
+    def open_json(filename):
+        return json.loads(open(filename, 'rb').read().decode('utf-8'))
+    
+    pymeta_schema = open_json(resource_filename('wheel.test',
+                                                'pymeta-schema.json'))
     valid = 0
     for dist in ("simple.dist", "complex-dist"):
         basedir = pkg_resources.resource_filename('wheel.test', dist)
@@ -67,7 +73,7 @@ def test_pymeta():
                     whl = ZipFile(os.path.join(dirname, filename))
                     for entry in whl.infolist():
                         if entry.filename.endswith('/pymeta.json'):
-                            pymeta = json.loads(whl.read(entry))
+                            pymeta = json.loads(whl.read(entry).decode('utf-8'))
                             jsonschema.validate(pymeta, pymeta_schema)
                             valid += 1
     assert valid > 0, "No pymeta.json found"
