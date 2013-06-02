@@ -1,13 +1,17 @@
 import os
 import distutils
 import pkg_resources
+import json
 import sys
+
+from pkg_resources import resource_filename
 
 from nose.tools import assert_true, assert_false, assert_equal, raises
 
 import wheel.util
 from wheel import egg2wheel
 from wheel.install import WheelFile
+from zipfile import ZipFile
 
 
 def test_findable():
@@ -24,7 +28,7 @@ def test_egg_re():
             continue
         assert egg2wheel.egg_info_re.match(line), line
 
-
+ 
 def test_compatibility_tags():
     """Test compatibilty tags are working."""
     wf = WheelFile("package-1.0.0-cp32.cp33-noabi-noarch.whl")
@@ -39,15 +43,34 @@ def test_compatibility_tags():
 
 def test_bdist_wheel():
     """Make sure bdist_wheel finish without errors."""
-    pwd = os.curdir
-    simpledist = pkg_resources.resource_filename('wheel.test', 'simple.dist')
-    os.chdir(simpledist)    
-    try:
-        sys.argv = ['', 'bdist_wheel']
-        exec(compile(open('setup.py').read(), 'setup.py', 'exec'))
-    finally:
-        os.chdir(pwd)
+    for dist in ("simple.dist", "complex-dist"):
+        pwd = os.curdir
+        simpledist = pkg_resources.resource_filename('wheel.test', dist)
+        os.chdir(simpledist)    
+        try:
+            sys.argv = ['', 'bdist_wheel']
+            exec(compile(open('setup.py').read(), 'setup.py', 'exec'))
+        finally:
+            os.chdir(pwd)
 
+def test_pymeta():
+    """Make sure pymeta.json exists and validates against our schema."""
+    import jsonschema
+    pymeta_schema = json.load(open(resource_filename('wheel.test',
+                                                     'pymeta-schema.json')))
+    valid = 0
+    for dist in ("simple.dist", "complex-dist"):
+        basedir = pkg_resources.resource_filename('wheel.test', dist)
+        for (dirname, subdirs, filenames) in os.walk(basedir):
+            for filename in filenames:
+                if filename.endswith('.whl'):
+                    whl = ZipFile(os.path.join(dirname, filename))
+                    for entry in whl.infolist():
+                        if entry.filename.endswith('/pymeta.json'):
+                            pymeta = json.loads(whl.read(entry))
+                            jsonschema.validate(pymeta, pymeta_schema)
+                            valid += 1
+    assert valid > 0, "No pymeta.json found"
 
 def test_util():
     """Test functions in util.py."""

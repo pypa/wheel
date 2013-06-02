@@ -1,5 +1,4 @@
 # Convert egg-style metadata to Metadata 2.0, json version.
-# This is currently based on the pypi json API but with less UNKNOWN.
 
 from collections import defaultdict
 from .pkginfo import read_pkg_info
@@ -9,7 +8,7 @@ METADATA_VERSION = "2.0"
 PLURAL_FIELDS = { "classifier" : "classifiers", 
                   "provides_dist" : "provides",
                   "provides_extra" : "extras" }
-SKIP_FIELDS = set(["description"])
+SKIP_FIELDS = set()
 
 # Will only support markers-as-extras here. Wheel itself is probably
 # the only program that uses non-extras markers in METADATA/PKG-INFO.
@@ -23,8 +22,14 @@ def unique(iterable):
             seen.add(value)
             yield value
 
-def pkginfo_to_dict(path):
-    """Convert a PKG-INFO file to a prototype Metadata 2.0 dict."""
+def pkginfo_to_dict(path, distribution=None):
+    """
+    Convert PKG-INFO to a prototype Metadata 2.0 dict.
+    
+    path: path to PKG-INFO file
+    distribution: optional distutils Distribution()
+    """
+    
     metadata = {}
     pkg_info = read_pkg_info(path)
     for key in unique(k.lower() for k in pkg_info.keys()):
@@ -64,46 +69,18 @@ def pkginfo_to_dict(path):
             metadata[low_key] = pkg_info[key]
 
     metadata['metadata_version'] = METADATA_VERSION
+    
+    if distribution:
+        for requires, attr in (('test_requires', 'tests_require'),):
+            try:
+                requirements = getattr(distribution, attr)
+                if requirements:
+                    metadata[requires] = requirements 
+            except AttributeError:
+                pass
+            
     return metadata
 
 if __name__ == "__main__":
     import sys, pprint
     pprint.pprint(pkginfo_to_dict(sys.argv[1]))
-    
-#    {
-#        "maintainer": null, 
-#        "docs_url": "", 
-#        "requires_python": null, 
-#        "maintainer_email": null, 
-#        "cheesecake_code_kwalitee_id": null, 
-#        "keywords": "wheel packaging", 
-#        "package_url": "http://pypi.python.org/pypi/wheel", 
-#        "author": "Daniel Holth", 
-#        "author_email": "dholth@fastmail.fm", 
-#        "download_url": "UNKNOWN", 
-#        "platform": "UNKNOWN", 
-#        "version": "1.0.0a1", 
-#        "cheesecake_documentation_id": null, 
-#        "_pypi_hidden": false, 
-#        "description": "Blah blah blah blah", 
-#        "release_url": "http://pypi.python.org/pypi/wheel/1.0.0a1", 
-#        "_pypi_ordering": 128, 
-#        "classifiers": [
-#            "Development Status :: 4 - Beta", 
-#            "Intended Audience :: Developers", 
-#            "Programming Language :: Python", 
-#            "Programming Language :: Python :: 2", 
-#            "Programming Language :: Python :: 2.6", 
-#            "Programming Language :: Python :: 2.7", 
-#            "Programming Language :: Python :: 3", 
-#            "Programming Language :: Python :: 3.2", 
-#            "Programming Language :: Python :: 3.3"
-#        ], 
-#        "bugtrack_url": "", 
-#        "name": "wheel", 
-#        "license": "MIT", 
-#        "summary": "A built-package format for Python.", 
-#        "home_page": "http://bitbucket.org/dholth/wheel/", 
-#        "stable_version": null, 
-#        "cheesecake_installability_id": null
-#    }, 

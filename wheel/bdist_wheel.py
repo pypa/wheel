@@ -219,10 +219,11 @@ class bdist_wheel(Command):
         metadata_path = os.path.join(self.distinfo_dir, 'METADATA')
         self.add_requirements(metadata_path)
         
-        # XXX to be specified
+        # XXX not a final specification
         metadata_json_path = os.path.join(self.distinfo_dir, 'pymeta.json')
         with open(metadata_json_path, "w") as metadata_json:
-            json.dump(pkginfo_to_dict(metadata_path), metadata_json)
+            pymeta = pkginfo_to_dict(metadata_path, distribution=self.distribution)
+            json.dump(pymeta, metadata_json)
 
         self.write_wheelfile(self.distinfo_dir)
 

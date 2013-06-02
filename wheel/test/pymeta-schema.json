@@ -1,0 +1,178 @@
+{
+  "id": "http://www.python.org/dev/peps/pep-0426/",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Metadata for Python Software Packages 2.0",
+  "type": "object",
+  "properties": {
+    "metadata_version": {
+      "description": "Version of the file format",
+      "type": "string"
+    },
+    "name": {
+      "description": "The name of the distribution.",
+      "type": "string",
+      "pattern": "^[0-9A-Za-z_.-]+$"
+    },
+    "version": {
+      "description": "The distribution's public version identifier",
+      "type": "string"
+    },
+    "source_label": {
+      "description": "A constrained identifying text string",
+      "type": "string"
+    },
+    "source_url": {
+      "description": "A string containing a full URL where the source for this specific version of the distribution can be downloaded.",
+      "type": "string"
+    },
+    "summary": {
+      "description": "A one-line summary of what the distribution does.",
+      "type": "string"
+    },
+    "description": {
+      "description": "The distribution metadata should include a longer description of the distribution that may run to several paragraphs.",
+      "type": "string"
+    },
+    "description_format": {
+      "description": "A field indicating the intended format of the text in the description field.",
+      "type": "string"
+    },
+    "keywords": {
+      "description": "A array of additional keywords to be used to assist searching for the distribution in a larger catalog.",
+      "type": "array"
+    },
+    "license": {
+      "description": "A string indicating the license covering the distribution.",
+      "type": "string"
+    },
+    "license_url": {
+      "description": "A specific URL referencing the full licence text for this version of the distribution.",
+      "type": "string"
+    },
+    "classifiers": {
+      "description": "A array of strings, with each giving a single classification value for the distribution.",
+      "type": "array"
+    },
+    "contacts": {
+      "description": "A array of contributor entries giving the recommended contact points for getting more information about the project.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "$ref": "#/definitions/contact"
+      }
+    },
+    "contributors": {
+      "description": "A array of contributor entries for other contributors not already listed as current project points of contact.",
+      "type": "array"
+    },
+    "project_urls": {
+      "description": "A mapping of arbitrary text labels to additional URLs relevant to the project.",
+      "type": "object"
+    },
+    "requires": {
+      "description": "A array of other distributions needed when this distribution is deployed.",
+      "type": "array"
+    },
+    "extras": {
+      "description": "A array of optional sets of dependencies that may be used to define conditional dependencies in \"may_require\" and similar fields.",
+      "type": "array"
+    },
+    "may_require": {
+      "description": "A array of other distributions that may be needed when this distribution is deployed, based on the extras requested and the target deployment environment.",
+      "$ref": "#/definitions/may_requires"
+    },
+    "test_requires": {
+      "description": "A array of other distributions needed when this distribution is tested.",
+      "type": "array"
+    },
+    "test_may_require": {
+      "description": "A array of other distributions that may be needed when this distribution is tested, based on the extras requested and the target deployment environment.",
+      "type": "array",
+      "$ref": "#/definitions/may_requires"
+    },
+    "build_requires": {
+      "description": "A array of other distributions needed when this distribution is built.",
+      "type": "array"
+    },
+    "build_may_require": {
+      "description": "A array of other distributions that may be needed when this distribution is built, based on the extras requested and the target deployment environment.",
+      "type": "array",
+      "$ref": "#/definitions/may_requires"
+    },
+    "dev_requires": {
+      "description": "A array of other distributions needed when this distribution is developed.",
+      "type": "array"
+    },
+    "dev_may_require": {
+      "description": "A array of other distributions that may be needed when this distribution is developed, based on the extras requested and the target deployment environment.",
+      "type": "array",
+      "$ref": "#/definitions/may_requires"
+    },
+    "provides": {
+      "description": "A array of strings naming additional dependency requirements that are satisfied by installing this distribution. These strings must be of the form Name or Name (Version), as for the requires field.",
+      "type": "array"
+    },
+    "obsoleted_by": {
+      "description": "A string that indicates that this project is no longer being developed. The named project provides a substitute or replacement.",
+      "type": "string"
+    },
+    "supports_environments": {
+      "description": "A array of strings specifying the environments that the distribution explicitly supports.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "metabuild_hooks": {
+      "description": "The metabuild_hooks field is used to define various operations that may be invoked on a distribution in a platform independent manner.",
+      "type": "object"
+    },
+    "extensions": {
+      "description": "Extensions to the metadata may be present in a mapping under the 'extensions' key.",
+      "type": "object"
+    }
+  },
+
+  "required": ["metadata_version", "name", "version"],
+
+  "definitions": {
+    "contact": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      }
+    },
+    "may_requires": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "extra": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["dependencies"]
+      }
+    }
+  }
+}
