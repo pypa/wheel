@@ -7,7 +7,6 @@ import csv
 import hashlib
 import os
 import subprocess
-import textwrap
 import warnings
 import shutil
 import json
@@ -36,7 +35,7 @@ from .util import get_abbr_impl, get_impl_ver, native, open_for_csv
 from .archive import archive_wheelfile
 from .pkginfo import read_pkg_info, write_pkg_info
 from .metadata import pkginfo_to_dict
-from . import pep425tags
+from . import pep425tags, metadata
 
 def safer_name(name):
     return safe_name(name).replace('-', '_')
@@ -274,65 +273,8 @@ class bdist_wheel(Command):
             path = drive + path[1:]
         return path
 
-    def _to_requires_dist(self, requirement):
-        """Compose the version predicates for requirement in PEP 345 fashion."""
-        requires_dist = []
-        for op, ver in requirement.specs:
-            requires_dist.append(op + ver)
-        if not requires_dist:
-            return ''
-        return " (%s)" % ','.join(requires_dist)
-
     def _pkginfo_to_metadata(self, egg_info_path, pkginfo_path):
-        pkg_info = read_pkg_info(pkginfo_path)
-        pkg_info.replace_header('Metadata-Version', '2.0')
-        requires_path = os.path.join(egg_info_path, 'requires.txt')
-        if os.path.exists(requires_path):
-            requires = open(requires_path).read()
-            for extra, reqs in pkg_resources.split_sections(requires):
-                condition = ''
-                if extra:
-                    pkg_info['Provides-Extra'] = extra
-                    condition = '; extra == %s' % repr(extra)
-                for req in reqs:
-                    parsed_requirement = pkg_resources.Requirement.parse(req)
-                    spec = self._to_requires_dist(parsed_requirement)
-                    extras = ",".join(parsed_requirement.extras)
-                    if extras:
-                        extras = "[%s]" % extras 
-                    pkg_info['Requires-Dist'] = (parsed_requirement.project_name 
-                                                 + extras 
-                                                 + spec 
-                                                 + condition)
-        description = pkg_info['Description']
-        if description:
-            # Python 3 Unicode handling, sorta. 
-            # See the wheel pep for a much better Python 3.3+ strategy.
-            surrogates = False
-            if not isinstance(description, str):
-                surrogates = True
-                for item in pkg_info.raw_items():
-                    if item[0].lower() == 'description':
-                        description = item[1].encode('ascii', 'surrogateescape')\
-                                                     .decode('utf-8')
-                        break
-            del pkg_info['Description']
-
-            description_lines = description.splitlines()
-            description_dedent = '\n'.join(
-                    # if the first line of long_description is blank,
-                    # the first line here will be indented.
-                    (description_lines[0].lstrip(),
-                     textwrap.dedent('\n'.join(description_lines[1:])),
-                     '\n'))
-
-            if surrogates:
-                description_dedent = description_dedent\
-                        .encode("utf8")\
-                        .decode("ascii", "surrogateescape")
-
-            pkg_info.set_payload(description_dedent)
-        return pkg_info
+        return metadata.pkginfo_to_metadata(egg_info_path, pkginfo_path)
     
     def license_file(self):
         """Return license filename from a license-file key in setup.cfg, or None."""

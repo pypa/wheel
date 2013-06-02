@@ -1,8 +1,14 @@
-# Convert egg-style metadata to Metadata 2.0, json version.
+"""
+Tools for converting old- to new-style metadata.
+"""
 
 from collections import defaultdict
 from .pkginfo import read_pkg_info
+
 import re
+import os
+import textwrap
+import pkg_resources
 
 METADATA_VERSION = "2.0"
 
@@ -43,6 +49,15 @@ def pkginfo_to_dict(path, distribution=None):
     
     metadata = {}
     pkg_info = read_pkg_info(path)
+    
+    if pkg_info['Description']:
+        metadata['description'] = dedent_description(pkg_info)
+        del pkg_info['Description']
+    else:
+        payload = pkg_info.get_payload()
+        if payload:
+            metadata['description'] = payload
+    
     for key in unique(k.lower() for k in pkg_info.keys()):
         low_key = key.replace('-', '_')
 
@@ -78,10 +93,9 @@ def pkginfo_to_dict(path, distribution=None):
             if not 'extras' in metadata:
                 metadata['extras'] = []
             metadata['extras'].extend(pkg_info.get_all(key))
-            
-                
+
         elif low_key == 'home_page':
-            metadata['project_urls'] = [{'Home':pkg_info[key]}]
+            metadata['project_urls'] = {'Home':pkg_info[key]}
 
         else:
             metadata[low_key] = pkg_info[key]
@@ -112,6 +126,83 @@ def pkginfo_to_dict(path, distribution=None):
         metadata['contacts'] = contacts
         
     return metadata
+
+
+def requires_to_requires_dist(requirement):
+    """Compose the version predicates for requirement in PEP 345 fashion."""
+    requires_dist = []
+    for op, ver in requirement.specs:
+        requires_dist.append(op + ver)
+    if not requires_dist:
+        return ''
+    return " (%s)" % ','.join(requires_dist)
+
+
+def pkginfo_to_metadata(egg_info_path, pkginfo_path):
+    """
+    Convert .egg-info directory with PKG-INFO to the Metadata 1.3 aka
+    old-draft Metadata 2.0 format.
+    """
+    pkg_info = read_pkg_info(pkginfo_path)
+    pkg_info.replace_header('Metadata-Version', '2.0')
+    requires_path = os.path.join(egg_info_path, 'requires.txt')
+    if os.path.exists(requires_path):
+        requires = open(requires_path).read()
+        for extra, reqs in pkg_resources.split_sections(requires):
+            condition = ''
+            if extra:
+                pkg_info['Provides-Extra'] = extra
+                condition = '; extra == %s' % repr(extra)
+            for req in reqs:
+                parsed_requirement = pkg_resources.Requirement.parse(req)
+                spec = requires_to_requires_dist(parsed_requirement)
+                extras = ",".join(parsed_requirement.extras)
+                if extras:
+                    extras = "[%s]" % extras 
+                pkg_info['Requires-Dist'] = (parsed_requirement.project_name 
+                                             + extras 
+                                             + spec 
+                                             + condition)
+
+    description = pkg_info['Description']
+    if description:
+        pkg_info.set_payload(dedent_description(pkg_info))
+        del pkg_info['Description']
+
+    return pkg_info
+
+
+def dedent_description(pkg_info):
+    """
+    Dedent and convert pkg_info['Description'] to Unicode.
+    """
+    description = pkg_info['Description']
+    
+    # Python 3 Unicode handling, sorta.
+    surrogates = False
+    if not isinstance(description, str):
+        surrogates = True
+        for item in pkg_info.raw_items():
+            if item[0].lower() == 'description':
+                description = item[1].encode('ascii', 'surrogateescape')\
+                                             .decode('utf-8')
+                break
+
+    description_lines = description.splitlines()
+    description_dedent = '\n'.join(
+            # if the first line of long_description is blank,
+            # the first line here will be indented.
+            (description_lines[0].lstrip(),
+             textwrap.dedent('\n'.join(description_lines[1:])),
+             '\n'))
+
+    if surrogates:
+        description_dedent = description_dedent\
+                .encode("utf8")\
+                .decode("ascii", "surrogateescape")
+                
+    return description_dedent
+
 
 if __name__ == "__main__":
     import sys, pprint
