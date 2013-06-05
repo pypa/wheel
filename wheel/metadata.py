@@ -9,6 +9,8 @@ import re
 import os
 import textwrap
 import pkg_resources
+import email.header
+import json
 
 METADATA_VERSION = "2.0"
 
@@ -50,14 +52,24 @@ def pkginfo_to_dict(path, distribution=None):
     metadata = {}
     pkg_info = read_pkg_info(path)
     
+    description = {}
+    
     if pkg_info['Description']:
-        metadata['description'] = dedent_description(pkg_info)
+        description['text'] = dedent_description(pkg_info)
         del pkg_info['Description']
     else:
         payload = pkg_info.get_payload()
         if payload:
-            metadata['description'] = payload
-    
+            description['text'] = payload
+            
+    if pkg_info['Summary']:
+        summary = pkginfo_unicode(pkg_info, 'Summary')
+        description['summary'] = summary
+        del pkg_info['Summary']
+        
+    if description:
+        pkg_info['description'] = description
+
     for key in unique(k.lower() for k in pkg_info.keys()):
         low_key = key.replace('-', '_')
 
@@ -83,9 +95,9 @@ def pkginfo_to_dict(path, distribution=None):
                         extra_requirements[extra_name].append(requirement)
                 else:
                     requirements.append(requirement)
-            metadata['requires'] = requirements
+            metadata['run_requires'] = requirements
             if extra_requirements:
-                metadata['may_require'] = [{'extra':key, 'dependencies':value} 
+                metadata['run_may_require'] = [{'extra':key, 'dependencies':value} 
                         for key, value in sorted(extra_requirements.items())]
                 if not 'extras' in metadata:
                     metadata['extras'] = []
@@ -175,6 +187,20 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
 
     return pkg_info
 
+            
+def pkginfo_unicode(pkg_info, field):
+    """Hack to coax Unicode out of an email Message()"""
+    text = pkg_info[field]
+    field = field.lower()
+    if not isinstance(text, str):
+        for item in pkg_info.raw_items():
+            if item[0].lower() == field:
+                text = item[1].encode('ascii', 'surrogateescape')\
+                                      .decode('utf-8')
+                break
+
+    return text
+
 
 def dedent_description(pkg_info):
     """
@@ -186,11 +212,7 @@ def dedent_description(pkg_info):
     surrogates = False
     if not isinstance(description, str):
         surrogates = True
-        for item in pkg_info.raw_items():
-            if item[0].lower() == 'description':
-                description = item[1].encode('ascii', 'surrogateescape')\
-                                             .decode('utf-8')
-                break
+        description = pkginfo_unicode(pkg_info, 'Description')
 
     description_lines = description.splitlines()
     description_dedent = '\n'.join(
