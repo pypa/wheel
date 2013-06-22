@@ -123,7 +123,7 @@ class bdist_wheel(Command):
                 if val.lower() in ('1', 'true', 'yes'):
                     impl_name = 'py2.py3'
                     impl_ver = ''
-            tag = (impl_name+impl_ver, abi_tag, plat_name)
+            tag = (impl_name + impl_ver, abi_tag, plat_name)
         else:
             plat_name = self.plat_name
             if plat_name is None:
@@ -138,7 +138,7 @@ class bdist_wheel(Command):
             if abi_tag.startswith('cpython-'):
                 abi_tag = 'cp' + abi_tag.rsplit('-', 1)[-1]
 
-            tag = (impl_name+impl_ver, abi_tag, plat_name)
+            tag = (impl_name + impl_ver, abi_tag, plat_name)
             # XXX switch to this alternate implementation for non-pure:
             assert tag == supported_tags[0]
         return tag
@@ -189,7 +189,7 @@ class bdist_wheel(Command):
                 basedir_observed)
 
         logger.info("installing to %s", self.bdist_dir)
-        
+
         self.run_command('install')
 
         archive_basename = self.get_archive_basename()
@@ -208,20 +208,35 @@ class bdist_wheel(Command):
                                          '%s.dist-info' % self.wheel_dist_name)
         self.egg2dist(self.egginfo_dir,
                       self.distinfo_dir)
-        
+
+        # XXX deprecated.
+        metadata_path = os.path.join(self.distinfo_dir, 'METADATA')
+        self.add_requirements(metadata_path)
+
+        # XXX not a final specification
+        metadata_json_path = os.path.join(self.distinfo_dir, 'pymeta.json')
+        pymeta = pkginfo_to_dict(metadata_path,
+                                 distribution=self.distribution)
+
+        if 'description' in pymeta:
+            description_filename = 'README.rst'
+            description_text = pymeta.pop('description')
+            description_path = os.path.join(self.distinfo_dir,
+                                            description_filename)
+            with open(description_path, "wb") as description_file:
+                description_file.write(description_text.encode('utf-8'))
+            pymeta['document_names'] = pymeta.get('document_names', {})
+            pymeta['document_names']['description'] = description_filename
+
         # XXX heuristically copy any LICENSE/LICENSE.txt?
         license = self.license_file()
         if license:
-            shutil.copy(license, os.path.join(self.distinfo_dir, 'LICENSE.txt'))
+            license_filename = 'LICENSE.txt'
+            shutil.copy(license, os.path.join(self.distinfo_dir, license_filename))
+            pymeta['document_names'] = pymeta.get('document_names', {})
+            pymeta['document_names']['license'] = license_filename
 
-        # XXX deprecated
-        metadata_path = os.path.join(self.distinfo_dir, 'METADATA')
-        self.add_requirements(metadata_path)
-        
-        # XXX not a final specification
-        metadata_json_path = os.path.join(self.distinfo_dir, 'pymeta.json')
         with open(metadata_json_path, "w") as metadata_json:
-            pymeta = pkginfo_to_dict(metadata_path, distribution=self.distribution)
             json.dump(pymeta, metadata_json)
 
         self.write_wheelfile(self.distinfo_dir)
@@ -232,7 +247,7 @@ class bdist_wheel(Command):
         if not os.path.exists(self.dist_dir):
             os.makedirs(self.dist_dir)
         wheel_name = archive_wheelfile(pseudoinstall_root, archive_root)
-        
+
         # Sign the archive
         if 'WHEEL_TOOL' in os.environ:
             subprocess.call([os.environ['WHEEL_TOOL'], 'sign', wheel_name])
@@ -253,7 +268,7 @@ class bdist_wheel(Command):
         msg['Wheel-Version'] = '1.0'  # of the spec
         msg['Generator'] = generator
         msg['Root-Is-Purelib'] = str(self.root_is_purelib).lower()
-       
+
         # Doesn't work for bdist_wininst
         impl_tag, abi_tag, plat_tag = self.get_tag()
         for impl in impl_tag.split('.'):
@@ -275,14 +290,14 @@ class bdist_wheel(Command):
 
     def _pkginfo_to_metadata(self, egg_info_path, pkginfo_path):
         return metadata.pkginfo_to_metadata(egg_info_path, pkginfo_path)
-    
+
     def license_file(self):
         """Return license filename from a license-file key in setup.cfg, or None."""
         metadata = self.distribution.get_option_dict('metadata')
         if not 'license_file' in metadata:
             return None
         return metadata['license_file'][1]
-    
+
     def setupcfg_requirements(self):
         """Generate requirements from setup.cfg as 
         ('Requires-Dist', 'requirement; qualifier') tuples. From a metadata
@@ -306,7 +321,7 @@ class bdist_wheel(Command):
         metadata = self.distribution.get_option_dict('metadata')
 
         # our .ini parser folds - to _ in key names:
-        for key, title in (('provides_extra', 'Provides-Extra'), 
+        for key, title in (('provides_extra', 'Provides-Extra'),
                            ('requires_dist', 'Requires-Dist')):
             if not key in metadata:
                 continue
@@ -316,20 +331,20 @@ class bdist_wheel(Command):
                 if not line:
                     continue
                 yield (title, line)
-    
+
     def add_requirements(self, metadata_path):
         """Add additional requirements from setup.cfg to file metadata_path"""
         additional = list(self.setupcfg_requirements())
-        if not additional: return        
+        if not additional: return
         pkg_info = read_pkg_info(metadata_path)
         if 'Provides-Extra' in pkg_info or 'Requires-Dist' in pkg_info:
             warnings.warn('setup.cfg requirements overwrite values from setup.py')
             del pkg_info['Provides-Extra']
-            del pkg_info['Requires-Dist'] 
+            del pkg_info['Requires-Dist']
         for k, v in additional:
             pkg_info[k] = v
         write_pkg_info(metadata_path, pkg_info)
-        
+
     def egg2dist(self, egginfo_path, distinfo_path):
         """Convert an .egg-info directory into a .dist-info directory"""
         def adios(p):
@@ -368,15 +383,15 @@ class bdist_wheel(Command):
 
             # ignore common egg metadata that is useless to wheel
             shutil.copytree(egginfo_path, distinfo_path,
-                            ignore=lambda x, y: set(('PKG-INFO', 
+                            ignore=lambda x, y: set(('PKG-INFO',
                                                      'requires.txt',
                                                      'SOURCES.txt',
                                                      'not-zip-safe',)))
-            
+
             # delete dependency_links if it is only whitespace
             dependency_links = os.path.join(distinfo_path, 'dependency_links.txt')
-            if not open(dependency_links, 'r').read().strip(): 
-                adios(dependency_links)        
+            if not open(dependency_links, 'r').read().strip():
+                adios(dependency_links)
 
         write_pkg_info(os.path.join(distinfo_path, 'METADATA'), pkg_info)
 
@@ -407,7 +422,7 @@ class bdist_wheel(Command):
                 else:
                     data = open(path, 'rb').read()
                     digest = hashlib.sha256(data).digest()
-                    hash = 'sha256='+native(urlsafe_b64encode(digest))
+                    hash = 'sha256=' + native(urlsafe_b64encode(digest))
                     size = len(data)
                 record_path = os.path.relpath(
                     path, bdist_dir).replace(os.path.sep, '/')

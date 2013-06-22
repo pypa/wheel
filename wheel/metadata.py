@@ -9,8 +9,6 @@ import re
 import os
 import textwrap
 import pkg_resources
-import email.header
-import json
 
 METADATA_VERSION = "2.0"
 
@@ -43,7 +41,10 @@ def unique(iterable):
 
 def pkginfo_to_dict(path, distribution=None):
     """
-    Convert PKG-INFO to a prototype Metadata 2.0 dict.
+    Convert PKG-INFO to a prototype Metadata 2.0 (PEP 426) dict.
+    
+    The description is included under the key ['description'] rather than 
+    being written to a separate file.
     
     path: path to PKG-INFO file
     distribution: optional distutils Distribution()
@@ -52,21 +53,16 @@ def pkginfo_to_dict(path, distribution=None):
     metadata = {}
     pkg_info = read_pkg_info(path)
     
-    description = {}
+    description = None
     
     if pkg_info['Description']:
-        description['text'] = dedent_description(pkg_info)
+        description = dedent_description(pkg_info)
         del pkg_info['Description']
     else:
         payload = pkg_info.get_payload()
         if payload:
-            description['text'] = payload
+            description = payload
             
-    if pkg_info['Summary']:
-        summary = pkginfo_unicode(pkg_info, 'Summary')
-        description['summary'] = summary
-        del pkg_info['Summary']
-        
     if description:
         pkg_info['description'] = description
 
@@ -115,8 +111,9 @@ def pkginfo_to_dict(path, distribution=None):
             metadata[low_key] = pkg_info[key]
 
     metadata['metadata_version'] = METADATA_VERSION
-    
-    metadata['extras'] = sorted(unique(metadata['extras']))
+   
+    if 'extras' in metadata:
+        metadata['extras'] = sorted(unique(metadata['extras']))
     
     # include more information if distribution is available
     if distribution:

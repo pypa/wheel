@@ -33,9 +33,24 @@
       "description": "A one-line summary of what the distribution does.",
       "type": "string"
     },
-    "description": {
-      "description": "The distribution metadata should include a longer description of the distribution that may run to several paragraphs.",
-      "$ref": "#/definitions/document"
+    "document_names": {
+      "description": "Names of supporting metadata documents",
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "$ref": "#/definitions/document_name"
+        },
+        "changelog": {
+          "type": "string",
+          "$ref": "#/definitions/document_name"
+        },
+        "license": {
+          "type": "string",
+          "$ref": "#/definitions/document_name"
+        }
+      },
+      "additionalProperties": false
     },
     "keywords": {
       "description": "A list of additional keywords to be used to assist searching for the distribution in a larger catalog.",
@@ -47,11 +62,6 @@
     "license": {
       "description": "A string indicating the license covering the distribution.",
       "type": "string"
-    },
-    "license_url": {
-      "description": "A specific URL referencing the full licence text for this version of the distribution.",
-      "type": "string",
-      "format": "uri"
     },
     "classifiers": {
       "description": "A list of strings, with each giving a single classification value for the distribution.",
@@ -196,17 +206,6 @@
         "$ref": "#/definitions/version_specifier"
       }
     },
-    "document": {
-      "type": "object",
-      "properties": {
-        "summary": {
-          "type": "string"
-        },
-        "embedded": {
-          "type": "string"
-        }
-      }
-    },
     "conditional_dependencies": {
       "type": "array",
       "items": {
@@ -236,6 +235,9 @@
         "type": "string"
     },
     "environment_marker": {
+        "type": "string"
+    },
+    "document_name": {
         "type": "string"
     }
   }
