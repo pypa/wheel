@@ -1,3 +1,7 @@
+0.17.0
+======
+- Support latest PEP-426 "pymeta.json" (json-format metadata)
+
 0.16.0
 ======
 - Python 2.6 compatibility bugfix (thanks John McFarlane)

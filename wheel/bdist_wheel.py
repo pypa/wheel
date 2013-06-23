@@ -219,7 +219,7 @@ class bdist_wheel(Command):
                                  distribution=self.distribution)
 
         if 'description' in pymeta:
-            description_filename = 'README.rst'
+            description_filename = 'DESCRIPTION.rst'
             description_text = pymeta.pop('description')
             description_path = os.path.join(self.distinfo_dir,
                                             description_filename)
