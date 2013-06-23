@@ -27,12 +27,12 @@ CONTACT_FIELDS = (({"email":"author_email", "name": "author"},
 UNKNOWN_FIELDS = set(("author", "author_email", "platform", "home_page",
                       "license"))
 
-# Wheel itself is probably the only program that uses non-extras markers 
+# Wheel itself is probably the only program that uses non-extras markers
 # in METADATA/PKG-INFO. Support its syntax with the extra at the end only.
 EXTRA_RE = re.compile("""^(?P<package>.*?)(;\s*(?P<condition>.*?)(extra == '(?P<extra>.*?)')?)$""")
 KEYWORDS_RE = re.compile("[\0-,]+")
 
-MayRequiresKey = namedtuple('MayRequiresKey', ('condition', 'extra')) 
+MayRequiresKey = namedtuple('MayRequiresKey', ('condition', 'extra'))
 
 def unique(iterable):
     """
@@ -57,8 +57,11 @@ def pkginfo_to_dict(path, distribution=None):
 
     metadata = {}
     pkg_info = read_pkg_info(path)
-
     description = None
+
+    if pkg_info['Summary']:
+        metadata['summary'] = pkginfo_unicode(pkg_info, 'Summary')
+        del pkg_info['Summary']
 
     if pkg_info['Description']:
         description = dedent_description(pkg_info)
@@ -93,7 +96,7 @@ def pkginfo_to_dict(path, distribution=None):
                     condition = groupdict['condition']
                     if condition.endswith(' and '):
                         condition = condition[:-5]
-                    key = MayRequiresKey(condition, 
+                    key = MayRequiresKey(condition,
                                          groupdict['extra'])
                     may_requires[key].append(groupdict['package'])
                 else:
@@ -116,7 +119,7 @@ def pkginfo_to_dict(path, distribution=None):
             if not 'extras' in metadata:
                 metadata['extras'] = []
             metadata['extras'].extend(pkg_info.get_all(key))
-            
+
         elif low_key == 'home_page':
             metadata['project_urls'] = {'Home':pkg_info[key]}
 
@@ -199,10 +202,12 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
 
 
 def pkginfo_unicode(pkg_info, field):
-    """Hack to coax Unicode out of an email Message()"""
+    """Hack to coax Unicode out of an email Message() - Python 3.3+"""
     text = pkg_info[field]
     field = field.lower()
     if not isinstance(text, str):
+        if not hasattr(pkg_info, 'raw_items'): # Python 3.2
+            return str(text)
         for item in pkg_info.raw_items():
             if item[0].lower() == field:
                 text = item[1].encode('ascii', 'surrogateescape')\
