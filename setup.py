@@ -49,7 +49,7 @@ setup(name='wheel',
           'faster-signatures': ['ed25519ll'], 
           'tool': []
           },
-      tests_require=['jsonschema', 'py.test', 'coverage', 'pytest-cov'],
+      tests_require=['jsonschema', 'pytest', 'coverage', 'pytest-cov'],
       include_package_data=True,
       zip_safe=False,
       entry_points = """\
