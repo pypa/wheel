@@ -19,9 +19,13 @@ test_distributions = ("simple.dist", "complex-dist", "headers.dist")
 
 def teardown_module():
     """Delete eggs/wheels created by tests."""
+    base = pkg_resources.resource_filename('wheel.test', '')
     for dist in test_distributions:
-        rmtree(pkg_resources.resource_filename('wheel.test', 
-                                               os.path.join(dist, 'build')))
+        for subdir in ('build', 'dist'):
+            try:
+                rmtree(os.path.join(base, dist, subdir))
+            except OSError:
+                pass
                         
 def test_findable():
     """Make sure pkg_resources can find us."""
