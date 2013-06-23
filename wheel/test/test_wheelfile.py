@@ -5,11 +5,11 @@ try:
 except ImportError:
     from io import BytesIO as StringIO
 import zipfile
-from nose import SkipTest
+import pytest
 
 def test_verifying_zipfile():
     if not hasattr(zipfile.ZipExtFile, '_update_crc'):
-        raise SkipTest('No ZIP verification. Missing ZipExtFile._update_crc.')
+        pytest.skip('No ZIP verification. Missing ZipExtFile._update_crc.')
     
     sio = StringIO()
     zf = zipfile.ZipFile(sio, 'w')

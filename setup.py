@@ -49,10 +49,9 @@ setup(name='wheel',
           'faster-signatures': ['ed25519ll'], 
           'tool': []
           },
-      tests_require=['jsonschema'],
+      tests_require=['jsonschema', 'py.test', 'coverage', 'pytest-cov'],
       include_package_data=True,
       zip_safe=False,
-      test_suite = 'nose.collector',
       entry_points = """\
 [console_scripts]
 wininst2wheel = wheel.wininst2wheel:main

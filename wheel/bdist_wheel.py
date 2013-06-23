@@ -209,36 +209,6 @@ class bdist_wheel(Command):
         self.egg2dist(self.egginfo_dir,
                       self.distinfo_dir)
 
-        # XXX deprecated.
-        metadata_path = os.path.join(self.distinfo_dir, 'METADATA')
-        self.add_requirements(metadata_path)
-
-        # XXX not a final specification
-        metadata_json_path = os.path.join(self.distinfo_dir, 'pymeta.json')
-        pymeta = pkginfo_to_dict(metadata_path,
-                                 distribution=self.distribution)
-
-        if 'description' in pymeta:
-            description_filename = 'DESCRIPTION.rst'
-            description_text = pymeta.pop('description')
-            description_path = os.path.join(self.distinfo_dir,
-                                            description_filename)
-            with open(description_path, "wb") as description_file:
-                description_file.write(description_text.encode('utf-8'))
-            pymeta['document_names'] = pymeta.get('document_names', {})
-            pymeta['document_names']['description'] = description_filename
-
-        # XXX heuristically copy any LICENSE/LICENSE.txt?
-        license = self.license_file()
-        if license:
-            license_filename = 'LICENSE.txt'
-            shutil.copy(license, os.path.join(self.distinfo_dir, license_filename))
-            pymeta['document_names'] = pymeta.get('document_names', {})
-            pymeta['document_names']['license'] = license_filename
-
-        with open(metadata_json_path, "w") as metadata_json:
-            json.dump(pymeta, metadata_json)
-
         self.write_wheelfile(self.distinfo_dir)
 
         self.write_record(self.bdist_dir, self.distinfo_dir)
@@ -394,6 +364,36 @@ class bdist_wheel(Command):
                 adios(dependency_links)
 
         write_pkg_info(os.path.join(distinfo_path, 'METADATA'), pkg_info)
+                
+        # XXX deprecated. Still useful for current distribute/setuptools.
+        metadata_path = os.path.join(distinfo_path, 'METADATA')
+        self.add_requirements(metadata_path)
+
+        # XXX not a final specification
+        metadata_json_path = os.path.join(distinfo_path, 'pymeta.json')
+        pymeta = pkginfo_to_dict(metadata_path,
+                                 distribution=self.distribution)
+
+        if 'description' in pymeta:
+            description_filename = 'DESCRIPTION.rst'
+            description_text = pymeta.pop('description')
+            description_path = os.path.join(distinfo_path,
+                                            description_filename)
+            with open(description_path, "wb") as description_file:
+                description_file.write(description_text.encode('utf-8'))
+            pymeta['document_names'] = pymeta.get('document_names', {})
+            pymeta['document_names']['description'] = description_filename
+
+        # XXX heuristically copy any LICENSE/LICENSE.txt?
+        license = self.license_file()
+        if license:
+            license_filename = 'LICENSE.txt'
+            shutil.copy(license, os.path.join(self.distinfo_dir, license_filename))
+            pymeta['document_names'] = pymeta.get('document_names', {})
+            pymeta['document_names']['license'] = license_filename
+
+        with open(metadata_json_path, "w") as metadata_json:
+            json.dump(pymeta, metadata_json)
 
         adios(egginfo_path)
 
@@ -409,8 +409,8 @@ class bdist_wheel(Command):
                     yield os.path.join(dir, f)
 
         def skip(path):
-            return (path.endswith('.pyc')
-                    or path.endswith('.pyo') or path == record_relpath)
+            """Wheel hashes every possible file."""
+            return (path == record_relpath)
 
         with open_for_csv(record_path, 'w+') as record_file:
             writer = csv.writer(record_file)
