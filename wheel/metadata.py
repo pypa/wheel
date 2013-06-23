@@ -2,7 +2,7 @@
 Tools for converting old- to new-style metadata.
 """
 
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from .pkginfo import read_pkg_info
 
 import re
@@ -12,27 +12,32 @@ import pkg_resources
 
 METADATA_VERSION = "2.0"
 
-PLURAL_FIELDS = { "classifier" : "classifiers", 
+PLURAL_FIELDS = { "classifier" : "classifiers",
                   "provides_dist" : "provides",
                   "provides_extra" : "extras" }
 
 SKIP_FIELDS = set()
 
-CONTACT_FIELDS = (({"email":"author_email", "name": "author"}, 
+CONTACT_FIELDS = (({"email":"author_email", "name": "author"},
                     "author"),
-                  ({"email":"maintainer_email", "name": "maintainer"}, 
+                  ({"email":"maintainer_email", "name": "maintainer"},
                     "maintainer"))
 
 # commonly filled out as "UNKNOWN" by distutils:
-UNKNOWN_FIELDS = set(("author", "author_email", "platform", "home_page", 
+UNKNOWN_FIELDS = set(("author", "author_email", "platform", "home_page",
                       "license"))
 
-# Will only support markers-as-extras here. Wheel itself is probably
-# the only program that uses non-extras markers in METADATA/PKG-INFO.
-EXTRA_RE = re.compile("extra == '(?P<extra>.+)'")
+# Wheel itself is probably the only program that uses non-extras markers 
+# in METADATA/PKG-INFO. Support its syntax with the extra at the end only.
+EXTRA_RE = re.compile("""^(?P<package>.*?)(;\s*(?P<condition>.*?)(extra == '(?P<extra>.*?)')?)$""")
 KEYWORDS_RE = re.compile("[\0-,]+")
 
+MayRequiresKey = namedtuple('MayRequiresKey', ('condition', 'extra')) 
+
 def unique(iterable):
+    """
+    Yield unique values in iterable, preserving order.
+    """
     seen = set()
     for value in iterable:
         if not value in seen:
@@ -49,12 +54,12 @@ def pkginfo_to_dict(path, distribution=None):
     path: path to PKG-INFO file
     distribution: optional distutils Distribution()
     """
-    
+
     metadata = {}
     pkg_info = read_pkg_info(path)
-    
+
     description = None
-    
+
     if pkg_info['Description']:
         description = dedent_description(pkg_info)
         del pkg_info['Description']
@@ -62,16 +67,16 @@ def pkginfo_to_dict(path, distribution=None):
         payload = pkg_info.get_payload()
         if payload:
             description = payload
-            
+
     if description:
         pkg_info['description'] = description
 
     for key in unique(k.lower() for k in pkg_info.keys()):
         low_key = key.replace('-', '_')
 
-        if low_key in SKIP_FIELDS: 
+        if low_key in SKIP_FIELDS:
             continue
-        
+
         if low_key in UNKNOWN_FIELDS and pkg_info.get(key) == 'UNKNOWN':
             continue
 
@@ -80,30 +85,38 @@ def pkginfo_to_dict(path, distribution=None):
 
         elif low_key == "requires_dist":
             requirements = []
-            extra_requirements = defaultdict(list)
-            for requirement, sep, marker in (value.partition(';') 
-                                        for value in pkg_info.get_all(key)):
-                marker = marker.strip()
-                if marker:
-                    extra_match = EXTRA_RE.match(marker)
-                    if extra_match:
-                        extra_name = extra_match.group('extra')
-                        extra_requirements[extra_name].append(requirement)
+            may_requires = defaultdict(list)
+            for value in pkg_info.get_all(key):
+                extra_match = EXTRA_RE.search(value)
+                if extra_match:
+                    groupdict = extra_match.groupdict()
+                    condition = groupdict['condition']
+                    if condition.endswith(' and '):
+                        condition = condition[:-5]
+                    key = MayRequiresKey(condition, 
+                                         groupdict['extra'])
+                    may_requires[key].append(groupdict['package'])
                 else:
-                    requirements.append(requirement)
+                    requirements.append(value)
             metadata['run_requires'] = requirements
-            if extra_requirements:
-                metadata['run_may_require'] = [{'extra':key, 'dependencies':value} 
-                        for key, value in sorted(extra_requirements.items())]
+            if may_requires:
+                metadata['run_may_require'] = []
+                for key, value in may_requires.items():
+                    may_requirement = {'dependencies':value}
+                    if key.extra:
+                        may_requirement['extra'] = key.extra
+                    if key.condition:
+                        may_requirement['condition'] = key.condition
+                    metadata['run_may_require'].append(may_requirement)
                 if not 'extras' in metadata:
                     metadata['extras'] = []
-                metadata['extras'].extend([key for key in sorted(extra_requirements.keys())])
+                metadata['extras'].extend([key.extra for key in may_requires.keys() if key.extra])
 
         elif low_key == 'provides_extra':
             if not 'extras' in metadata:
                 metadata['extras'] = []
             metadata['extras'].extend(pkg_info.get_all(key))
-
+            
         elif low_key == 'home_page':
             metadata['project_urls'] = {'Home':pkg_info[key]}
 
@@ -111,20 +124,20 @@ def pkginfo_to_dict(path, distribution=None):
             metadata[low_key] = pkg_info[key]
 
     metadata['metadata_version'] = METADATA_VERSION
-   
+
     if 'extras' in metadata:
-        metadata['extras'] = sorted(unique(metadata['extras']))
-    
+        metadata['extras'] = sorted(set(metadata['extras']))
+
     # include more information if distribution is available
     if distribution:
         for requires, attr in (('test_requires', 'tests_require'),):
             try:
                 requirements = getattr(distribution, attr)
                 if requirements:
-                    metadata[requires] = requirements 
+                    metadata[requires] = requirements
             except AttributeError:
                 pass
-            
+
     # handle contacts
     contacts = []
     for contact_type, role in CONTACT_FIELDS:
@@ -137,7 +150,7 @@ def pkginfo_to_dict(path, distribution=None):
             contacts.append(contact)
     if contacts:
         metadata['contacts'] = contacts
-        
+
     return metadata
 
 
@@ -171,10 +184,10 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
                 spec = requires_to_requires_dist(parsed_requirement)
                 extras = ",".join(parsed_requirement.extras)
                 if extras:
-                    extras = "[%s]" % extras 
-                pkg_info['Requires-Dist'] = (parsed_requirement.project_name 
-                                             + extras 
-                                             + spec 
+                    extras = "[%s]" % extras
+                pkg_info['Requires-Dist'] = (parsed_requirement.project_name
+                                             + extras
+                                             + spec
                                              + condition)
 
     description = pkg_info['Description']
@@ -184,7 +197,7 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
 
     return pkg_info
 
-            
+
 def pkginfo_unicode(pkg_info, field):
     """Hack to coax Unicode out of an email Message()"""
     text = pkg_info[field]
@@ -204,7 +217,7 @@ def dedent_description(pkg_info):
     Dedent and convert pkg_info['Description'] to Unicode.
     """
     description = pkg_info['Description']
-    
+
     # Python 3 Unicode handling, sorta.
     surrogates = False
     if not isinstance(description, str):
@@ -223,7 +236,7 @@ def dedent_description(pkg_info):
         description_dedent = description_dedent\
                 .encode("utf8")\
                 .decode("ascii", "surrogateescape")
-                
+
     return description_dedent
 
 
