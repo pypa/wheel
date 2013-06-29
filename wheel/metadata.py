@@ -44,6 +44,42 @@ def unique(iterable):
             seen.add(value)
             yield value
 
+
+def handle_requires(metadata, pkg_info, key):
+    """
+    Place the runtime requirements from pkg_info into metadata. 
+    """
+    may_requires = defaultdict(list)
+    for value in pkg_info.get_all(key):
+        extra_match = EXTRA_RE.search(value)
+        if extra_match:
+            groupdict = extra_match.groupdict()
+            condition = groupdict['condition']
+            extra = groupdict['extra']
+            package = groupdict['package']
+            if condition.endswith(' and '):
+                condition = condition[:-5]
+        else:
+            condition, extra = None, None
+            package = value
+        key = MayRequiresKey(condition, extra)
+        may_requires[key].append(package)
+    
+    if may_requires:
+        metadata['run_requires'] = []
+        for key, value in may_requires.items():
+            may_requirement = {'install':value}
+            if key.extra:
+                may_requirement['extra'] = key.extra
+            if key.condition:
+                may_requirement['environment'] = key.condition
+            metadata['run_requires'].append(may_requirement)
+        
+        if not 'extras' in metadata:
+            metadata['extras'] = []
+        metadata['extras'].extend([key.extra for key in may_requires.keys() if key.extra])
+
+
 def pkginfo_to_dict(path, distribution=None):
     """
     Convert PKG-INFO to a prototype Metadata 2.0 (PEP 426) dict.
@@ -86,34 +122,8 @@ def pkginfo_to_dict(path, distribution=None):
         if low_key in PLURAL_FIELDS:
             metadata[PLURAL_FIELDS[low_key]] = pkg_info.get_all(key)
 
-        elif low_key == "requires_dist":
-            may_requires = defaultdict(list)
-            for value in pkg_info.get_all(key):
-                extra_match = EXTRA_RE.search(value)
-                if extra_match:
-                    groupdict = extra_match.groupdict()
-                    condition = groupdict['condition']
-                    extra = groupdict['extra']
-                    package = groupdict['package']
-                    if condition.endswith(' and '):
-                        condition = condition[:-5]
-                else:
-                    condition, extra = None, None
-                    package = value
-                key = MayRequiresKey(condition, extra)
-                may_requires[key].append(package)
-            if may_requires:
-                metadata['run_requires'] = []
-                for key, value in may_requires.items():
-                    may_requirement = {'install':value}
-                    if key.extra:
-                        may_requirement['extra'] = key.extra
-                    if key.condition:
-                        may_requirement['environment'] = key.condition
-                    metadata['run_requires'].append(may_requirement)
-                if not 'extras' in metadata:
-                    metadata['extras'] = []
-                metadata['extras'].extend([key.extra for key in may_requires.keys() if key.extra])
+        elif low_key == "requires_dist":            
+            handle_requires(metadata, pkg_info, key)
 
         elif low_key == 'provides_extra':
             if not 'extras' in metadata:
