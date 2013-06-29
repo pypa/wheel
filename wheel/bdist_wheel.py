@@ -1,4 +1,5 @@
-"""Create a wheel (.whl) distribution.
+"""
+Create a wheel (.whl) distribution.
 
 A wheel is a built archive format.
 """

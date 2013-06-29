@@ -87,30 +87,30 @@ def pkginfo_to_dict(path, distribution=None):
             metadata[PLURAL_FIELDS[low_key]] = pkg_info.get_all(key)
 
         elif low_key == "requires_dist":
-            requirements = []
             may_requires = defaultdict(list)
             for value in pkg_info.get_all(key):
                 extra_match = EXTRA_RE.search(value)
                 if extra_match:
                     groupdict = extra_match.groupdict()
                     condition = groupdict['condition']
+                    extra = groupdict['extra']
+                    package = groupdict['package']
                     if condition.endswith(' and '):
                         condition = condition[:-5]
-                    key = MayRequiresKey(condition,
-                                         groupdict['extra'])
-                    may_requires[key].append(groupdict['package'])
                 else:
-                    requirements.append(value)
-            metadata['run_requires'] = requirements
+                    condition, extra = None, None
+                    package = value
+                key = MayRequiresKey(condition, extra)
+                may_requires[key].append(package)
             if may_requires:
-                metadata['run_may_require'] = []
+                metadata['run_requires'] = []
                 for key, value in may_requires.items():
-                    may_requirement = {'dependencies':value}
+                    may_requirement = {'install':value}
                     if key.extra:
                         may_requirement['extra'] = key.extra
                     if key.condition:
-                        may_requirement['condition'] = key.condition
-                    metadata['run_may_require'].append(may_requirement)
+                        may_requirement['environment'] = key.condition
+                    metadata['run_requires'].append(may_requirement)
                 if not 'extras' in metadata:
                     metadata['extras'] = []
                 metadata['extras'].extend([key.extra for key in may_requires.keys() if key.extra])
@@ -137,7 +137,7 @@ def pkginfo_to_dict(path, distribution=None):
             try:
                 requirements = getattr(distribution, attr)
                 if requirements:
-                    metadata[requires] = requirements
+                    metadata[requires] = [{'install':requirements}]
             except AttributeError:
                 pass
 
@@ -206,7 +206,7 @@ def pkginfo_unicode(pkg_info, field):
     text = pkg_info[field]
     field = field.lower()
     if not isinstance(text, str):
-        if not hasattr(pkg_info, 'raw_items'): # Python 3.2
+        if not hasattr(pkg_info, 'raw_items'):  # Python 3.2
             return str(text)
         for item in pkg_info.raw_items():
             if item[0].lower() == field:

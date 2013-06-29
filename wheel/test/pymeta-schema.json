@@ -100,50 +100,23 @@
     },
     "distributes": {
       "description": "A list of subdistributions made available through this metadistribution.",
-      "type": "array",
-      "$ref": "#/definitions/dependencies"
-    },
-    "may_distribute": {
-      "description": "A list of subdistributions that may be made available through this metadistribution, based on the extras requested and the target deployment environment.",
       "$ref": "#/definitions/conditional_dependencies"
     },
     "run_requires": {
       "description": "A list of other distributions needed when to run this distribution.",
       "type": "array",
-      "$ref": "#/definitions/dependencies"
-    },
-    "run_may_require": {
-      "description": "A list of other distributions that may be needed when this distribution is deployed, based on the extras requested and the target deployment environment.",
       "$ref": "#/definitions/conditional_dependencies"
     },
     "test_requires": {
       "description": "A list of other distributions needed when this distribution is tested.",
-      "type": "array",
-      "$ref": "#/definitions/dependencies"
-    },
-    "test_may_require": {
-      "description": "A list of other distributions that may be needed when this distribution is tested, based on the extras requested and the target deployment environment.",
-      "type": "array",
       "$ref": "#/definitions/conditional_dependencies"
     },
     "build_requires": {
       "description": "A list of other distributions needed when this distribution is built.",
-      "type": "array",
-      "$ref": "#/definitions/dependencies"
-    },
-    "build_may_require": {
-      "description": "A list of other distributions that may be needed when this distribution is built, based on the extras requested and the target deployment environment.",
-      "type": "array",
       "$ref": "#/definitions/conditional_dependencies"
     },
     "dev_requires": {
       "description": "A list of other distributions needed when this distribution is developed.",
-      "type": "array",
-      "$ref": "#/definitions/dependencies"
-    },
-    "dev_may_require": {
-      "description": "A list of other distributions that may be needed when this distribution is developed, based on the extras requested and the target deployment environment.",
-      "type": "array",
       "$ref": "#/definitions/conditional_dependencies"
     },
     "provides": {
@@ -219,12 +192,12 @@
             "type": "string",
             "$ref": "#/definitions/environment_marker"
           },
-          "dependencies": {
+          "install": {
             "type": "array",
             "$ref": "#/definitions/dependencies"
           }
         },
-        "required": ["dependencies"],
+        "required": ["install"],
         "additionalProperties": false
       }
     },
