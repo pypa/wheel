@@ -104,7 +104,6 @@ def pkginfo_to_dict(path, distribution=None):
         del pkg_info['Description']
     else:
         payload = pkg_info.get_payload()
-        import pdb; pdb.set_trace()
         if isinstance(payload, bytes):
             # Avoid a Python 2 Unicode error.
             # We still suffer ? glyphs on Python 3.
