@@ -19,23 +19,25 @@ if have_pkgresources:
 
 import argparse
 
+class WheelError(Exception): pass
+
 # For testability
-def get_keyring():    
+def get_keyring():
     try:
         from ..signatures import keys
         import keyring
     except ImportError:
-        raise Exception("Install wheel[signatures] (keyring, dirspec) for signatures")
+        raise WheelError("Install wheel[signatures] (requires keyring, dirspec) for signatures.")
     return keys.WheelKeys, keyring
 
 def keygen(get_keyring=get_keyring):
     """Generate a public/private key pair."""
     WheelKeys, keyring = get_keyring()
-    
+
     ed25519ll = signatures.get_ed25519ll()
 
     wk = WheelKeys().load()
-    
+
     keypair = ed25519ll.crypto_sign_keypair()
     vk = native(urlsafe_b64encode(keypair.vk))
     sk = native(urlsafe_b64encode(keypair.sk))
@@ -49,8 +51,8 @@ def keygen(get_keyring=get_keyring):
 
     sk2 = kr.get_password('wheel', vk)
     if sk2 != sk:
-        raise Exception("Keyring is broken. Could not retrieve secret key.")
-    
+        raise WheelError("Keyring is broken. Could not retrieve secret key.")
+
     sys.stdout.write("Trusting {0} to sign and verify all packages.\n".format(vk))
     wk.add_signer('+', vk)
     wk.trust('+', vk)
@@ -61,31 +63,31 @@ def sign(wheelfile, replace=False, get_keyring=get_keyring):
     WheelKeys, keyring = get_keyring()
 
     ed25519ll = signatures.get_ed25519ll()
-    
+
     wf = WheelFile(wheelfile, append=True)
     wk = WheelKeys().load()
-    
+
     name = wf.parsed_filename.group('name')
     sign_with = wk.signers(name)[0]
     sys.stdout.write("Signing {0} with {1}\n".format(name, sign_with[1]))
-    
+
     vk = sign_with[1]
     kr = keyring.get_keyring()
     sk = kr.get_password('wheel', vk)
-    keypair = ed25519ll.Keypair(urlsafe_b64decode(binary(vk)), 
+    keypair = ed25519ll.Keypair(urlsafe_b64decode(binary(vk)),
                                 urlsafe_b64decode(binary(sk)))
-    
-    
+
+
     record_name = wf.distinfo_name + '/RECORD'
     sig_name = wf.distinfo_name + '/RECORD.jws'
-    if sig_name in wf.zipfile.namelist(): 
-        raise NotImplementedError("Wheel is already signed")
+    if sig_name in wf.zipfile.namelist():
+        raise WheelError("Wheel is already signed.")
     record_data = wf.zipfile.read(record_name)
-    payload = {"hash":"sha256="+native(urlsafe_b64encode(hashlib.sha256(record_data).digest()))}
+    payload = {"hash":"sha256=" + native(urlsafe_b64encode(hashlib.sha256(record_data).digest()))}
     sig = signatures.sign(payload, keypair)
     wf.zipfile.writestr(sig_name, json.dumps(sig, sort_keys=True))
     wf.zipfile.close()
-    
+
 def unsign(wheelfile):
     """
     Remove RECORD.jws from a wheel by truncating the zip file.
@@ -98,7 +100,7 @@ def unsign(wheelfile):
     vzf = wheel.install.VerifyingZipFile(wheelfile, "a")
     info = vzf.infolist()
     if not (len(info) and info[-1].filename.endswith('/RECORD.jws')):
-        raise NotImplementedError("RECORD.jws not found at end of archive.")
+        raise WheelError("RECORD.jws not found at end of archive.")
     vzf.pop()
     vzf.close()
 
@@ -116,7 +118,7 @@ def verify(wheelfile):
     sys.stderr.write("Signatures are internally consistent.\n")
     sys.stdout.write(json.dumps(verified, indent=2))
     sys.stdout.write('\n')
-                     
+
 def unpack(wheelfile, dest='.'):
     """Unpack a wheel.
 
@@ -129,9 +131,9 @@ def unpack(wheelfile, dest='.'):
     wf = WheelFile(wheelfile)
     namever = wf.parsed_filename.group('namever')
     destination = os.path.join(dest, namever)
-    sys.stdout.write("Unpacking to: %s\n" % (destination))
+    sys.stderr.write("Unpacking to: %s\n" % (destination))
     wf.zipfile.extractall(destination)
-    wf.zipfile.close()    
+    wf.zipfile.close()
 
 def install(requirements, requirements_file=None,
             wheel_dirs=None, force=False, list_files=False,
@@ -139,7 +141,7 @@ def install(requirements, requirements_file=None,
     """Install wheels.
     
     :param requirements: A list of requirements or wheel files to install.
-    :param requirements_file: A file containint requirements to install.
+    :param requirements_file: A file containing requirements to install.
     :param wheel_dirs: A list of directories to search for wheels.
     :param force: Install a wheel file even if it is not compatible.
     :param list_files: Only list the files to install, don't install them.
@@ -190,27 +192,27 @@ def install(requirements, requirements_file=None,
                 else:
                     msg = ("{} is not compatible with this Python. "
                            "--force to install anyway.".format(req))
-                    raise Exception(msg)
+                    raise WheelError(msg)
             else:
                 # We could search on wheel_dirs, but it's probably OK to
                 # assume the user has made an error.
-                raise Exception("No such wheel file: {}".format(req))
+                raise WheelError("No such wheel file: {}".format(req))
             continue
 
         # We have a requirement spec
         # If we don't have pkg_resources, this will raise an exception
         matches = matches_requirement(req, all_wheels)
         if not matches:
-            raise Exception("No match for requirement {}".format(req))
+            raise WheelError("No match for requirement {}".format(req))
         to_install.append(max(matches))
 
     # We now have a list of wheels to install
     if list_files:
         sys.stdout.write("Installing:\n")
-        
+
     if dry_run:
         return
-    
+
     for wf in to_install:
         if list_files:
             sys.stdout.write("    {}\n".format(wf.filename))
@@ -220,7 +222,7 @@ def install(requirements, requirements_file=None,
 
 def convert(installers, dest_dir, verbose):
     if not have_pkgresources:
-        raise RuntimeError("wheel convert needs pkg_resources")
+        raise RuntimeError("'wheel convert' needs pkg_resources (part of setuptools).")
 
     for pat in installers:
         for installer in iglob(pat):
@@ -238,30 +240,30 @@ def convert(installers, dest_dir, verbose):
 def parser():
     p = argparse.ArgumentParser()
     s = p.add_subparsers(help="commands")
-    
+
     def keygen_f(args):
         keygen()
     keygen_parser = s.add_parser('keygen', help='Generate signing key')
     keygen_parser.set_defaults(func=keygen_f)
-    
+
     def sign_f(args):
-        sign(args.wheelfile)    
+        sign(args.wheelfile)
     sign_parser = s.add_parser('sign', help='Sign wheel')
     sign_parser.add_argument('wheelfile', help='Wheel file')
     sign_parser.set_defaults(func=sign_f)
-    
+
     def unsign_f(args):
         unsign(args.wheelfile)
     unsign_parser = s.add_parser('unsign', help=unsign.__doc__)
     unsign_parser.add_argument('wheelfile', help='Wheel file')
     unsign_parser.set_defaults(func=unsign_f)
-    
+
     def verify_f(args):
         verify(args.wheelfile)
     verify_parser = s.add_parser('verify', help=verify.__doc__)
     verify_parser.add_argument('wheelfile', help='Wheel file')
     verify_parser.set_defaults(func=verify_f)
-    
+
     def unpack_f(args):
         unpack(args.wheelfile, args.dest)
     unpack_parser = s.add_parser('unpack', help='Unpack wheel')
@@ -269,7 +271,7 @@ def parser():
                                default='.')
     unpack_parser.add_argument('wheelfile', help='Wheel file')
     unpack_parser.set_defaults(func=unpack_f)
-    
+
     def install_f(args):
         install(args.requirements, args.requirements_file,
                 args.wheel_dirs, args.force, args.list_files)
@@ -282,7 +284,7 @@ def parser():
     install_parser.add_argument('--wheel-dir', '-d', action='append',
                                 dest='wheel_dirs',
                                 help='Directories containing wheels.')
-    install_parser.add_argument('--requirements-file', '-r', 
+    install_parser.add_argument('--requirements-file', '-r',
                                 help="A file containing requirements to "
                                 "install.")
     install_parser.add_argument('--list', '-l', default=False,
@@ -300,7 +302,7 @@ def parser():
             help="Directory to store wheels (default %(default)s)")
     convert_parser.add_argument('--verbose', '-v', action='store_true')
     convert_parser.set_defaults(func=convert_f)
-    
+
     def help_f(args):
         p.print_help()
     help_parser = s.add_parser('help', help='Show this help')
@@ -315,4 +317,8 @@ def main():
         p.print_help()
     else:
         # XXX on Python 3.3 we get 'args has no func' rather than short help.
-        args.func(args)
+        try:
+            args.func(args)
+        except WheelError as e:
+            sys.stderr.write(e.message + "\n")
+            sys.exit(1)

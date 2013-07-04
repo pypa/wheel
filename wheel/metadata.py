@@ -11,7 +11,7 @@ import textwrap
 import pkg_resources
 import email.parser
 
-METADATA_VERSION = "2.0a0"
+METADATA_VERSION = "2.0"
 
 PLURAL_FIELDS = { "classifier" : "classifiers",
                   "provides_dist" : "provides",
