@@ -9,8 +9,9 @@ import re
 import os
 import textwrap
 import pkg_resources
+import email.parser
 
-METADATA_VERSION = "2.0"
+METADATA_VERSION = "2.0a0"
 
 PLURAL_FIELDS = { "classifier" : "classifiers",
                   "provides_dist" : "provides",
@@ -92,7 +93,11 @@ def pkginfo_to_dict(path, distribution=None):
     """
 
     metadata = {}
-    pkg_info = read_pkg_info(path)
+    try:
+        unicode
+        pkg_info = read_pkg_info(path)
+    except NameError:
+        pkg_info = email.parser.Parser().parsestr(open(path, 'rb').read().decode('utf-8'))
     description = None
 
     if pkg_info['Summary']:
