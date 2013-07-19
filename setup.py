@@ -1,10 +1,14 @@
-import os, sys, codecs
+import os.path, sys, codecs, re
 
 from setuptools import setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = codecs.open(os.path.join(here, 'README.txt'), encoding='utf8').read()
 CHANGES = codecs.open(os.path.join(here, 'CHANGES.txt'), encoding='utf8').read()
+
+with codecs.open(os.path.join(os.path.dirname(__file__), 'wheel', '__init__.py'), 
+                 encoding='utf8') as version_file:
+    metadata = dict(re.findall(r"""__([a-z]+)__ = "([^"]+)""", version_file.read()))
 
 #
 # All these requirements are overridden by setup.cfg when wheel is built
@@ -18,7 +22,7 @@ if sys.version_info[:2] < (2, 7):
     install_requires.append('argparse')
 
 setup(name='wheel',
-      version='0.18.0',
+      version=metadata['version'],
       description='A built-package format for Python.',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[

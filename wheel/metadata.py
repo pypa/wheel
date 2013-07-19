@@ -10,6 +10,7 @@ import os
 import textwrap
 import pkg_resources
 import email.parser
+import wheel
 
 METADATA_VERSION = "2.0"
 
@@ -69,7 +70,7 @@ def handle_requires(metadata, pkg_info, key):
     if may_requires:
         metadata['run_requires'] = []
         for key, value in may_requires.items():
-            may_requirement = {'install':value}
+            may_requirement = {'requires':value}
             if key.extra:
                 may_requirement['extra'] = key.extra
             if key.condition:
@@ -92,7 +93,7 @@ def pkginfo_to_dict(path, distribution=None):
     distribution: optional distutils Distribution()
     """
 
-    metadata = {}
+    metadata = {"generator":"bdist_wheel (" + wheel.__version__ + ")"}
     try:
         unicode
         pkg_info = read_pkg_info(path)
@@ -156,7 +157,7 @@ def pkginfo_to_dict(path, distribution=None):
             try:
                 requirements = getattr(distribution, attr)
                 if requirements:
-                    metadata[requires] = [{'install':requirements}]
+                    metadata[requires] = [{'requires':requirements}]
             except AttributeError:
                 pass
 

@@ -371,7 +371,7 @@ class bdist_wheel(Command):
         self.add_requirements(metadata_path)
 
         # XXX not a final specification
-        metadata_json_path = os.path.join(distinfo_path, 'pymeta.json')
+        metadata_json_path = os.path.join(distinfo_path, 'pydist.json')
         pymeta = pkginfo_to_dict(metadata_path,
                                  distribution=self.distribution)
 

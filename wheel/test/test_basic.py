@@ -99,8 +99,8 @@ def test_unpack():
         for wheelfile in (w for w in os.listdir(distdir) if w.endswith('.whl')):
             wheel.tool.unpack(os.path.join(distdir, wheelfile), distdir)
 
-def test_pymeta():
-    """Make sure pymeta.json exists and validates against our schema."""
+def test_pydist():
+    """Make sure pydist.json exists and validates against our schema."""
     # XXX this test may need manual cleanup of older wheels
 
     import jsonschema
@@ -109,7 +109,7 @@ def test_pymeta():
         return json.loads(open(filename, 'rb').read().decode('utf-8'))
 
     pymeta_schema = open_json(resource_filename('wheel.test',
-                                                'pymeta-schema.json'))
+                                                'pydist-schema.json'))
     valid = 0
     for dist in ("simple.dist", "complex-dist"):
         basedir = pkg_resources.resource_filename('wheel.test', dist)
@@ -118,11 +118,11 @@ def test_pymeta():
                 if filename.endswith('.whl'):
                     whl = ZipFile(os.path.join(dirname, filename))
                     for entry in whl.infolist():
-                        if entry.filename.endswith('/pymeta.json'):
+                        if entry.filename.endswith('/pydist.json'):
                             pymeta = json.loads(whl.read(entry).decode('utf-8'))
                             jsonschema.validate(pymeta, pymeta_schema)
                             valid += 1
-    assert valid > 0, "No pymeta.json found"
+    assert valid > 0, "No pydist.json found"
 
 def test_util():
     """Test functions in util.py."""
