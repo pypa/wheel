@@ -6,6 +6,8 @@ import os
 import hashlib
 import sys
 import json
+import wheel.paths
+
 from glob import iglob
 from .. import signatures
 from ..util import (urlsafe_b64decode, urlsafe_b64encode, native, binary,
@@ -220,6 +222,24 @@ def install(requirements, requirements_file=None,
         wf.install(force=force)
         wf.zipfile.close()
 
+def install_scripts(distributions):
+    """
+    Regenerate the entry_points console_scripts for the named distribution.
+    """
+    try:
+        from setuptools.command import easy_install
+        import pkg_resources
+    except ImportError:
+        raise RuntimeError("'wheel install_scripts' needs setuptools.")
+
+    for dist in distributions:
+        pkg_resources_dist = pkg_resources.get_distribution(dist)
+        install = wheel.paths.get_install_command(dist)
+        command = easy_install.easy_install(install.distribution)
+        command.args = ['wheel'] # dummy argument
+        command.finalize_options()
+        command.install_egg_scripts(pkg_resources_dist)
+
 def convert(installers, dest_dir, verbose):
     if not have_pkgresources:
         raise RuntimeError("'wheel convert' needs pkg_resources (part of setuptools).")
@@ -293,6 +313,13 @@ def parser():
                                 help="List wheels which would be installed, "
                                 "but don't actually install anything.")
     install_parser.set_defaults(func=install_f)
+
+    def install_scripts_f(args):        
+        install_scripts(args.distributions)
+    install_scripts_parser = s.add_parser('install-scripts', help='Install console_scripts')
+    install_scripts_parser.add_argument('distributions', nargs='*',
+                                        help='Regenerate console_scripts for these distributions')
+    install_scripts_parser.set_defaults(func=install_scripts_f)
 
     def convert_f(args):
         convert(args.installers, args.dest_dir, args.verbose)
