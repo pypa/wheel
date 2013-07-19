@@ -1,3 +1,19 @@
+0.20.0
+======
+- No longer include console_scripts in wheels. Ordinary scripts (shell files,
+  standalone Python files) are included as usual.
+- Include new command "python -m wheel install-scripts [distribution
+  [distribution ...]]" to install the console_scripts (setuptools-style
+  scripts using pkg_resources) for a distribution.
+
+0.19.0
+======
+- pymeta.json becomes pydist.json
+
+0.18.0
+======
+- Python 3 Unicode improvements
+
 0.17.0
 ======
 - Support latest PEP-426 "pymeta.json" (json-format metadata)
