@@ -170,6 +170,9 @@ class bdist_wheel(Command):
         install.skip_build = self.skip_build
         install.warn_dir = False
 
+        install_scripts = self.reinitialize_command('install_scripts')
+        install_scripts.no_ep = True
+
         # Use a custom scheme for the archive, because we have to decide
         # at installation time which scheme to use.
         for key in ('headers', 'scripts', 'data', 'purelib', 'platlib'):
@@ -365,7 +368,7 @@ class bdist_wheel(Command):
                 adios(dependency_links)
 
         write_pkg_info(os.path.join(distinfo_path, 'METADATA'), pkg_info)
-                
+
         # XXX deprecated. Still useful for current distribute/setuptools.
         metadata_path = os.path.join(distinfo_path, 'METADATA')
         self.add_requirements(metadata_path)
