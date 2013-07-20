@@ -1,3 +1,12 @@
+0.21.0
+======
+- Pregenerated scripts are the default again.
+- "setup.py bdist_wheel --skip-scripts" turns them off.
+- setuptools is no longer a listed requirement for the 'wheel'
+  package. It is of course still required in order for bdist_wheel 
+  to work.
+- "python -m wheel" avoids importing pkg_resources until it's necessary.
+
 0.20.0
 ======
 - No longer include console_scripts in wheels. Ordinary scripts (shell files,
