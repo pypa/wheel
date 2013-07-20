@@ -60,7 +60,7 @@ setup(name='wheel',
 [console_scripts]
 wininst2wheel = wheel.wininst2wheel:main
 egg2wheel = wheel.egg2wheel:main
-wheel = wheel.__main__:main
+wheel = wheel.tool:main
 
 [distutils.commands]
 bdist_wheel = wheel.bdist_wheel:bdist_wheel"""

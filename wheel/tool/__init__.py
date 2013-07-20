@@ -10,14 +10,15 @@ import wheel.paths
 
 from glob import iglob
 from .. import signatures
-from ..util import (urlsafe_b64decode, urlsafe_b64encode, native, binary,
-        have_pkgresources, matches_requirement)
+from ..util import (urlsafe_b64decode, urlsafe_b64encode, native, binary, 
+                    matches_requirement)
 from ..install import WheelFile
 
-if have_pkgresources:
-    # Only support wheel convert if pkg_resources is present
-    from ..wininst2wheel import bdist_wininst2wheel
-    from ..egg2wheel import egg2wheel
+def require_pkgresources(name):
+    try:
+        import pkg_resources
+    except ImportError:
+        raise RuntimeError("'{0}' needs pkg_resources (part of setuptools).".format(name))
 
 import argparse
 
@@ -241,8 +242,11 @@ def install_scripts(distributions):
         command.install_egg_scripts(pkg_resources_dist)
 
 def convert(installers, dest_dir, verbose):
-    if not have_pkgresources:
-        raise RuntimeError("'wheel convert' needs pkg_resources (part of setuptools).")
+    require_pkgresources('wheel convert')
+    
+    # Only support wheel convert if pkg_resources is present
+    from ..wininst2wheel import bdist_wininst2wheel
+    from ..egg2wheel import egg2wheel
 
     for pat in installers:
         for installer in iglob(pat):
@@ -346,6 +350,7 @@ def main():
         # XXX on Python 3.3 we get 'args has no func' rather than short help.
         try:
             args.func(args)
+            return 0
         except WheelError as e:
             sys.stderr.write(e.message + "\n")
-            sys.exit(1)
+    return 1

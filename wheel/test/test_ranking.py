@@ -1,6 +1,6 @@
 import unittest
 
-from wheel.util import generate_supported
+from wheel.pep425tags import get_supported
 from wheel.install import WheelFile
 
 WHEELPAT = "%(name)s-%(ver)s-%(pyver)s-%(abi)s-%(arch)s.whl"
@@ -11,7 +11,7 @@ def make_wheel(name, ver, pyver, abi, arch):
 
 # This relies on the fact that generate_supported will always return the
 # exact pyver, abi, and architecture for its first (best) match.
-sup = generate_supported()
+sup = get_supported()
 pyver, abi, arch = sup[0]
 genver = 'py' + pyver[2:]
 majver = genver[:3]

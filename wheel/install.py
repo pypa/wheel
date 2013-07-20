@@ -19,8 +19,8 @@ except NameError:
     _big_number = sys.maxint
 
 from wheel.decorator import reify
-from wheel.util import (urlsafe_b64encode, from_json,
-    urlsafe_b64decode, native, binary, HashingFile, parse_version)
+from wheel.util import (urlsafe_b64encode, from_json, urlsafe_b64decode,
+                        native, binary, HashingFile)
 from wheel import signatures
 from wheel.pkginfo import read_pkg_info_bytes
 from wheel.util import open_for_csv
@@ -39,6 +39,14 @@ WHEEL_INFO_RE = re.compile(
     \.whl|\.dist-info)$""",
     re.VERBOSE).match
 
+def parse_version(version):
+    """Use parse_version from pkg_resources or distutils as available."""
+    global parse_version
+    try:
+        from pkg_resources import parse_version
+    except ImportError:
+        from distutils.version import LooseVersion as parse_version
+    return parse_version(version)
 
 class BadWheelFile(ValueError):
     pass
@@ -50,7 +58,7 @@ class WheelFile(object):
     
     WheelFile can be used to simply parse a wheel filename by avoiding the
     methods that require the actual file contents."""
-    
+
     WHEEL_INFO = "WHEEL"
     RECORD = "RECORD"
 
@@ -108,14 +116,14 @@ class WheelFile(object):
             for abi in tags['abi'].split('.'):
                 for plat in tags['plat'].split('.'):
                     yield (pyver, abi, plat)
-    
+
     compatibility_tags = tags
 
     @property
     def arity(self):
         """The number of compatibility tags the wheel declares."""
         return len(list(self.compatibility_tags))
-    
+
     @property
     def rank(self):
         """
@@ -126,7 +134,7 @@ class WheelFile(object):
 
     @property
     def compatible(self):
-        return self.rank[0] != _big_number # bad API!
+        return self.rank[0] != _big_number  # bad API!
 
     # deprecated:
     def compatibility_rank(self, supported):
@@ -146,7 +154,7 @@ class WheelFile(object):
         if len(preferences):
             return (min(preferences), self.arity)
         return (_big_number, 0)
-    
+
     # deprecated
     def supports_current_python(self, x):
         assert self.context == x, 'context mismatch'
@@ -158,26 +166,26 @@ class WheelFile(object):
     #   1. Name
     #   2. Version
     #   3. Compatibility rank
-    #   4. Filename (as a tiebreaker)        
+    #   4. Filename (as a tiebreaker)
     @property
     def _sort_key(self):
         return (self.parsed_filename.group('name'),
                 parse_version(self.parsed_filename.group('ver')),
                 tuple(-x for x in self.rank),
                 self.filename)
-    
+
     def __eq__(self, other):
         return self.filename == other.filename
-    
+
     def __ne__(self, other):
         return self.filename != other.filename
-    
+
     def __lt__(self, other):
         if self.context != other.context:
             raise TypeError("{}.context != {}.context".format(self, other))
 
         return self._sort_key < other._sort_key
-    
+
         # XXX prune
 
         sn = self.parsed_filename.group('name')
@@ -200,20 +208,20 @@ class WheelFile(object):
         elif sc == None and oc != None:
             return False
         return self.filename < other.filename
-    
+
     def __gt__(self, other):
         return other < self
-    
+
     def __le__(self, other):
         return self == other or self < other
-    
+
     def __ge__(self, other):
         return self == other or other < self
 
     #
     # Methods using the file's contents:
-    # 
-    
+    #
+
     @reify
     def zipfile(self):
         mode = "r"
@@ -309,7 +317,7 @@ class WheelFile(object):
         #   3. Actual install - put the files in their target locations.
         #   4. Update RECORD - write a suitably modified RECORD file to
         #      reflect the actual installed paths.
-        
+
         if not force:
             for info, v in name_trans.items():
                 k = info.filename
@@ -348,7 +356,7 @@ class WheelFile(object):
             source.close()
             # preserve attributes (especially +x bit for scripts)
             attrs = info.external_attr >> 16
-            if attrs: # tends to be 0 if Windows.
+            if attrs:  # tends to be 0 if Windows.
                 os.chmod(dest, info.external_attr >> 16)
 
         record_name = os.path.join(root, self.record_name)
@@ -356,7 +364,7 @@ class WheelFile(object):
         for reldest, digest, length in sorted(record_data):
             writer.writerow((reldest, digest, length))
         writer.writerow((self.record_name, '', ''))
-        
+
     def verify(self, zipfile=None):
         """Configure the VerifyingZipFile `zipfile` by verifying its signature 
         and setting expected hashes for every hash in RECORD.
@@ -366,20 +374,20 @@ class WheelFile(object):
         if zipfile is None:
             zipfile = self.zipfile
         zipfile.strict = True
-        
+
         record_name = '/'.join((self.distinfo_name, 'RECORD'))
         sig_name = '/'.join((self.distinfo_name, 'RECORD.jws'))
-        # tolerate s/mime signatures: 
+        # tolerate s/mime signatures:
         smime_sig_name = '/'.join((self.distinfo_name, 'RECORD.p7s'))
         zipfile.set_expected_hash(record_name, None)
         zipfile.set_expected_hash(sig_name, None)
         zipfile.set_expected_hash(smime_sig_name, None)
         record = zipfile.read(record_name)
-                
+
         record_digest = urlsafe_b64encode(hashlib.sha256(record).digest())
         try:
             sig = from_json(native(zipfile.read(sig_name)))
-        except KeyError: # no signature
+        except KeyError:  # no signature
             pass
         if sig:
             headers, payload = signatures.verify(sig)
@@ -387,9 +395,9 @@ class WheelFile(object):
                 msg = "RECORD.sig claimed RECORD hash {0} != computed hash {1}."
                 raise BadWheelFile(msg.format(payload['hash'],
                                               native(record_digest)))
-        
+
         reader = csv.reader((native(r) for r in record.splitlines()))
-        
+
         for row in reader:
             filename = row[0]
             hash = row[1]
@@ -400,13 +408,13 @@ class WheelFile(object):
             algo, data = row[1].split('=', 1)
             assert algo == "sha256", "Unsupported hash algorithm"
             zipfile.set_expected_hash(filename, urlsafe_b64decode(binary(data)))
-    
-    
+
+
 class VerifyingZipFile(zipfile.ZipFile):
     """ZipFile that can assert that each of its extracted contents matches
     an expected sha256 hash. Note that each file must be completly read in 
     order for its hash to be checked."""
-    
+
     def __init__(self, file, mode="r",
                  compression=zipfile.ZIP_STORED,
                  allowZip64=False):
@@ -415,14 +423,14 @@ class VerifyingZipFile(zipfile.ZipFile):
         self.strict = False
         self._expected_hashes = {}
         self._hash_algorithm = hashlib.sha256
-        
+
     def set_expected_hash(self, name, hash):
         """
         :param name: name of zip entry
         :param hash: bytes of hash (or None for "don't care")
         """
         self._expected_hashes[name] = hash
-        
+
     def open(self, name_or_info, mode="r", pwd=None):
         """Return file-like object for 'name'."""
         # A non-monkey-patched version would contain most of zipfile.py
@@ -431,7 +439,7 @@ class VerifyingZipFile(zipfile.ZipFile):
             name = name_or_info.filename
         else:
             name = name_or_info
-        if (name in self._expected_hashes 
+        if (name in self._expected_hashes
             and self._expected_hashes[name] != None):
             expected_hash = self._expected_hashes[name]
             try:
@@ -441,7 +449,7 @@ class VerifyingZipFile(zipfile.ZipFile):
                               'file hash verification (in Python >= 2.7)')
                 return ef
             running_hash = self._hash_algorithm()
-            if hasattr(ef, '_eof'): # py33
+            if hasattr(ef, '_eof'):  # py33
                 def _update_crc(data):
                     _update_crc_orig(data)
                     running_hash.update(data)
