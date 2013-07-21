@@ -12,30 +12,30 @@ preserves enough information to "Spread" (copy data and scripts to their
 final locations) at any later time.
 
 The wheel project provides a `bdist_wheel` command for setuptools
-(requires distribute >= 0.6.34). Wheel files can be
-installed with a newer `pip` from https://github.com/pypa/pip
-or with wheel's own command line utility.
+(requires setuptools >= 0.8.0). Wheel files can be installed with a
+newer `pip` from https://github.com/pypa/pip or with wheel's own command
+line utility.
 
-The wheel documentation is at http://wheel.rtfd.org/. The
-file format is documented in PEP 427
-(http://www.python.org/dev/peps/pep-0427/).
+The wheel documentation is at http://wheel.rtfd.org/. The file format
+is documented in PEP 427 (http://www.python.org/dev/peps/pep-0427/).
 
 The reference implementation is at http://bitbucket.org/dholth/wheel/
 
 Why not egg?
 ------------
 
-Python's egg format predates the packaging related standards we have today,
-the most important being PEP 376 "Database of Installed Python Distributions"
-which specifies the .dist-info directory (instead of .egg-info) and PEP 345 
-"Metadata for Python Software Packages 1.2" which specifies how to express
-dependencies (instead of requires.txt in .egg-info).
+Python's egg format predates the packaging related standards we have
+today, the most important being PEP 376 "Database of Installed Python
+Distributions" which specifies the .dist-info directory (instead of
+.egg-info) and PEP 426 "Metadata for Python Software Packages 2.0"
+which specifies how to express dependencies (instead of requires.txt
+in .egg-info).
 
 Wheel implements these things. It also provides a richer file naming
-convention that communicates the Python implementation and ABI as well as
-simply the language version used in a particular package.
+convention that communicates the Python implementation and ABI as well
+as simply the language version used in a particular package.
 
-Unlike .egg, wheel will be a fully-documented standard at the binary level
-that is truly easy to install even if you do not want to use the reference
-implementation.
+Unlike .egg, wheel will be a fully-documented standard at the binary
+level that is truly easy to install even if you do not want to use the
+reference implementation.
 
