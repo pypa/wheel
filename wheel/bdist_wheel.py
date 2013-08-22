@@ -432,7 +432,8 @@ class bdist_wheel(Command):
                     hash = ''
                     size = ''
                 else:
-                    data = open(path, 'rb').read()
+                    with open(path, 'rb') as f:
+                        data = f.read()
                     digest = hashlib.sha256(data).digest()
                     hash = 'sha256=' + native(urlsafe_b64encode(digest))
                     size = len(data)
