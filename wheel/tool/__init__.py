@@ -334,6 +334,12 @@ def parser():
     convert_parser.add_argument('--verbose', '-v', action='store_true')
     convert_parser.set_defaults(func=convert_f)
 
+    def version_f(args):
+        from .. import __version__
+        sys.stdout.write("wheel %s\n" % __version__)
+    version_parser = s.add_parser('version', help='Print version and exit')
+    version_parser.set_defaults(func=version_f)
+
     def help_f(args):
         p.print_help()
     help_parser = s.add_parser('help', help='Show this help')
