@@ -336,7 +336,7 @@ def parser():
 
     def version_f(args):
         from .. import __version__
-        print("wheel %s" % __version__)
+        sys.stdout.write("wheel %s\n" % __version__)
     version_parser = s.add_parser('version', help='Print version and exit')
     version_parser.set_defaults(func=version_f)
 
