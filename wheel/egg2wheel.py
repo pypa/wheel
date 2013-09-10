@@ -5,9 +5,9 @@ import sys
 import tempfile
 import zipfile
 import wheel.bdist_wheel
+import shutil
 import distutils.dist
 from distutils.archive_util import make_archive
-from shutil import rmtree
 from argparse import ArgumentParser
 from glob import iglob
 
@@ -16,9 +16,20 @@ egg_info_re = re.compile(r'''(?P<name>.+?)-(?P<ver>.+?)
 
 def egg2wheel(egg_path, dest_dir):
     egg_info = egg_info_re.match(os.path.basename(egg_path)).groupdict()
-    egg = zipfile.ZipFile(egg_path)
     dir = tempfile.mkdtemp(suffix="_e2w")
-    egg.extractall(dir)
+    if os.path.isfile(egg_path):
+        # assume we have a bdist_egg otherwise
+        egg = zipfile.ZipFile(egg_path)
+        egg.extractall(dir)
+    else:
+        # support buildout-style installed eggs directories
+        for pth in os.listdir(egg_path):
+            src = os.path.join(egg_path, pth)
+            if os.path.isfile(src):
+                shutil.copy2(src, dir)
+            else:
+                shutil.copytree(src, os.path.join(dir, pth))
+
     dist_info = "%s-%s" % (egg_info['name'], egg_info['ver'])
     abi = 'none'
     pyver = egg_info['pyver'].replace('.', '')
@@ -41,7 +52,7 @@ def egg2wheel(egg_path, dest_dir):
     bw.write_record(dir, dist_info_dir)
     filename = make_archive(os.path.join(dest_dir, wheel_name), 'zip', root_dir=dir)
     os.rename(filename, filename[:-3] + 'whl')
-    rmtree(dir)
+    shutil.rmtree(dir)
 
 def main():
     parser = ArgumentParser()
