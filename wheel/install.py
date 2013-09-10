@@ -174,7 +174,7 @@ class WheelFile(object):
     
     def __lt__(self, other):
         if self.context != other.context:
-            raise TypeError("{}.context != {}.context".format(self, other))
+            raise TypeError("{0}.context != {1}.context".format(self, other))
 
         return self._sort_key < other._sort_key
     
@@ -190,7 +190,7 @@ class WheelFile(object):
             return sv < ov
         # Compatibility
         if self.context != other.context:
-            raise TypeError("{}.context != {}.context".format(self, other))
+            raise TypeError("{0}.context != {1}.context".format(self, other))
         sc = self.rank
         oc = other.rank
         if sc != None and oc != None and sc != oc:
@@ -287,7 +287,7 @@ class WheelFile(object):
                 # Data file. Target destination is elsewhere
                 key, sep, filename = filename.partition('/')
                 if not sep:
-                    raise ValueError("Invalid filename in wheel: {}".format(name))
+                    raise ValueError("Invalid filename in wheel: {0}".format(name))
                 target = get_path(key)
             else:
                 # Normal file. Target destination is root
@@ -315,7 +315,7 @@ class WheelFile(object):
                 k = info.filename
                 key, target, filename, dest = v
                 if os.path.exists(dest):
-                    raise ValueError("Wheel file {} would overwrite {}. Use force if this is intended".format(k, dest))
+                    raise ValueError("Wheel file {0} would overwrite {1}. Use force if this is intended".format(k, dest))
 
         # Get the name of our executable, for use when replacing script
         # wrapper hashbang lines.

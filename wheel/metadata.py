@@ -7,7 +7,7 @@ METADATA_VERSION = "2.0"
 PLURAL_FIELDS = { "classifier" : "classifiers", 
                   "provides_dist" : "provides",
                   "provides_extra" : "extras" }
-SKIP_FIELDS =  { "description" }
+SKIP_FIELDS = ("description",)
 
 def unique(iterable):
     seen = set()
