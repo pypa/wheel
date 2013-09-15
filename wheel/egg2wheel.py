@@ -53,7 +53,7 @@ def main():
     for pat in args.eggs:
         for egg in iglob(pat):
             if args.verbose:
-                sys.stdout.write("{}... ".format(egg))
+                sys.stdout.write("{0}... ".format(egg))
             egg2wheel(egg, args.dest_dir)
             if args.verbose:
                 sys.stdout.write("OK\n")

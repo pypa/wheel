@@ -56,7 +56,7 @@ class WheelKeys(object):
                         self.data['schema'] = self.SCHEMA
                     elif self.data['schema'] != self.SCHEMA:
                         raise ValueError(
-                            "Bad wheel.json version {}, expected {}".format(
+                            "Bad wheel.json version {0}, expected {1}".format(
                                 self.data['schema'], self.SCHEMA))
                 break
         return self

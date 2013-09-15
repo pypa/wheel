@@ -193,7 +193,7 @@ def install(requirements, requirements_file=None,
                 if wf.compatible or force:
                     to_install.append(wf)
                 else:
-                    msg = ("{} is not compatible with this Python. "
+                    msg = ("{0} is not compatible with this Python. "
                            "--force to install anyway.".format(req))
                     raise WheelError(msg)
             else:
@@ -218,7 +218,7 @@ def install(requirements, requirements_file=None,
 
     for wf in to_install:
         if list_files:
-            sys.stdout.write("    {}\n".format(wf.filename))
+            sys.stdout.write("    {0}\n".format(wf.filename))
             continue
         wf.install(force=force)
         wf.zipfile.close()
@@ -255,7 +255,7 @@ def convert(installers, dest_dir, verbose):
             else:
                 conv = bdist_wininst2wheel
             if verbose:
-                sys.stdout.write("{}... ".format(installer))
+                sys.stdout.write("{0}... ".format(installer))
                 sys.stdout.flush()
             conv(installer, dest_dir)
             if verbose:
