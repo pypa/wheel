@@ -177,7 +177,7 @@ def pkginfo_to_dict(path, distribution=None):
 
     # convert entry points to exports
     try:
-        with file(os.path.join(os.path.dirname(path), "entry_points.txt"), "r") as ep_file:
+        with open(os.path.join(os.path.dirname(path), "entry_points.txt"), "r") as ep_file:
             ep_map = pkg_resources.EntryPoint.parse_map(ep_file.read())
         exports = {}
         for group, items in ep_map.items():
