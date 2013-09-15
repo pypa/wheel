@@ -17,7 +17,7 @@
     "name": {
       "description": "The name of the distribution.",
       "type": "string",
-      "$ref": "#/definitions/valid_name"
+      "$ref": "#/definitions/distribution_name"
     },
     "version": {
       "description": "The distribution's public version identifier",
@@ -136,6 +136,32 @@
         "$ref": "#/definitions/provides_declaration"
       }
     },
+    "modules": {
+      "description": "A list of modules and/or packages available for import after installing this distribution.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "$ref": "#/definitions/qualified_name"
+      }
+    },
+    "namespaces": {
+      "description": "A list of namespace packages this distribution contributes to",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "$ref": "#/definitions/qualified_name"
+      }
+    },
+    "commands": {
+      "description": "Command line interfaces provided by this distribution",
+      "type": "object",
+      "$ref": "#/definitions/commands"
+    },
+    "exports": {
+      "description": "Other exported interfaces provided by this distribution",
+      "type": "object",
+      "$ref": "#/definitions/exports"
+    },
     "obsoleted_by": {
       "description": "A string that indicates that this project is no longer being developed. The named project provides a substitute or replacement.",
       "type": "string",
@@ -155,17 +181,18 @@
       "properties": {
         "postinstall": {
           "type": "string",
-          "$ref": "#/definitions/entry_point"
+          "$ref": "#/definitions/export_specifier"
         },
         "preuninstall": {
           "type": "string",
-          "$ref": "#/definitions/entry_point"
+          "$ref": "#/definitions/export_specifier"
         }
       }
     },
     "extensions": {
       "description": "Extensions to the metadata may be present in a mapping under the 'extensions' key.",
-      "type": "object"
+      "type": "object",
+      "$ref": "#/definitions/extensions"
     }
   },
 
@@ -204,7 +231,7 @@
       "properties": {
         "extra": {
           "type": "string",
-          "$ref": "#/definitions/valid_name"
+          "$ref": "#/definitions/extra_name"
         },
         "environment": {
           "type": "string",
@@ -221,7 +248,61 @@
       "required": ["requires"],
       "additionalProperties": false
     },
-    "valid_name": {
+    "commands": {
+      "type": "object",
+      "properties": {
+        "wrap_console": {
+          "type": "object",
+          "$ref": "#/definitions/command_map"
+        },
+        "wrap_gui": {
+          "type": "object",
+          "$ref": "#/definitions/command_map"
+        },
+        "prebuilt": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "$ref": "#/definitions/relative_path"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "exports": {
+      "type": "object",
+      "patternProperties": {
+        "^[A-Za-z][0-9A-Za-z_]*([.][0-9A-Za-z_]*)*$": {
+          "type": "object",
+          "patternProperties": {
+            ".": {
+              "type": "string",
+              "$ref": "#/definitions/export_specifier"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "extensions": {
+      "type": "object",
+      "patternProperties": {
+        "^[A-Za-z][0-9A-Za-z_]*([.][0-9A-Za-z_]*)*$": {}
+      },
+      "additionalProperties": false
+    },
+    "command_map": {
+      "type": "object",
+      "patternProperties": {
+        "^[0-9A-Za-z]([0-9A-Za-z_.-]*[0-9A-Za-z])?$": {
+          "type": "string",
+          "$ref": "#/definitions/export_specifier"
+        }
+      },
+      "additionalProperties": false
+    },
+    "distribution_name": {
         "type": "string",
         "pattern": "^[0-9A-Za-z]([0-9A-Za-z_.-]*[0-9A-Za-z])?$"
     },
@@ -234,14 +315,27 @@
     "environment_marker": {
         "type": "string"
     },
-    "entry_point": {
-        "type": "string"
-    },
     "document_name": {
         "type": "string"
     },
     "extra_name" : {
+        "type": "string",
+        "pattern": "^[0-9A-Za-z]([0-9A-Za-z_.-]*[0-9A-Za-z])?$"
+    },
+    "relative_path" : {
         "type": "string"
+    },
+    "export_specifier": {
+      "type": "string",
+      "pattern": "^([A-Za-z_][A-Za-z_0-9]*([.][A-Za-z_][A-Za-z_0-9]*)*)(:[A-Za-z_][A-Za-z_0-9]*([.][A-Za-z_][A-Za-z_0-9]*)*)?(\\[[0-9A-Za-z]([0-9A-Za-z_.-]*[0-9A-Za-z])?\\])?$"
+    },
+    "qualified_name" : {
+        "type": "string",
+        "pattern": "^[A-Za-z_][A-Za-z_0-9]*([.][A-Za-z_][A-Za-z_0-9]*)*$"
+    },
+    "prefixed_name" : {
+        "type": "string",
+        "pattern": "^[A-Za-z_][A-Za-z_0-9]*([.][A-Za-z_0-9]*)*$"
     }
   }
 }

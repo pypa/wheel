@@ -6,7 +6,7 @@ from collections import defaultdict, namedtuple
 from .pkginfo import read_pkg_info
 
 import re
-import os
+import os.path
 import textwrap
 import pkg_resources
 import email.parser
@@ -66,7 +66,7 @@ def handle_requires(metadata, pkg_info, key):
             package = value
         key = MayRequiresKey(condition, extra)
         may_requires[key].append(package)
-    
+
     if may_requires:
         metadata['run_requires'] = []
         for key, value in may_requires.items():
@@ -76,7 +76,7 @@ def handle_requires(metadata, pkg_info, key):
             if key.condition:
                 may_requirement['environment'] = key.condition
             metadata['run_requires'].append(may_requirement)
-        
+
         if not 'extras' in metadata:
             metadata['extras'] = []
         metadata['extras'].extend([key.extra for key in may_requires.keys() if key.extra])
@@ -132,7 +132,7 @@ def pkginfo_to_dict(path, distribution=None):
         if low_key in PLURAL_FIELDS:
             metadata[PLURAL_FIELDS[low_key]] = pkg_info.get_all(key)
 
-        elif low_key == "requires_dist":            
+        elif low_key == "requires_dist":
             handle_requires(metadata, pkg_info, key)
 
         elif low_key == 'provides_extra':
@@ -156,8 +156,9 @@ def pkginfo_to_dict(path, distribution=None):
         for requires, attr in (('test_requires', 'tests_require'),):
             try:
                 requirements = getattr(distribution, attr)
-                if requirements:
-                    metadata[requires] = [{'requires':requirements}]
+                if isinstance(requirements, list):
+                    new_requirements = list(convert_requirements(requirements))
+                    metadata[requires] = [{'requires':new_requirements}]
             except AttributeError:
                 pass
 
@@ -174,8 +175,30 @@ def pkginfo_to_dict(path, distribution=None):
     if contacts:
         metadata['contacts'] = contacts
 
-    return metadata
+    # convert entry points to exports
+    try:
+        with file(os.path.join(os.path.dirname(path), "entry_points.txt"), "r") as ep_file:
+            ep_map = pkg_resources.EntryPoint.parse_map(ep_file.read())
+        exports = {}
+        for group, items in ep_map.items():
+            exports[group] = {}
+            for item in items.values():
+                name, export = str(item).split(' = ', 1)
+                exports[group][name] = export
+        if exports:
+            metadata['exports'] = exports
+    except IOError:
+        pass
 
+    # copy console_scripts entry points to commands
+    if 'exports' in metadata:
+        for (ep_script, wrap_script) in (('console_scripts', 'wrap_console'),
+                                         ('gui_scripts', 'wrap_gui')):
+            if ep_script in metadata['exports']:
+                metadata['commands'] = metadata.get('commands', {})
+                metadata['commands'][wrap_script] = metadata['exports'][ep_script]
+
+    return metadata
 
 def requires_to_requires_dist(requirement):
     """Compose the version predicates for requirement in PEP 345 fashion."""
@@ -186,6 +209,15 @@ def requires_to_requires_dist(requirement):
         return ''
     return " (%s)" % ','.join(requires_dist)
 
+def convert_requirements(requirements):
+    """Yield Requires-Dist: strings for parsed requirements strings."""
+    for req in requirements:
+        parsed_requirement = pkg_resources.Requirement.parse(req)
+        spec = requires_to_requires_dist(parsed_requirement)
+        extras = ",".join(parsed_requirement.extras)
+        if extras:
+            extras = "[%s]" % extras
+        yield (parsed_requirement.project_name + extras + spec)
 
 def pkginfo_to_metadata(egg_info_path, pkginfo_path):
     """
@@ -202,16 +234,8 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
             if extra:
                 pkg_info['Provides-Extra'] = extra
                 condition = '; extra == %s' % repr(extra)
-            for req in reqs:
-                parsed_requirement = pkg_resources.Requirement.parse(req)
-                spec = requires_to_requires_dist(parsed_requirement)
-                extras = ",".join(parsed_requirement.extras)
-                if extras:
-                    extras = "[%s]" % extras
-                pkg_info['Requires-Dist'] = (parsed_requirement.project_name
-                                             + extras
-                                             + spec
-                                             + condition)
+            for new_req in convert_requirements(reqs):
+                pkg_info['Requires-Dist'] = new_req + condition
 
     description = pkg_info['Description']
     if description:

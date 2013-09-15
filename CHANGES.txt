@@ -1,3 +1,10 @@
+0.22.0
+======
+- Include entry_points.txt, scripts a.k.a. commands, in experimental
+  pydist.json
+- Improved test_requires parsing
+- Python 2.6 fixes, "wheel version" command courtesy pombredanne
+
 0.21.0
 ======
 - Pregenerated scripts are the default again.

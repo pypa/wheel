@@ -19,7 +19,7 @@ setup(name='complex-dist',
       setup_requires=["wheel", "setuptools"],
       install_requires=["quux", "splort"],
       extras_require={'simple':['simple.dist']},
-      tests_require=["foo", "bar"],
+      tests_require=["foo", "bar>=10.0.0"],
       entry_points={'console_scripts':['complex-dist=complexdist:main']}
       )
 
