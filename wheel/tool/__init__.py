@@ -47,7 +47,7 @@ def keygen(get_keyring=get_keyring):
     kr = keyring.get_keyring()
     kr.set_password("wheel", vk, sk)
     sys.stdout.write("Created Ed25519 keypair with vk={0}\n".format(vk))
-    if isinstance(kr, keyring.backend.BasicFileKeyring):
+    if isinstance(kr, keyring.backends.file.BaseKeyring):
         sys.stdout.write("in {0}\n".format(kr.file_path))
     else:
         sys.stdout.write("in %r\n" % kr.__class__)
