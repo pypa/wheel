@@ -132,6 +132,7 @@ Wheel
 * Because ‘newegg’ was taken.
 * Python packaging - reinvented.
 * A container for cheese.
+* It makes it easier to roll out software.
 
 .. toctree::
    :maxdepth: 2
