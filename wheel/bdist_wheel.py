@@ -74,6 +74,9 @@ class bdist_wheel(Command):
                     ('skip-scripts', None,
                      "skip building the setuptools console_scripts",
                      "(default: false)"),
+                    ('universal', None,
+                     "make a universal wheel",
+                     "(default: false)"),
                     ]
 
     boolean_options = ['keep-temp', 'skip-build', 'relative']
@@ -93,6 +96,7 @@ class bdist_wheel(Command):
         self.owner = None
         self.group = None
         self.skip_scripts = False
+        self.universal = False
 
     def finalize_options(self):
         if self.bdist_dir is None:
@@ -124,7 +128,10 @@ class bdist_wheel(Command):
         impl_name = 'py'
         if purity:
             wheel = self.distribution.get_option_dict('wheel')
-            if 'universal' in wheel:
+            if self.universal:
+                impl_name = 'py2.py3'
+                impl_ver = ''
+            elif 'universal' in wheel:
                 # please don't define this in your global configs
                 val = wheel['universal'][1].strip()
                 if val.lower() in ('1', 'true', 'yes'):
