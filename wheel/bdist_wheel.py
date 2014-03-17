@@ -75,11 +75,11 @@ class bdist_wheel(Command):
                      "skip building the setuptools console_scripts",
                      "(default: false)"),
                     ('universal', None,
-                     "make a universal wheel",
-                     "(default: false)"),
+                     "make a universal wheel"
+                     " (default: false)"),
                     ]
 
-    boolean_options = ['keep-temp', 'skip-build', 'relative']
+    boolean_options = ['keep-temp', 'skip-build', 'relative', 'universal']
 
     def initialize_options(self):
         self.bdist_dir = None
@@ -112,6 +112,14 @@ class bdist_wheel(Command):
 
         self.root_is_purelib = self.distribution.is_pure()
 
+        # Support legacy [wheel] section for setting universal
+        wheel = self.distribution.get_option_dict('wheel')
+        if 'universal' in wheel:
+            # please don't define this in your global configs
+            val = wheel['universal'][1].strip()
+            if val.lower() in ('1', 'true', 'yes'):
+                self.universal = True
+
     @property
     def wheel_dist_name(self):
         """Return distribution full name with - replaced with _"""
@@ -127,16 +135,9 @@ class bdist_wheel(Command):
         plat_name = 'any'
         impl_name = 'py'
         if purity:
-            wheel = self.distribution.get_option_dict('wheel')
             if self.universal:
                 impl_name = 'py2.py3'
                 impl_ver = ''
-            elif 'universal' in wheel:
-                # please don't define this in your global configs
-                val = wheel['universal'][1].strip()
-                if val.lower() in ('1', 'true', 'yes'):
-                    impl_name = 'py2.py3'
-                    impl_ver = ''
             tag = (impl_name + impl_ver, abi_tag, plat_name)
         else:
             plat_name = self.plat_name
