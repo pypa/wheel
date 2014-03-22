@@ -36,7 +36,7 @@ can become a less-than-1 second "unpack from wheel".
 
 As a side effect the wheel directory, "/tmp/wheelhouse" in the example,
 contains installable copies of the exact versions of your application's
-dependencies. the dependencies.  By installing from those cached wheels
+dependencies.  By installing from those cached wheels
 you can recreate that environment quickly and with no surprises.
 
 To build an individual wheel, run ``python setup.py bdist_wheel``.  Note that
