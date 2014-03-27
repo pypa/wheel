@@ -1,3 +1,11 @@
+0.23.0
+======
+- Compatibiltiy tag flags added to the bdist_wheel command
+- sdist should include files necessary for tests
+- 'wheel convert' can now also convert unpacked eggs to wheel
+- Rename pydist.json to metadata.json to avoid stepping on the PEP
+- Thank you contributors
+
 0.22.0
 ======
 - Include entry_points.txt, scripts a.k.a. commands, in experimental
@@ -10,7 +18,7 @@
 - Pregenerated scripts are the default again.
 - "setup.py bdist_wheel --skip-scripts" turns them off.
 - setuptools is no longer a listed requirement for the 'wheel'
-  package. It is of course still required in order for bdist_wheel 
+  package. It is of course still required in order for bdist_wheel
   to work.
 - "python -m wheel" avoids importing pkg_resources until it's necessary.
 
@@ -117,8 +125,8 @@
 
 0.9.5
 =====
-- Wheel's own wheel file can be executed by Python, and can install itself: 
-  ``python wheel-0.9.5-py27-none-any/wheel install ...`` 
+- Wheel's own wheel file can be executed by Python, and can install itself:
+  ``python wheel-0.9.5-py27-none-any/wheel install ...``
 - Use argparse; basic ``wheel install`` command should run with only stdlib
   dependencies.
 - Allow requires_dist in setup.cfg's [metadata] section. In addition to
