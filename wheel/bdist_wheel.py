@@ -185,7 +185,7 @@ class bdist_wheel(Command):
         install.warn_dir = False
 
         if self.skip_scripts:
-            # A wheel without setuptools scripts is more cross-platform. 
+            # A wheel without setuptools scripts is more cross-platform.
             install_scripts = self.reinitialize_command('install_scripts')
             install_scripts.no_ep = True
 
@@ -289,19 +289,19 @@ class bdist_wheel(Command):
         return metadata['license_file'][1]
 
     def setupcfg_requirements(self):
-        """Generate requirements from setup.cfg as 
+        """Generate requirements from setup.cfg as
         ('Requires-Dist', 'requirement; qualifier') tuples. From a metadata
         section in setup.cfg:
-        
+
         [metadata]
         provides-extra = extra1
             extra2
         requires-dist = requirement; qualifier
             another; qualifier2
             unqualified
-            
+
         Yields
-        
+
         ('Provides-Extra', 'extra1'),
         ('Provides-Extra', 'extra2'),
         ('Requires-Dist', 'requirement; qualifier'),
@@ -389,8 +389,8 @@ class bdist_wheel(Command):
         metadata_path = os.path.join(distinfo_path, 'METADATA')
         self.add_requirements(metadata_path)
 
-        # XXX not a final specification
-        metadata_json_path = os.path.join(distinfo_path, 'pydist.json')
+        # XXX intentionally a different path than the PEP.
+        metadata_json_path = os.path.join(distinfo_path, 'metadata.json')
         pymeta = pkginfo_to_dict(metadata_path,
                                  distribution=self.distribution)
 
