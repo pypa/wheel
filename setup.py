@@ -6,7 +6,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = codecs.open(os.path.join(here, 'README.txt'), encoding='utf8').read()
 CHANGES = codecs.open(os.path.join(here, 'CHANGES.txt'), encoding='utf8').read()
 
-with codecs.open(os.path.join(os.path.dirname(__file__), 'wheel', '__init__.py'), 
+with codecs.open(os.path.join(os.path.dirname(__file__), 'wheel', '__init__.py'),
                  encoding='utf8') as version_file:
     metadata = dict(re.findall(r"""__([a-z]+)__ = "([^"]+)""", version_file.read()))
 
@@ -16,7 +16,7 @@ with codecs.open(os.path.join(os.path.dirname(__file__), 'wheel', '__init__.py')
 #
 signature_reqs = ['keyring']
 if sys.platform != 'win32':
-    signature_reqs.append('dirspec')
+    signature_reqs.append('pyxdg')
 install_requires = []
 if sys.version_info[:2] < (2, 7):
     install_requires.append('argparse')
@@ -42,15 +42,15 @@ setup(name='wheel',
       keywords=['wheel', 'packaging'],
       license='MIT',
       packages=[
-          'wheel', 
-          'wheel.test', 
-          'wheel.tool', 
+          'wheel',
+          'wheel.test',
+          'wheel.tool',
           'wheel.signatures'
           ],
       install_requires=install_requires,
       extras_require={
           'signatures': signature_reqs,
-          'faster-signatures': ['ed25519ll'], 
+          'faster-signatures': ['ed25519ll'],
           'tool': []
           },
       tests_require=['jsonschema', 'pytest', 'coverage', 'pytest-cov'],

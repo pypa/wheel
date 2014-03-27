@@ -6,7 +6,7 @@ import base64
 import json
 import hashlib
 
-__all__ = ['urlsafe_b64encode', 'urlsafe_b64decode', 'utf8', 
+__all__ = ['urlsafe_b64encode', 'urlsafe_b64decode', 'utf8',
            'to_json', 'from_json', 'matches_requirement']
 
 def urlsafe_b64encode(data):
@@ -118,11 +118,11 @@ if sys.platform == 'win32':
                 yield path
 else:
     def save_config_path(*resource):
-        import dirspec.basedir
-        return dirspec.basedir.save_config_path(*resource)
+        import xdg.BaseDirectory
+        return xdg.BaseDirectory.save_config_path(*resource)
     def load_config_paths(*resource):
-        import dirspec.basedir
-        return dirspec.basedir.load_config_paths(*resource)
+        import xdg.BaseDirectory
+        return xdg.BaseDirectory.load_config_paths(*resource)
 
 def matches_requirement(req, wheels):
     """List of wheels matching a requirement.
