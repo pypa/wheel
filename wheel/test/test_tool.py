@@ -10,6 +10,8 @@ def test_keygen():
         
         class keyringTest:
             backend = keyring.backend
+            class backends:
+                file = keyring.backends.file
             @classmethod
             def get_keyring(cls):
                 class keyringTest2:
