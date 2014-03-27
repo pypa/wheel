@@ -1,5 +1,5 @@
 """
-Tests for the bdist_wheel --python-tag option
+Tests for the bdist_wheel tag options (--python-tag and --universal)
 """
 
 import os
