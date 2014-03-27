@@ -1,4 +1,4 @@
-"wheel" copyright (c) 2012 Daniel Holth <dholth@fastmail.fm> and
+"wheel" copyright (c) 2012-2014 Daniel Holth <dholth@fastmail.fm> and
 contributors.
 
 The MIT License
