@@ -71,9 +71,6 @@ class bdist_wheel(Command):
                     ('group=', 'g',
                      "Group name used when creating a tar file"
                      " [default: current group]"),
-                    ('skip-scripts', None,
-                     "skip building the setuptools console_scripts",
-                     "(default: false)"),
                     ('universal', None,
                      "make a universal wheel"
                      " (default: false)"),
@@ -98,7 +95,6 @@ class bdist_wheel(Command):
         self.relative = False
         self.owner = None
         self.group = None
-        self.skip_scripts = False
         self.universal = False
         self.python_tag = 'py' + get_impl_ver()[0]
 
@@ -185,10 +181,11 @@ class bdist_wheel(Command):
         install.skip_build = self.skip_build
         install.warn_dir = False
 
-        if self.skip_scripts:
-            # A wheel without setuptools scripts is more cross-platform.
-            install_scripts = self.reinitialize_command('install_scripts')
-            install_scripts.no_ep = True
+        # A wheel without setuptools scripts is more cross-platform.
+        # Use the (undocumented) `no_ep` option to setuptools'
+        # install_scripts command to avoid creating entry point scripts.
+        install_scripts = self.reinitialize_command('install_scripts')
+        install_scripts.no_ep = True
 
         # Use a custom scheme for the archive, because we have to decide
         # at installation time which scheme to use.

@@ -99,6 +99,17 @@ def test_unpack():
         for wheelfile in (w for w in os.listdir(distdir) if w.endswith('.whl')):
             wheel.tool.unpack(os.path.join(distdir, wheelfile), distdir)
 
+def test_no_scripts():
+    """Make sure entry point scripts are not generated."""
+    dist = "complex-dist"
+    basedir = pkg_resources.resource_filename('wheel.test', dist)
+    for (dirname, subdirs, filenames) in os.walk(basedir):
+        for filename in filenames:
+            if filename.endswith('.whl'):
+                whl = ZipFile(os.path.join(dirname, filename))
+                for entry in whl.infolist():
+                    assert not '.data/scripts/' in entry.filename
+
 def test_pydist():
     """Make sure pydist.json exists and validates against our schema."""
     # XXX this test may need manual cleanup of older wheels
