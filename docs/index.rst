@@ -97,6 +97,43 @@ contain the setuptools script wrappers. The wheel tool `python -m wheel
 install-scripts packagename` calls setuptools to write the appropriate
 scripts wrappers after an install.
 
+Defining the Python version
+---------------------------
+
+The `bdist_wheel` command automatically determines the correct tags to use for
+the generated wheel.  These are based on the Python interpreter used to
+generate the wheel and whether the project contains C extension code or not.
+While this is usually correct for C code, it can be too conservative for pure
+Python code.  The bdist_wheel command therefore supports two flags that can be
+used to specify the Python version tag to use more precisely::
+
+    --universal        Specifies that a pure-python wheel is "universal"
+                       (i.e., it works on any version of Python).  This
+                       equates to the tag "py2.py3".
+    --python-tag XXX   Specifies the precide python version tag to use for
+                       a pure-python wheel.
+
+Neither of these two flags have any effect when used on a project that includes
+C extension code.
+
+A reasonable use of the `--python-tag` argument would be for a project that
+uses Python syntax only introduced in a particular Python version.  There are
+no current examples of this, but if wheels had been available when Python 2.5
+was released (the first version containing the `with` statement), wheels for a
+project that used the `with` statement would typically use `--python-tag py25`.
+
+Typically, projects would not specify python tags on the command line, but
+would use `setup.cfg` to set them as a project default::
+
+    [bdist_wheel]
+    universal=1
+
+or::
+
+    [bdist_wheel]
+    python-tag = py32
+
+
 Automatically sign wheel files
 ------------------------------
 

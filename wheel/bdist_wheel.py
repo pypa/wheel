@@ -77,6 +77,9 @@ class bdist_wheel(Command):
                     ('universal', None,
                      "make a universal wheel"
                      " (default: false)"),
+                    ('python-tag=', None,
+                     "Python implementation compatibility tag"
+                     " (default: py%s)" % get_impl_ver()[0]),
                     ]
 
     boolean_options = ['keep-temp', 'skip-build', 'relative', 'universal']
@@ -97,6 +100,7 @@ class bdist_wheel(Command):
         self.group = None
         self.skip_scripts = False
         self.universal = False
+        self.python_tag = 'py' + get_impl_ver()[0]
 
     def finalize_options(self):
         if self.bdist_dir is None:
@@ -129,27 +133,24 @@ class bdist_wheel(Command):
     def get_tag(self):
         supported_tags = pep425tags.get_supported()
 
-        purity = self.distribution.is_pure()
-        impl_ver = get_impl_ver()
-        abi_tag = 'none'
-        plat_name = 'any'
-        impl_name = 'py'
-        if purity:
+        if self.distribution.is_pure():
             if self.universal:
-                impl_name = 'py2.py3'
-                impl_ver = ''
-            tag = (impl_name + impl_ver, abi_tag, plat_name)
+                impl = 'py2.py3'
+            else:
+                impl = self.python_tag
+            tag = (impl, 'none', 'any')
         else:
             plat_name = self.plat_name
             if plat_name is None:
                 plat_name = get_platform()
             plat_name = plat_name.replace('-', '_').replace('.', '_')
             impl_name = get_abbr_impl()
+            impl_ver = get_impl_ver()
             # PEP 3149 -- no SOABI in Py 2
             # For PyPy?
             # "pp%s%s" % (sys.pypy_version_info.major,
             # sys.pypy_version_info.minor)
-            abi_tag = sysconfig.get_config_vars().get('SOABI', abi_tag)
+            abi_tag = sysconfig.get_config_vars().get('SOABI', 'none')
             if abi_tag.startswith('cpython-'):
                 abi_tag = 'cp' + abi_tag.rsplit('-', 1)[-1]
 
