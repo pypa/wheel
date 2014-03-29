@@ -4,6 +4,12 @@
 - sdist should include files necessary for tests
 - 'wheel convert' can now also convert unpacked eggs to wheel
 - Rename pydist.json to metadata.json to avoid stepping on the PEP
+- The --skip-scripts option has been removed, and not generating scripts is now
+  the default. The option was a temporary approach until installers could
+  generate scripts themselves. That is now the case with pip 1.5 and later.
+  Note that using pip 1.4 to install a wheel without scripts will leave the
+  installation without entry-point wrappers. The "wheel install-scripts"
+  command can be used to generate the scripts in such cases.
 - Thank you contributors
 
 0.22.0
