@@ -23,10 +23,10 @@ built packages::
 
         # Build a directory of wheels for pyramid and all its dependencies
         pip wheel --wheel-dir=/tmp/wheelhouse pyramid
-        
+
         # Install from cached wheels
         pip install --use-wheel --no-index --find-links=/tmp/wheelhouse pyramid
-        
+
         # Install from cached wheels remotely
         pip install --use-wheel --no-index --find-links=https://wheelhouse.example.com/ pyramid
 
@@ -52,7 +52,7 @@ Wheel's builtin utility can be invoked directly from wheel's own wheel::
 
     $ python wheel-0.21.0-py2.py3-none-any.whl/wheel -h
     usage: wheel [-h]
-                 
+
                  {keygen,sign,unsign,verify,unpack,install,install-scripts,convert,help}
                  ...
 
@@ -101,7 +101,7 @@ Defining the Python version
 ---------------------------
 
 The `bdist_wheel` command automatically determines the correct tags to use for
-the generated wheel.  These are based on the Python interpreter used to
+the generated wheel. These are based on the Python interpreter used to
 generate the wheel and whether the project contains C extension code or not.
 While this is usually correct for C code, it can be too conservative for pure
 Python code.  The bdist_wheel command therefore supports two flags that can be
@@ -110,7 +110,7 @@ used to specify the Python version tag to use more precisely::
     --universal        Specifies that a pure-python wheel is "universal"
                        (i.e., it works on any version of Python).  This
                        equates to the tag "py2.py3".
-    --python-tag XXX   Specifies the precide python version tag to use for
+    --python-tag XXX   Specifies the precise python version tag to use for
                        a pure-python wheel.
 
 Neither of these two flags have any effect when used on a project that includes
@@ -122,7 +122,7 @@ no current examples of this, but if wheels had been available when Python 2.5
 was released (the first version containing the `with` statement), wheels for a
 project that used the `with` statement would typically use `--python-tag py25`.
 
-Typically, projects would not specify python tags on the command line, but
+Typically, projects would not specify Python tags on the command line, but
 would use `setup.cfg` to set them as a project default::
 
     [bdist_wheel]
@@ -145,8 +145,8 @@ command line tool::
 	$ pip install wheel[tool]
 	# Generate a signing key (only once)
 	$ wheel keygen
-	    
-	$ export WHEEL_TOOL=/path/to/wheel	
+
+	$ export WHEEL_TOOL=/path/to/wheel
 	$ python setup.py bdist_wheel
 
 Signing is done in a subprocess because it is not convenient for the
@@ -177,7 +177,7 @@ Wheel
 
 .. toctree::
    :maxdepth: 2
-   
+
    story
    api
 
