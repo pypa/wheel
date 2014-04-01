@@ -88,14 +88,13 @@ be used to generate platform-specific scripts wrappers.  Most usefully
 these wrappers include `.exe` launchers if they are generated on a
 Windows machine.
 
-By default `bdist_wheel` puts pre-generated versions of these wrappers
-into the `*.data/scripts/` directory of the archive.  This means a
-Windows user may have trouble running scripts from a wheel generated
-on Unix and vice-versa.  As of version 0.21.0 `python setup.py
-bdist_wheel --skip-scripts` is available to create wheels that do not
-contain the setuptools script wrappers. The wheel tool `python -m wheel
-install-scripts packagename` calls setuptools to write the appropriate
-scripts wrappers after an install.
+As of 0.23.0, `bdist_wheel` no longer places pre-generated versions of these
+wrappers into the `*.data/scripts/` directory of the archive (non-setuptools
+scripts are still present, of course).
+
+If the scripts are needed, use a real installer like `pip`.  The wheel tool
+`python -m wheel install-scripts package [package ...]` can also be used at
+any time to call setuptools to write the appropriate scripts wrappers.
 
 Defining the Python version
 ---------------------------
@@ -133,13 +132,16 @@ or::
     [bdist_wheel]
     python-tag = py32
 
-
 Automatically sign wheel files
 ------------------------------
 
+Wheel contains an experimental digital signatures scheme based on Ed25519
+signatures; these signatures are unrelated to pgp/gpg signatures and do not
+include a trust model.
+
 `python setup.py bdist_wheel` will automatically sign wheel files if
 the environment variable `WHEEL_TOOL` is set to the path of the `wheel`
-command line tool::
+command line tool.::
 
 	# Install the wheel tool and its dependencies
 	$ pip install wheel[tool]
@@ -154,10 +156,6 @@ build environment to contain bindings to the keyring and cryptography
 libraries. The keyring library may not be able to find your keys (choosing
 a different key storage back end based on available dependencies) unless
 you run it from the same environment used for keygen.
-
-A future version of `wheel sign` will be able to choose different signing
-keys depending on the package name, in case a user wishes to reserve a
-more widely trusted key for packages they intend to distribute.
 
 Format
 ------
