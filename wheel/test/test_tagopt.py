@@ -2,8 +2,8 @@
 Tests for the bdist_wheel tag options (--python-tag and --universal)
 """
 
-import os
 import sys
+import shutil
 import pytest
 import py.path
 import tempfile
@@ -22,11 +22,11 @@ setup(
 
 @pytest.fixture
 def temp_pkg(request):
-    tempdir = tempfile.TemporaryDirectory()
+    tempdir = tempfile.mkdtemp()
     def fin():
-        tempdir.cleanup()
+        shutil.rmtree(tempdir)
     request.addfinalizer(fin)
-    temppath = py.path.local(tempdir.name)
+    temppath = py.path.local(tempdir)
     temppath.join('test.py').write('print("Hello, world")')
     temppath.join('setup.py').write(SETUP_PY)
     return temppath
