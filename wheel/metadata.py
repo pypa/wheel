@@ -49,7 +49,7 @@ def unique(iterable):
 
 def handle_requires(metadata, pkg_info, key):
     """
-    Place the runtime requirements from pkg_info into metadata. 
+    Place the runtime requirements from pkg_info into metadata.
     """
     may_requires = defaultdict(list)
     for value in pkg_info.get_all(key):
@@ -85,10 +85,10 @@ def handle_requires(metadata, pkg_info, key):
 def pkginfo_to_dict(path, distribution=None):
     """
     Convert PKG-INFO to a prototype Metadata 2.0 (PEP 426) dict.
-    
-    The description is included under the key ['description'] rather than 
+
+    The description is included under the key ['description'] rather than
     being written to a separate file.
-    
+
     path: path to PKG-INFO file
     distribution: optional distutils Distribution()
     """
@@ -231,9 +231,15 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
         requires = open(requires_path).read()
         for extra, reqs in pkg_resources.split_sections(requires):
             condition = ''
+            if extra and ':' in extra: # setuptools extra:condition syntax
+                extra, condition = extra.split(':', 1)
             if extra:
                 pkg_info['Provides-Extra'] = extra
-                condition = '; extra == %s' % repr(extra)
+                if condition:
+                    condition += " and "
+                condition += 'extra == %s' % repr(extra)
+            if condition:
+                condition = '; ' + condition
             for new_req in convert_requirements(reqs):
                 pkg_info['Requires-Dist'] = new_req + condition
 

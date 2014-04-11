@@ -49,7 +49,9 @@ setup(name='wheel',
           ],
       install_requires=install_requires,
       extras_require={
-          'signatures': signature_reqs,
+          ':python_version=="2.6"': ['argparse'],
+          'signatures': ['keyring'],
+          'signatures:sys_platform!="win32"': ['pyxdg'],
           'faster-signatures': ['ed25519ll'],
           'tool': []
           },
