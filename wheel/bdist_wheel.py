@@ -399,16 +399,14 @@ class bdist_wheel(Command):
                                             description_filename)
             with open(description_path, "wb") as description_file:
                 description_file.write(description_text.encode('utf-8'))
-            pymeta['document_names'] = pymeta.get('document_names', {})
-            pymeta['document_names']['description'] = description_filename
+            pymeta['extensions']['python.details']['document_names']['description'] = description_filename
 
         # XXX heuristically copy any LICENSE/LICENSE.txt?
         license = self.license_file()
         if license:
             license_filename = 'LICENSE.txt'
             shutil.copy(license, os.path.join(self.distinfo_dir, license_filename))
-            pymeta['document_names'] = pymeta.get('document_names', {})
-            pymeta['document_names']['license'] = license_filename
+            pymeta['extensions']['python.details']['document_names']['license'] = license_filename
 
         with open(metadata_json_path, "w") as metadata_json:
             json.dump(pymeta, metadata_json)

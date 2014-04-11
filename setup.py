@@ -1,4 +1,4 @@
-import os.path, sys, codecs, re
+import os.path, codecs, re
 
 from setuptools import setup
 
@@ -28,7 +28,7 @@ setup(name='wheel',
         ],
       author='Daniel Holth',
       author_email='dholth@fastmail.fm',
-      url='http://bitbucket.org/dholth/wheel/',
+      url='http://bitbucket.org/pypa/wheel/',
       keywords=['wheel', 'packaging'],
       license='MIT',
       packages=[

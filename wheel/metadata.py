@@ -93,7 +93,8 @@ def pkginfo_to_dict(path, distribution=None):
     distribution: optional distutils Distribution()
     """
 
-    metadata = {"generator":"bdist_wheel (" + wheel.__version__ + ")"}
+    metadata = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+    metadata["generator"] = "bdist_wheel (" + wheel.__version__ + ")"
     try:
         unicode
         pkg_info = read_pkg_info(path)
@@ -141,7 +142,10 @@ def pkginfo_to_dict(path, distribution=None):
             metadata['extras'].extend(pkg_info.get_all(key))
 
         elif low_key == 'home_page':
-            metadata['project_urls'] = {'Home':pkg_info[key]}
+            metadata['extensions']['python.details']['project_urls'] = {'Home':pkg_info[key]}
+
+        elif low_key == 'keywords':
+            metadata['keywords'] = KEYWORDS_RE.split(pkg_info[key])
 
         else:
             metadata[low_key] = pkg_info[key]
@@ -173,7 +177,7 @@ def pkginfo_to_dict(path, distribution=None):
             contact['role'] = role
             contacts.append(contact)
     if contacts:
-        metadata['contacts'] = contacts
+        metadata['extensions']['python.details']['contacts'] = contacts
 
     # convert entry points to exports
     try:
@@ -186,17 +190,17 @@ def pkginfo_to_dict(path, distribution=None):
                 name, export = str(item).split(' = ', 1)
                 exports[group][name] = export
         if exports:
-            metadata['exports'] = exports
+            metadata['extensions']['python.exports'] = exports
     except IOError:
         pass
 
     # copy console_scripts entry points to commands
-    if 'exports' in metadata:
+    if 'python.exports' in metadata['extensions']:
         for (ep_script, wrap_script) in (('console_scripts', 'wrap_console'),
                                          ('gui_scripts', 'wrap_gui')):
-            if ep_script in metadata['exports']:
-                metadata['commands'] = metadata.get('commands', {})
-                metadata['commands'][wrap_script] = metadata['exports'][ep_script]
+            if ep_script in metadata['extensions']['python.exports']:
+                metadata['extensions']['python.commands'][wrap_script] = \
+                    metadata['extensions']['python.exports'][ep_script]
 
     return metadata
 
