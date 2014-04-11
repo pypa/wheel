@@ -10,17 +10,6 @@ with codecs.open(os.path.join(os.path.dirname(__file__), 'wheel', '__init__.py')
                  encoding='utf8') as version_file:
     metadata = dict(re.findall(r"""__([a-z]+)__ = "([^"]+)""", version_file.read()))
 
-#
-# All these requirements are overridden by setup.cfg when wheel is built
-# as a wheel:
-#
-signature_reqs = ['keyring']
-if sys.platform != 'win32':
-    signature_reqs.append('pyxdg')
-install_requires = []
-if sys.version_info[:2] < (2, 7):
-    install_requires.append('argparse')
-
 setup(name='wheel',
       version=metadata['version'],
       description='A built-package format for Python.',
@@ -35,6 +24,7 @@ setup(name='wheel',
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.2",
         "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
         ],
       author='Daniel Holth',
       author_email='dholth@fastmail.fm',
@@ -47,7 +37,6 @@ setup(name='wheel',
           'wheel.tool',
           'wheel.signatures'
           ],
-      install_requires=install_requires,
       extras_require={
           ':python_version=="2.6"': ['argparse'],
           'signatures': ['keyring'],

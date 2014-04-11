@@ -132,6 +132,30 @@ or::
     [bdist_wheel]
     python-tag = py32
 
+Defining conditional dependencies
+---------------------------------
+
+In wheel, the only way to have conditional dependencies (that might only be
+needed on certain platforms) is to use environment markers as defined by
+PEP 426.
+
+As of wheel 0.24.0, the recommended way to do this is in the setuptools
+`extras_require` parameter. A `:` separates the extra name from the marker.
+Wheel's own setup.py has an example::
+      extras_require={
+          ':python_version=="2.6"': ['argparse'],
+          'signatures': ['keyring'],
+          'signatures:sys_platform!="win32"': ['pyxdg'],
+          'faster-signatures': ['ed25519ll'],
+          'tool': []
+          },
+
+The extra named '' signifies a default requirement, as if it was passed to
+`install_requires`.
+
+Older versions of bdist_wheel supported passing requirements in a
+now-deprecated [metadata] section in setup.cfg.
+
 Automatically sign wheel files
 ------------------------------
 
