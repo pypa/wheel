@@ -115,11 +115,19 @@ used to specify the Python version tag to use more precisely::
 Neither of these two flags have any effect when used on a project that includes
 C extension code.
 
+The default for a pure Python project (if no explicit flags are given) is "pyN"
+where N is the major version of the Python interpreter used to build the wheel.
+This is generally the correct choice, as projects would not typically ship
+different wheels for different minor versions of Python.
+
 A reasonable use of the `--python-tag` argument would be for a project that
 uses Python syntax only introduced in a particular Python version.  There are
 no current examples of this, but if wheels had been available when Python 2.5
 was released (the first version containing the `with` statement), wheels for a
 project that used the `with` statement would typically use `--python-tag py25`.
+However, unless a separate version of the wheel was shipped which avoided the
+use of the new syntax, there is little benefit in explicitly marking the tag in
+this manner.
 
 Typically, projects would not specify Python tags on the command line, but
 would use `setup.cfg` to set them as a project default::
