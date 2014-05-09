@@ -4,6 +4,9 @@
   only). This change actually occurred in 0.23.0 when the --python-tag
   option was added, but was not explicitly mentioned in the changelog then.
 
+- wininst2wheel and egg2wheel removed. Use "wheel convert [archive]"
+  instead.
+
 0.23.0
 ======
 - Compatibiltiy tag flags added to the bdist_wheel command

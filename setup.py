@@ -49,8 +49,6 @@ setup(name='wheel',
       zip_safe=False,
       entry_points = """\
 [console_scripts]
-wininst2wheel = wheel.wininst2wheel:main
-egg2wheel = wheel.egg2wheel:main
 wheel = wheel.tool:main
 
 [distutils.commands]
