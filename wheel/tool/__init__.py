@@ -30,7 +30,7 @@ def get_keyring():
         from ..signatures import keys
         import keyring
     except ImportError:
-        raise WheelError("Install wheel[signatures] (requires keyring, dirspec) for signatures.")
+        raise WheelError("Install wheel[signatures] (requires keyring, pyxdg) for signatures.")
     return keys.WheelKeys, keyring
 
 def keygen(get_keyring=get_keyring):
