@@ -3,9 +3,14 @@
 - The python tag used for pure-python packages is now .pyN (major version
   only). This change actually occurred in 0.23.0 when the --python-tag
   option was added, but was not explicitly mentioned in the changelog then.
-
 - wininst2wheel and egg2wheel removed. Use "wheel convert [archive]"
   instead.
+- Wheel now supports setuptools style conditional requirements via the
+  extras_require={} syntax. Separate 'extra' names from conditions using
+  the : character. Wheel's own setup.py does this. (The empty-string
+  extra is the same as install_requires.) These conditional requirements
+  should work the same whether the package is installed by wheel or
+  by setup.py.
 
 0.23.0
 ======
