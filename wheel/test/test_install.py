@@ -36,15 +36,16 @@ def test_install():
         for key in ('purelib', 'platlib', 'scripts', 'headers', 'data'):
             locs[key] = os.path.join(tempdir, key)
             os.mkdir(locs[key])
-        whl.install(overrides=locs)
-        assert len(os.listdir(locs['purelib'])) == 0
-        assert check(locs['platlib'], 'hello.pyd')
-        assert check(locs['platlib'], 'hello', 'hello.py')
-        assert check(locs['platlib'], 'hello', '__init__.py')
-        assert check(locs['data'], 'hello.dat')
-        assert check(locs['headers'], 'hello.dat')
-        assert check(locs['scripts'], 'hello.sh')
-        assert check(locs['platlib'], 'test-1.0.dist-info', 'RECORD')
+        for force in (False, True):
+            whl.install(force=force, overrides=locs)
+            assert len(os.listdir(locs['purelib'])) == 0
+            assert check(locs['platlib'], 'hello.pyd')
+            assert check(locs['platlib'], 'hello', 'hello.py')
+            assert check(locs['platlib'], 'hello', '__init__.py')
+            assert check(locs['data'], 'hello.dat')
+            assert check(locs['headers'], 'hello.dat')
+            assert check(locs['scripts'], 'hello.sh')
+            assert check(locs['platlib'], 'test-1.0.dist-info', 'RECORD')
     finally:
         shutil.rmtree(tempdir)
 
