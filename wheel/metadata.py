@@ -2,8 +2,13 @@
 Tools for converting old- to new-style metadata.
 """
 
-from collections import defaultdict, namedtuple
+from collections import namedtuple
 from .pkginfo import read_pkg_info
+from .util import OrderedDefaultDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    OrderedDict = dict
 
 import re
 import os.path
@@ -51,8 +56,8 @@ def handle_requires(metadata, pkg_info, key):
     """
     Place the runtime requirements from pkg_info into metadata.
     """
-    may_requires = defaultdict(list)
-    for value in pkg_info.get_all(key):
+    may_requires = OrderedDefaultDict(list)
+    for value in sorted(pkg_info.get_all(key)):
         extra_match = EXTRA_RE.search(value)
         if extra_match:
             groupdict = extra_match.groupdict()
@@ -70,7 +75,7 @@ def handle_requires(metadata, pkg_info, key):
     if may_requires:
         metadata['run_requires'] = []
         for key, value in may_requires.items():
-            may_requirement = {'requires':value}
+            may_requirement = OrderedDict((('requires', value),))
             if key.extra:
                 may_requirement['extra'] = key.extra
             if key.condition:
@@ -93,7 +98,7 @@ def pkginfo_to_dict(path, distribution=None):
     distribution: optional distutils Distribution()
     """
 
-    metadata = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+    metadata = OrderedDefaultDict(lambda: OrderedDefaultDict(lambda: OrderedDefaultDict(OrderedDict)))
     metadata["generator"] = "bdist_wheel (" + wheel.__version__ + ")"
     try:
         unicode
@@ -121,7 +126,7 @@ def pkginfo_to_dict(path, distribution=None):
     if description:
         pkg_info['description'] = description
 
-    for key in unique(k.lower() for k in pkg_info.keys()):
+    for key in sorted(unique(k.lower() for k in pkg_info.keys())):
         low_key = key.replace('-', '_')
 
         if low_key in SKIP_FIELDS:
@@ -130,7 +135,7 @@ def pkginfo_to_dict(path, distribution=None):
         if low_key in UNKNOWN_FIELDS and pkg_info.get(key) == 'UNKNOWN':
             continue
 
-        if low_key in PLURAL_FIELDS:
+        if low_key in sorted(PLURAL_FIELDS):
             metadata[PLURAL_FIELDS[low_key]] = pkg_info.get_all(key)
 
         elif low_key == "requires_dist":
@@ -161,7 +166,7 @@ def pkginfo_to_dict(path, distribution=None):
             try:
                 requirements = getattr(distribution, attr)
                 if isinstance(requirements, list):
-                    new_requirements = list(convert_requirements(requirements))
+                    new_requirements = sorted(convert_requirements(requirements))
                     metadata[requires] = [{'requires':new_requirements}]
             except AttributeError:
                 pass
@@ -169,8 +174,8 @@ def pkginfo_to_dict(path, distribution=None):
     # handle contacts
     contacts = []
     for contact_type, role in CONTACT_FIELDS:
-        contact = {}
-        for key in contact_type:
+        contact = OrderedDict()
+        for key in sorted(contact_type):
             if contact_type[key] in metadata:
                 contact[key] = metadata.pop(contact_type[key])
         if contact:
@@ -183,10 +188,10 @@ def pkginfo_to_dict(path, distribution=None):
     try:
         with open(os.path.join(os.path.dirname(path), "entry_points.txt"), "r") as ep_file:
             ep_map = pkg_resources.EntryPoint.parse_map(ep_file.read())
-        exports = {}
-        for group, items in ep_map.items():
-            exports[group] = {}
-            for item in items.values():
+        exports = OrderedDict()
+        for group, items in sorted(ep_map.items()):
+            exports[group] = OrderedDict()
+            for item in sorted(items.values()):
                 name, export = str(item).split(' = ', 1)
                 exports[group][name] = export
         if exports:
