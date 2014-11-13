@@ -1,9 +1,3 @@
-In next release ...
-
-- When force is given, write to temporary file and rename. This is
-  necessary because when a file exists, it may already be in use by a
-  running process.
-
 0.24.0
 ======
 - The python tag used for pure-python packages is now .pyN (major version
