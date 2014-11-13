@@ -12,14 +12,15 @@ def options(opt):
 
 def configure(ctx):
     ctx.load('python')
+    ctx.check_python_version()
 
 def build(bld):
-    bld(features='py', 
-        source=bld.path.ant_glob('wheel/**/*.py', excl="wheel/test"), 
+    bld(features='py',
+        source=bld.path.ant_glob('wheel/**/*.py', excl="wheel/test"),
         install_from='.')
 
     # build the wheel:
-    
+
     DIST_INFO = '%s-%s.dist-info' % (APPNAME, VERSION)
 
     node = bld.path.get_bld().make_node(DIST_INFO)
@@ -33,7 +34,7 @@ def build(bld):
     CHANGES = codecs.open('CHANGES.txt', encoding='utf8').read()
     METADATA = codecs.open('METADATA.in', encoding='utf8').read()
     METADATA = string.Template(METADATA).substitute(
-            VERSION=VERSION, 
+            VERSION=VERSION,
             DESCRIPTION='\n\n'.join((README, CHANGES))
             )
 
@@ -52,10 +53,11 @@ Tag: py3-none-any
     bld(target=wheel,
        rule=lambda tsk: Utils.writef(tsk.outputs[0].abspath(), WHEEL))
 
-    # globs don't work, since here the files may not exist
+    # globs don't work, since here the files may not exist:
     bld.install_files('${PYTHONDIR}/'+DIST_INFO, [DIST_INFO+'/WHEEL', DIST_INFO+'/METADATA'])
-    bld.install_files('${PYTHONDIR}/'+DIST_INFO, ['entry_points.txt'])
 
+    # only if entry_points.txt exists:
+    bld.install_files('${PYTHONDIR}/'+DIST_INFO, ['entry_points.txt'])
 
 import shutil, os, base64
 
@@ -73,11 +75,12 @@ class WheelDist(Scripting.Dist):
         files = self.get_files()
         lines = []
         for f in files:
+            print("File: %s" % f.relpath())
             size = os.stat(f.abspath()).st_size
             digest = hashlib.sha256(open(f.abspath(), 'rb').read()).digest()
-            digest = "sha256="+urlsafe_b64encode(digest)
+            digest = "sha256="+(urlsafe_b64encode(digest).decode('ascii'))
             lines.append("%s,%s,%s" % (f.path_from(self.base_path).replace(',', ',,'), digest, size))
-                    
+
         record_path = '%s-%s.dist-info/RECORD' % (APPNAME, VERSION)
         lines.append(record_path+',,')
         RECORD = '\n'.join(lines)
@@ -127,11 +130,4 @@ class package_cls(Build.InstallContext):
         ctx.manifest()
 
         shutil.rmtree(self.tmp.abspath())
-
-# for variants, add command subclasses "package_release", "package_debug", etc
-def init(ctx):
-    for x in ('release', 'debug'):
-            class tmp(package_cls):
-                cmd = 'package_' + x
-                variant = x
 

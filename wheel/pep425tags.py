@@ -85,7 +85,10 @@ def get_supported(versions=None):
             # Tagged specifically as being cross-version compatible 
             # (with just the major version specified)
             supported.append(('%s%s' % (impl, versions[0][0]), 'none', 'any')) 
-            
+    
+    # Major Python version + platform; e.g. binaries not using the Python API
+    supported.append(('py%s' % (versions[0][0]), 'none', arch))
+
     # No abi / arch, generic Python
     for i, version in enumerate(versions):
         supported.append(('py%s' % (version,), 'none', 'any'))

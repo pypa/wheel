@@ -421,7 +421,8 @@ class bdist_wheel(Command):
 
         def walk():
             for dir, dirs, files in os.walk(bdist_dir):
-                for f in files:
+                dirs.sort()
+                for f in sorted(files):
                     yield os.path.join(dir, f)
 
         def skip(path):
