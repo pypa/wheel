@@ -238,7 +238,8 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
     requires_path = os.path.join(egg_info_path, 'requires.txt')
     if os.path.exists(requires_path):
         requires = open(requires_path).read()
-        for extra, reqs in sorted(pkg_resources.split_sections(requires)):
+        for extra, reqs in sorted(pkg_resources.split_sections(requires),
+                                  key=lambda x: x[0] or ''):
             condition = ''
             if extra and ':' in extra: # setuptools extra:condition syntax
                 extra, condition = extra.split(':', 1)
