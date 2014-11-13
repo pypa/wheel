@@ -5,6 +5,10 @@ import os
 import base64
 import json
 import hashlib
+try:
+    from collections import OrderedDict
+except ImportError:
+    OrderedDict = dict
 
 __all__ = ['urlsafe_b64encode', 'urlsafe_b64decode', 'utf8',
            'to_json', 'from_json', 'matches_requirement']
@@ -90,6 +94,23 @@ class HashingFile(object):
             return self.hash.hexdigest()
         digest = self.hash.digest()
         return self.hashtype + '=' + native(urlsafe_b64encode(digest))
+
+class OrderedDefaultDict(OrderedDict):
+    def __init__(self, *args, **kwargs):
+        if not args:
+            self.default_factory = None
+        else:
+            if not (args[0] is None or callable(args[0])):
+                raise TypeError('first argument must be callable or None')
+            self.default_factory = args[0]
+            args = args[1:]
+        super(OrderedDefaultDict, self).__init__(*args, **kwargs)
+
+    def __missing__ (self, key):
+        if self.default_factory is None:
+            raise KeyError(key)
+        self[key] = default = self.default_factory()
+        return default
 
 if sys.platform == 'win32':
     import ctypes.wintypes
