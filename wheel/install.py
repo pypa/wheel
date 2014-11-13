@@ -335,25 +335,36 @@ class WheelFile(object):
         record_name = self.distinfo_name + '/RECORD'
         for info, (key, target, filename, dest) in name_trans.items():
             name = info.filename
-            source = self.zipfile.open(info)
-            # Skip the RECORD file
-            if name == record_name:
-                continue
             ddir = os.path.dirname(dest)
             if not os.path.isdir(ddir):
                 os.makedirs(ddir)
-            destination = HashingFile(open(dest, 'wb'))
-            if key == 'scripts':
-                hashbang = source.readline()
-                if hashbang.startswith(b'#!python'):
-                    hashbang = b'#!' + exename + binary(os.linesep)
-                destination.write(hashbang)
-            shutil.copyfileobj(source, destination)
+
+            if force:
+                dest = "{0}.tmp".format(dest)
+
+            with self.zipfile.open(info) as source, open(dest, 'wb') as f:
+                destination = HashingFile(f)
+
+                # Skip the RECORD file
+                if name == record_name:
+                    continue
+
+                if key == 'scripts':
+                    hashbang = source.readline()
+                    if hashbang.startswith(b'#!python'):
+                        hashbang = b'#!' + exename + binary(os.linesep)
+                    destination.write(hashbang)
+                shutil.copyfileobj(source, destination)
+
+            if force:
+                tmp = dest
+                dest = dest[:-4]
+                os.rename(tmp, dest)
+
             reldest = os.path.relpath(dest, root)
             reldest.replace(os.sep, '/')
             record_data.append((reldest, destination.digest(), destination.length))
-            destination.close()
-            source.close()
+
             # preserve attributes (especially +x bit for scripts)
             attrs = info.external_attr >> 16
             if attrs:  # tends to be 0 if Windows.
