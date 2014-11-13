@@ -28,7 +28,7 @@ setup(name='wheel',
         ],
       author='Daniel Holth',
       author_email='dholth@fastmail.fm',
-      url='http://bitbucket.org/pypa/wheel/',
+      url='https://bitbucket.org/pypa/wheel/',
       keywords=['wheel', 'packaging'],
       license='MIT',
       packages=[
