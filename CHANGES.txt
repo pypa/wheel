@@ -14,7 +14,7 @@
 
 0.23.0
 ======
-- Compatibiltiy tag flags added to the bdist_wheel command
+- Compatibility tag flags added to the bdist_wheel command
 - sdist should include files necessary for tests
 - 'wheel convert' can now also convert unpacked eggs to wheel
 - Rename pydist.json to metadata.json to avoid stepping on the PEP
