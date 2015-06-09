@@ -74,7 +74,14 @@ def handle_requires(metadata, pkg_info, key):
 
     if may_requires:
         metadata['run_requires'] = []
-        for key, value in may_requires.items():
+        def sort_key(item):
+            # Both condition and extra could be None, which can't be compared
+            # against strings in Python 3.
+            key, value = item
+            if key.condition is None:
+                return ''
+            return key.condition
+        for key, value in sorted(may_requires.items(), key=sort_key):
             may_requirement = OrderedDict((('requires', value),))
             if key.extra:
                 may_requirement['extra'] = key.extra

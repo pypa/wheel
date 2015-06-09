@@ -2,6 +2,7 @@
 Archive tools for wheel.
 """
 
+import time
 import logging
 import os.path
 import zipfile
@@ -55,6 +56,14 @@ def make_wheelfile_inner(base_name, base_dir='.'):
     deferred.sort()
     for score, path in deferred:
         writefile(path)
+
+    # Before we close the zip file, see if the caller is forcing the timestamp
+    # of the individual TarInfo objects.  See issue #143.
+    timestamp = os.environ.get('WHEEL_FORCE_TIMESTAMP')
+    if timestamp is not None:
+        date_time = time.localtime(int(timestamp))[0:6]
+        for info in zip.infolist():
+            info.date_time = date_time
 
     zip.close()
 

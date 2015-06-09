@@ -410,7 +410,7 @@ class bdist_wheel(Command):
             pymeta['extensions']['python.details']['document_names']['license'] = license_filename
 
         with open(metadata_json_path, "w") as metadata_json:
-            json.dump(pymeta, metadata_json)
+            json.dump(pymeta, metadata_json, sort_keys=True)
 
         adios(egginfo_path)
 
