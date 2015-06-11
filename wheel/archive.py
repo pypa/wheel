@@ -34,7 +34,7 @@ def make_wheelfile_inner(base_name, base_dir='.'):
     log.info("creating '%s' and adding '%s' to it", zip_filename, base_dir)
 
     # Some applications need reproducible .whl files, but they can't do this
-    # without forcing the timestamp of the individual TarInfo objects.  See
+    # without forcing the timestamp of the individual ZipInfo objects.  See
     # issue #143.
     timestamp = os.environ.get('WHEEL_FORCE_TIMESTAMP')
     if timestamp is None:
