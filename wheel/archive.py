@@ -2,6 +2,7 @@
 Archive tools for wheel.
 """
 
+import os
 import time
 import logging
 import os.path
@@ -32,6 +33,15 @@ def make_wheelfile_inner(base_name, base_dir='.'):
 
     log.info("creating '%s' and adding '%s' to it", zip_filename, base_dir)
 
+    # Some applications need reproducible .whl files, but they can't do this
+    # without forcing the timestamp of the individual TarInfo objects.  See
+    # issue #143.
+    timestamp = os.environ.get('WHEEL_FORCE_TIMESTAMP')
+    if timestamp is None:
+        date_time = None
+    else:
+        date_time = time.localtime(int(timestamp))[0:6]
+
     # XXX support bz2, xz when available
     zip = zipfile.ZipFile(open(zip_filename, "wb+"), "w",
                           compression=zipfile.ZIP_DEFLATED)
@@ -39,8 +49,14 @@ def make_wheelfile_inner(base_name, base_dir='.'):
     score = {'WHEEL': 1, 'METADATA': 2, 'RECORD': 3}
     deferred = []
 
-    def writefile(path):
-        zip.write(path, path)
+    def writefile(path, date_time):
+        if date_time is None:
+            st = os.stat(path)
+            mtime = time.localtime(st.st_mtime)
+            date_time = mtime[0:6]
+        zinfo = zipfile.ZipInfo(path, date_time)
+        with open(path, 'rb') as fp:
+            zip.writestr(zinfo, fp.read())
         log.info("adding '%s'" % path)
 
     for dirpath, dirnames, filenames in os.walk(base_dir):
@@ -51,19 +67,11 @@ def make_wheelfile_inner(base_name, base_dir='.'):
                 if dirpath.endswith('.dist-info'):
                     deferred.append((score.get(name, 0), path))
                 else:
-                    writefile(path)
+                    writefile(path, date_time)
 
     deferred.sort()
     for score, path in deferred:
-        writefile(path)
-
-    # Before we close the zip file, see if the caller is forcing the timestamp
-    # of the individual TarInfo objects.  See issue #143.
-    timestamp = os.environ.get('WHEEL_FORCE_TIMESTAMP')
-    if timestamp is not None:
-        date_time = time.localtime(int(timestamp))[0:6]
-        for info in zip.infolist():
-            info.date_time = date_time
+        writefile(path, date_time)
 
     zip.close()
 
