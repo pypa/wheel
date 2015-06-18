@@ -149,7 +149,7 @@ class bdist_wheel(Command):
             # sys.pypy_version_info.minor)
             abi_tag = sysconfig.get_config_vars().get('SOABI', 'none')
             if abi_tag.startswith('cpython-'):
-                abi_tag = 'cp' + abi_tag.rsplit('-', 1)[-1]
+                abi_tag = 'cp' + abi_tag.split('-', 1)[-1]
 
             tag = (impl_name + impl_ver, abi_tag, plat_name)
             # XXX switch to this alternate implementation for non-pure:
