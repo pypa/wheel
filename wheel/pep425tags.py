@@ -53,9 +53,9 @@ def get_abi_tag():
         u = 'u' if sys.maxunicode == 0x10ffff else ''
         abi = '%s%s%s%s%s' % (impl, get_impl_ver(), d, m, u)
     elif soabi and soabi.startswith('cpython-'):
-        abi = 'cp' + soabi.split('-', 1)[-1]
+        abi = 'cp' + soabi.split('-')[1]
     elif soabi:
-        abi = soabi
+        abi = soabi.replace('.', '_').replace('-', '_')
     else:
         abi = None
     return abi
