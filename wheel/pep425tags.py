@@ -26,9 +26,39 @@ def get_abbr_impl():
 def get_impl_ver():
     """Return implementation version."""
     impl_ver = sysconfig.get_config_var("py_version_nodot")
-    if not impl_ver:
-        impl_ver = ''.join(map(str, sys.version_info[:2]))
+    if not impl_ver or get_abbr_impl() == 'pp':
+        impl_ver = ''.join(map(str, get_impl_version_info()))
     return impl_ver
+
+
+def get_impl_version_info():
+    """Return sys.version_info-like tuple for use in decrementing the minor
+    version."""
+    if get_abbr_impl() == 'pp':
+        # as per https://github.com/pypa/pip/issues/2882
+        return (sys.version_info[0], sys.pypy_version_info.major,
+                sys.pypy_version_info.minor)
+    else:
+        return sys.version_info[0], sys.version_info[1]
+
+
+def get_abi_tag():
+    """Return the ABI tag based on SOABI (if available) or emulate SOABI
+    (CPython 2, PyPy)."""
+    soabi = sysconfig.get_config_var('SOABI')
+    impl = get_abbr_impl()
+    if not soabi and impl in ('cp', 'pp'):
+        d = 'd' if hasattr(sys, 'pydebug') and sys.pydebug else ''
+        m = 'm' if impl == 'cp' else ''
+        u = 'u' if sys.maxunicode == 0x10ffff else ''
+        abi = '%s%s%s%s%s' % (impl, get_impl_ver(), d, m, u)
+    elif soabi and soabi.startswith('cpython-'):
+        abi = 'cp' + soabi.split('-', 1)[-1]
+    elif soabi:
+        abi = soabi
+    else:
+        abi = None
+    return abi
 
 
 def get_platform():
@@ -49,18 +79,19 @@ def get_supported(versions=None):
     # Versions must be given with respect to the preference
     if versions is None:
         versions = []
-        major = sys.version_info[0]
+        version_info = get_impl_version_info()
+        major = version_info[:-1]
         # Support all previous minor Python versions.
-        for minor in range(sys.version_info[1], -1, -1):
-            versions.append(''.join(map(str, (major, minor))))
+        for minor in range(version_info[-1], -1, -1):
+            versions.append(''.join(map(str, major + (minor,))))
             
     impl = get_abbr_impl()
     
     abis = []
 
-    soabi = sysconfig.get_config_var('SOABI')
-    if soabi and soabi.startswith('cpython-'):
-        abis[0:0] = ['cp' + soabi.split('-', 1)[-1]]
+    abi = get_abi_tag()
+    if abi:
+        abis[0:0] = [abi]
  
     abi3s = set()
     import imp
@@ -96,5 +127,3 @@ def get_supported(versions=None):
             supported.append(('py%s' % (version[0]), 'none', 'any'))
         
     return supported
-
-
