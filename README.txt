@@ -39,3 +39,12 @@ Unlike .egg, wheel will be a fully-documented standard at the binary
 level that is truly easy to install even if you do not want to use the
 reference implementation.
 
+
+Code of Conduct
+---------------
+
+Everyone interacting in the wheel project's codebases, issue trackers, chat
+rooms, and mailing lists is expected to follow the `PyPA Code of Conduct`_.
+
+.. _PyPA Code of Conduct: https://www.pypa.io/en/latest/code-of-conduct/
+
