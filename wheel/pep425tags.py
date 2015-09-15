@@ -60,7 +60,7 @@ def get_supported(versions=None):
 
     soabi = sysconfig.get_config_var('SOABI')
     if soabi and soabi.startswith('cpython-'):
-        abis[0:0] = ['cp' + soabi.split('-', 1)[-1]]
+        abis[0:0] = ['cp' + soabi.split('-')[1]]
  
     abi3s = set()
     import imp
