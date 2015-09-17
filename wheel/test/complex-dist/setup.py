@@ -20,6 +20,11 @@ setup(name='complex-dist',
       install_requires=["quux", "splort"],
       extras_require={'simple':['simple.dist']},
       tests_require=["foo", "bar>=10.0.0"],
-      entry_points={'console_scripts':['complex-dist=complexdist:main']}
+      entry_points={
+          'console_scripts': [
+              'complex-dist=complexdist:main',
+              'complex-dist2=complexdist:main',
+          ],
+      },
       )
 

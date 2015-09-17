@@ -191,8 +191,8 @@ def pkginfo_to_dict(path, distribution=None):
         exports = OrderedDict()
         for group, items in sorted(ep_map.items()):
             exports[group] = OrderedDict()
-            for item in sorted(items.values()):
-                name, export = str(item).split(' = ', 1)
+            for item in sorted(map(str, items.values())):
+                name, export = item.split(' = ', 1)
                 exports[group][name] = export
         if exports:
             metadata['extensions']['python.exports'] = exports
