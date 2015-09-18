@@ -1,3 +1,7 @@
+0.26.0
+======
+- Fix multiple entrypoint comparison failure on Python 3 (Issue #148)
+
 0.25.0
 ======
 - Add Python 3.5 to tox configuration
