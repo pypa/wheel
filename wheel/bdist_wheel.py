@@ -52,8 +52,8 @@ class bdist_wheel(Command):
 
     user_options = [('bdist-dir=', 'b',
                      "temporary directory for creating the distribution"),
-                    ('plat-name=', 'p',
-                     "platform name to embed in generated filenames "
+                    ('plat-tag=', 'p',
+                     "platform tag to embed in generated filenames "
                      "(default: %s)" % get_platform()),
                     ('keep-temp', 'k',
                      "keep the pseudo-installation tree around after " +
@@ -85,6 +85,7 @@ class bdist_wheel(Command):
         self.bdist_dir = None
         self.data_dir = None
         self.plat_name = None
+        self.plat_tag = None
         self.format = 'zip'
         self.keep_temp = False
         self.dist_dir = None
@@ -135,7 +136,11 @@ class bdist_wheel(Command):
                 impl = 'py2.py3'
             else:
                 impl = self.python_tag
-            tag = (impl, 'none', 'any')
+            if self.plat_tag:
+                plat_name = self.plat_tag.replace('-', '_').replace('.', '_')
+            else:
+                plat_name = 'any'
+            tag = (impl, 'none', plat_name)
         else:
             plat_name = self.plat_name
             if plat_name is None:
@@ -159,13 +164,13 @@ class bdist_wheel(Command):
     def get_archive_basename(self):
         """Return archive name without extension"""
 
-        impl_tag, abi_tag, plat_tag = self.get_tag()
+        impl_tag, abi_tag, plat_name = self.get_tag()
 
         archive_basename = "%s-%s-%s-%s" % (
             self.wheel_dist_name,
             impl_tag,
             abi_tag,
-            plat_tag)
+            plat_name)
         return archive_basename
 
     def run(self):
@@ -259,10 +264,10 @@ class bdist_wheel(Command):
         msg['Root-Is-Purelib'] = str(self.root_is_pure).lower()
 
         # Doesn't work for bdist_wininst
-        impl_tag, abi_tag, plat_tag = self.get_tag()
+        impl_tag, abi_tag, plat_name = self.get_tag()
         for impl in impl_tag.split('.'):
             for abi in abi_tag.split('.'):
-                for plat in plat_tag.split('.'):
+                for plat in plat_name.split('.'):
                     msg['Tag'] = '-'.join((impl, abi, plat))
 
         wheelfile_path = os.path.join(wheelfile_base, 'WHEEL')
