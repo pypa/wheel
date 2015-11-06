@@ -55,6 +55,9 @@ class bdist_wheel(Command):
                     ('plat-tag=', 'p',
                      "platform tag to embed in generated filenames "
                      "(default: %s)" % get_platform()),
+                    ('plat-name=', None,
+                     "DEPRECATED. Platform tag to embed in generated "
+                     "filenames (default: %s)" % get_platform()),
                     ('keep-temp', 'k',
                      "keep the pseudo-installation tree around after " +
                      "creating the distribution archive"),
@@ -137,14 +140,17 @@ class bdist_wheel(Command):
             else:
                 impl = self.python_tag
             if self.plat_tag:
-                plat_name = self.plat_tag.replace('-', '_').replace('.', '_')
+                plat_tag = self.plat_tag.replace('-', '_').replace('.', '_')
             else:
-                plat_name = 'any'
-            tag = (impl, 'none', plat_name)
+                plat_tag = 'any'
+            tag = (impl, 'none', plat_tag)
         else:
-            plat_name = self.plat_name
+            plat_name = self.plat_tag
             if plat_name is None:
-                plat_name = get_platform()
+                if self.plat_name:
+                    plat_name = self.plat_name
+                else:
+                    plat_name = get_platform()
             plat_name = plat_name.replace('-', '_').replace('.', '_')
             impl_name = get_abbr_impl()
             impl_ver = get_impl_ver()
@@ -164,13 +170,13 @@ class bdist_wheel(Command):
     def get_archive_basename(self):
         """Return archive name without extension"""
 
-        impl_tag, abi_tag, plat_name = self.get_tag()
+        impl_tag, abi_tag, plat_tag = self.get_tag()
 
         archive_basename = "%s-%s-%s-%s" % (
             self.wheel_dist_name,
             impl_tag,
             abi_tag,
-            plat_name)
+            plat_tag)
         return archive_basename
 
     def run(self):
@@ -264,10 +270,10 @@ class bdist_wheel(Command):
         msg['Root-Is-Purelib'] = str(self.root_is_pure).lower()
 
         # Doesn't work for bdist_wininst
-        impl_tag, abi_tag, plat_name = self.get_tag()
+        impl_tag, abi_tag, plat_tag = self.get_tag()
         for impl in impl_tag.split('.'):
             for abi in abi_tag.split('.'):
-                for plat in plat_name.split('.'):
+                for plat in plat_tag.split('.'):
                     msg['Tag'] = '-'.join((impl, abi, plat))
 
         wheelfile_path = os.path.join(wheelfile_base, 'WHEEL')
