@@ -1,3 +1,16 @@
+0.26.0
+======
+- Fix multiple entrypoint comparison failure on Python 3 (Issue #148)
+
+0.25.0
+======
+- Add Python 3.5 to tox configuration
+- Deterministic (sorted) metadata
+- Fix tagging for Python 3.5 compatibility
+- Support py2-none-'arch' and py3-none-'arch' tags
+- Treat data-only wheels as pure
+- Write to temporary file and rename when using wheel install --force
+
 0.24.0
 ======
 - The python tag used for pure-python packages is now .pyN (major version
