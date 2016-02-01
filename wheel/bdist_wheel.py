@@ -372,9 +372,11 @@ class bdist_wheel(Command):
                                                      'not-zip-safe',)))
 
             # delete dependency_links if it is only whitespace
-            dependency_links = os.path.join(distinfo_path, 'dependency_links.txt')
-            if not open(dependency_links, 'r').read().strip():
-                adios(dependency_links)
+            dependency_links_path = os.path.join(distinfo_path, 'dependency_links.txt')
+            with open(dependency_links_path, 'r') as dependency_links_file:
+                dependency_links = dependency_links_file.read().strip()
+            if not dependency_links:
+                adios(dependency_links_path)
 
         write_pkg_info(os.path.join(distinfo_path, 'METADATA'), pkg_info)
 
