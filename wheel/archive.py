@@ -36,11 +36,11 @@ def make_wheelfile_inner(base_name, base_dir='.'):
     # Some applications need reproducible .whl files, but they can't do this
     # without forcing the timestamp of the individual ZipInfo objects.  See
     # issue #143.
-    timestamp = os.environ.get('WHEEL_FORCE_TIMESTAMP')
+    timestamp = os.environ.get('SOURCE_DATE_EPOCH')
     if timestamp is None:
         date_time = None
     else:
-        date_time = time.localtime(int(timestamp))[0:6]
+        date_time = time.gmtime(int(timestamp))[0:6]
 
     # XXX support bz2, xz when available
     zip = zipfile.ZipFile(open(zip_filename, "wb+"), "w",
@@ -52,7 +52,7 @@ def make_wheelfile_inner(base_name, base_dir='.'):
     def writefile(path, date_time):
         if date_time is None:
             st = os.stat(path)
-            mtime = time.localtime(st.st_mtime)
+            mtime = time.gmtime(st.st_mtime)
             date_time = mtime[0:6]
         zinfo = zipfile.ZipInfo(path, date_time)
         with open(path, 'rb') as fp:

@@ -115,7 +115,7 @@ def test_zipfile_timestamp():
                 fp.write(filename + '\n')
         zip_base_name = os.path.join(tempdir, 'dummy')
         # The earliest date representable in TarInfos, 1980-01-01
-        with environ('WHEEL_FORCE_TIMESTAMP', '315576060'):
+        with environ('SOURCE_DATE_EPOCH', '315576060'):
             zip_filename = wheel.archive.make_wheelfile_inner(
                 zip_base_name, tempdir)
         with readable_zipfile(zip_filename) as zf:
