@@ -33,7 +33,7 @@ from distutils.sysconfig import get_python_version
 
 from distutils import log as logger
 
-from .pep425tags import get_abbr_impl, get_impl_ver
+from .pep425tags import get_abbr_impl, get_impl_ver, get_abi_tag
 from .util import native, open_for_csv
 from .archive import archive_wheelfile
 from .pkginfo import read_pkg_info, write_pkg_info
@@ -143,14 +143,8 @@ class bdist_wheel(Command):
             plat_name = plat_name.replace('-', '_').replace('.', '_')
             impl_name = get_abbr_impl()
             impl_ver = get_impl_ver()
-            # PEP 3149 -- no SOABI in Py 2
-            # For PyPy?
-            # "pp%s%s" % (sys.pypy_version_info.major,
-            # sys.pypy_version_info.minor)
-            abi_tag = sysconfig.get_config_vars().get('SOABI', 'none')
-            if abi_tag.startswith('cpython-'):
-                abi_tag = 'cp' + abi_tag.split('-')[1]
-
+            # PEP 3149
+            abi_tag = str(get_abi_tag()).lower()
             tag = (impl_name + impl_ver, abi_tag, plat_name)
             # XXX switch to this alternate implementation for non-pure:
             assert tag == supported_tags[0]
