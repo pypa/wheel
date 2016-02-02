@@ -194,7 +194,7 @@ class bdist_wheel(Command):
         if os.name == 'nt':
             # win32 barfs if any of these are ''; could be '.'?
             # (distutils.command.install:change_roots bug)
-            basedir_observed = os.path.join(self.data_dir, '..')
+            basedir_observed = os.path.normpath(os.path.join(self.data_dir, '..'))
             self.install_libbase = self.install_lib = basedir_observed
 
         setattr(install,
