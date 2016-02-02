@@ -132,31 +132,27 @@ class bdist_wheel(Command):
                          safer_version(self.distribution.get_version())))
 
     def get_tag(self):
-        supported_tags = pep425tags.get_supported()
+        plat_tag = self.plat_tag or self.plat_name
+        if plat_tag:
+            plat_tag = plat_tag.replace('-', '_').replace('.', '_')
+        supported_tags = pep425tags.get_supported(supplied_platform=plat_tag)
 
         if self.root_is_pure:
             if self.universal:
                 impl = 'py2.py3'
             else:
                 impl = self.python_tag
-            if self.plat_tag:
-                plat_tag = self.plat_tag.replace('-', '_').replace('.', '_')
-            else:
+            if not plat_tag:
                 plat_tag = 'any'
             tag = (impl, 'none', plat_tag)
         else:
-            plat_name = self.plat_tag
-            if plat_name is None:
-                if self.plat_name:
-                    plat_name = self.plat_name
-                else:
-                    plat_name = get_platform()
-            plat_name = plat_name.replace('-', '_').replace('.', '_')
             impl_name = get_abbr_impl()
             impl_ver = get_impl_ver()
             # PEP 3149
             abi_tag = str(get_abi_tag()).lower()
-            tag = (impl_name + impl_ver, abi_tag, plat_name)
+            if not plat_tag:
+                plat_tag = get_platform().replace('-', '_').replace('.', '_')
+            tag = (impl_name + impl_ver, abi_tag, plat_tag)
             # XXX switch to this alternate implementation for non-pure:
             assert tag == supported_tags[0]
         return tag
