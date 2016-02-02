@@ -52,9 +52,12 @@ class bdist_wheel(Command):
 
     user_options = [('bdist-dir=', 'b',
                      "temporary directory for creating the distribution"),
-                    ('plat-name=', 'p',
-                     "platform name to embed in generated filenames "
+                    ('plat-tag=', 'p',
+                     "platform tag to embed in generated filenames "
                      "(default: %s)" % get_platform()),
+                    ('plat-name=', None,
+                     "DEPRECATED. Platform tag to embed in generated "
+                     "filenames (default: %s)" % get_platform()),
                     ('keep-temp', 'k',
                      "keep the pseudo-installation tree around after " +
                      "creating the distribution archive"),
@@ -85,6 +88,7 @@ class bdist_wheel(Command):
         self.bdist_dir = None
         self.data_dir = None
         self.plat_name = None
+        self.plat_tag = None
         self.format = 'zip'
         self.keep_temp = False
         self.dist_dir = None
@@ -135,11 +139,18 @@ class bdist_wheel(Command):
                 impl = 'py2.py3'
             else:
                 impl = self.python_tag
-            tag = (impl, 'none', 'any')
+            if self.plat_tag:
+                plat_tag = self.plat_tag.replace('-', '_').replace('.', '_')
+            else:
+                plat_tag = 'any'
+            tag = (impl, 'none', plat_tag)
         else:
-            plat_name = self.plat_name
+            plat_name = self.plat_tag
             if plat_name is None:
-                plat_name = get_platform()
+                if self.plat_name:
+                    plat_name = self.plat_name
+                else:
+                    plat_name = get_platform()
             plat_name = plat_name.replace('-', '_').replace('.', '_')
             impl_name = get_abbr_impl()
             impl_ver = get_impl_ver()
