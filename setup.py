@@ -41,6 +41,7 @@ setup(name='wheel',
           ':python_version=="2.6"': ['argparse'],
           'signatures': ['keyring', 'keyrings.alt'],
           'signatures:sys_platform!="win32"': ['pyxdg'],
+          'signatures:python_version=="2.6"': ['importlib'],
           'faster-signatures': ['ed25519ll'],
           'tool': []
           },
