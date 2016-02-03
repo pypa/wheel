@@ -1,13 +1,13 @@
 from .. import tool
 
-def test_keygen():    
+def test_keygen():
     def get_keyring():
         WheelKeys, keyring = tool.get_keyring()
-        
+
         class WheelKeysTest(WheelKeys):
             def save(self):
                 pass
-        
+
         class keyringTest:
             backend = keyring.backend
             class backends:
@@ -20,9 +20,9 @@ def test_keygen():
                         self.pw = c
                     def get_password(self, a, b):
                         return self.pw
-                    
+
                 return keyringTest2()
-        
+
         return WheelKeysTest, keyringTest
-    
+
     tool.keygen(get_keyring=get_keyring)
