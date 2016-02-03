@@ -10,7 +10,7 @@ import wheel.paths
 
 from glob import iglob
 from .. import signatures
-from ..util import (urlsafe_b64decode, urlsafe_b64encode, native, binary, 
+from ..util import (urlsafe_b64decode, urlsafe_b64encode, native, binary,
                     matches_requirement)
 from ..install import WheelFile
 
@@ -29,8 +29,9 @@ def get_keyring():
     try:
         from ..signatures import keys
         import keyring
-    except ImportError:
-        raise WheelError("Install wheel[signatures] (requires keyring, pyxdg) for signatures.")
+        assert keyring.get_keyring().priority
+    except (ImportError, AssertionError):
+        raise WheelError("Install wheel[signatures] (requires keyring, keyrings.alt, pyxdg) for signatures.")
     return keys.WheelKeys, keyring
 
 def keygen(get_keyring=get_keyring):
@@ -47,10 +48,7 @@ def keygen(get_keyring=get_keyring):
     kr = keyring.get_keyring()
     kr.set_password("wheel", vk, sk)
     sys.stdout.write("Created Ed25519 keypair with vk={0}\n".format(vk))
-    if isinstance(kr, keyring.backends.file.BaseKeyring):
-        sys.stdout.write("in {0}\n".format(kr.file_path))
-    else:
-        sys.stdout.write("in %r\n" % kr.__class__)
+    sys.stdout.write("in {0!r}\n".format(kr))
 
     sk2 = kr.get_password('wheel', vk)
     if sk2 != sk:
@@ -94,9 +92,9 @@ def sign(wheelfile, replace=False, get_keyring=get_keyring):
 def unsign(wheelfile):
     """
     Remove RECORD.jws from a wheel by truncating the zip file.
-    
-    RECORD.jws must be at the end of the archive. The zip file must be an 
-    ordinary archive, with the compressed files and the directory in the same 
+
+    RECORD.jws must be at the end of the archive. The zip file must be an
+    ordinary archive, with the compressed files and the directory in the same
     order, and without any non-zip content after the truncation point.
     """
     import wheel.install
@@ -109,8 +107,8 @@ def unsign(wheelfile):
 
 def verify(wheelfile):
     """Verify a wheel.
-    
-    The signature will be verified for internal consistency ONLY and printed. 
+
+    The signature will be verified for internal consistency ONLY and printed.
     Wheel's own unpack/install commands verify the manifest against the
     signature and file contents.
     """
@@ -142,7 +140,7 @@ def install(requirements, requirements_file=None,
             wheel_dirs=None, force=False, list_files=False,
             dry_run=False):
     """Install wheels.
-    
+
     :param requirements: A list of requirements or wheel files to install.
     :param requirements_file: A file containing requirements to install.
     :param wheel_dirs: A list of directories to search for wheels.
@@ -243,7 +241,7 @@ def install_scripts(distributions):
 
 def convert(installers, dest_dir, verbose):
     require_pkgresources('wheel convert')
-    
+
     # Only support wheel convert if pkg_resources is present
     from ..wininst2wheel import bdist_wininst2wheel
     from ..egg2wheel import egg2wheel
@@ -318,7 +316,7 @@ def parser():
                                 "but don't actually install anything.")
     install_parser.set_defaults(func=install_f)
 
-    def install_scripts_f(args):        
+    def install_scripts_f(args):
         install_scripts(args.distributions)
     install_scripts_parser = s.add_parser('install-scripts', help='Install console_scripts')
     install_scripts_parser.add_argument('distributions', nargs='*',
