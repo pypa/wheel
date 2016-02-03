@@ -29,8 +29,9 @@ def get_keyring():
     try:
         from ..signatures import keys
         import keyring
-    except ImportError:
-        raise WheelError("Install wheel[signatures] (requires keyring, pyxdg) for signatures.")
+        assert keyring.get_keyring().priority
+    except (ImportError, AssertionError):
+        raise WheelError("Install wheel[signatures] (requires keyring, keyrings.alt, pyxdg) for signatures.")
     return keys.WheelKeys, keyring
 
 def keygen(get_keyring=get_keyring):
