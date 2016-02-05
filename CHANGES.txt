@@ -1,3 +1,7 @@
+0.28.0
+======
+- Fix file modes in archive (Issue #154)
+
 0.27.0
 ======
 - Support forcing a platform tag using `--plat-name` on pure-Python wheels, as
