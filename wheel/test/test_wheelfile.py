@@ -124,15 +124,18 @@ def test_zipfile_timestamp():
 
 def test_zipfile_attributes():
     # With the change from ZipFile.write() to .writestr(), we need to manually
-    # set member attributes. Per existing tradition file permissions are forced
-    # to 0o644, although in the future we may want to preserve executable bits.
+    # set member attributes.
     with temporary_directory() as tempdir:
-        path = os.path.join(tempdir, 'foo')
-        with codecs.open(path, 'w', encoding='utf-8') as fp:
-            fp.write('foo\n')
+        files = (('foo', 0o644), ('bar', 0o755))
+        for filename, mode in files:
+            path = os.path.join(tempdir, filename)
+            with codecs.open(path, 'w', encoding='utf-8') as fp:
+                fp.write(filename + '\n')
+            os.chmod(path, mode)
         zip_base_name = os.path.join(tempdir, 'dummy')
         zip_filename = wheel.archive.make_wheelfile_inner(
             zip_base_name, tempdir)
         with readable_zipfile(zip_filename) as zf:
-            for info in zf.infolist():
-                assert info.external_attr == 0o100644 << 16
+            for filename, mode in files:
+                info = zf.getinfo(os.path.join(tempdir, filename))
+                assert info.external_attr == (mode | 0o100000) << 16

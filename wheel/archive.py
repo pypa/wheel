@@ -50,12 +50,12 @@ def make_wheelfile_inner(base_name, base_dir='.'):
     deferred = []
 
     def writefile(path, date_time):
+        st = os.stat(path)
         if date_time is None:
-            st = os.stat(path)
             mtime = time.gmtime(st.st_mtime)
             date_time = mtime[0:6]
         zinfo = zipfile.ZipInfo(path, date_time)
-        zinfo.external_attr = 0o100644 << 16
+        zinfo.external_attr = st.st_mode << 16
         with open(path, 'rb') as fp:
             zip.writestr(zinfo, fp.read())
         log.info("adding '%s'" % path)
