@@ -1,5 +1,6 @@
 """
-Tests for the bdist_wheel tag options (--python-tag and --universal)
+Tests for the bdist_wheel tag options (--python-tag, --universal, and
+--plat-name)
 """
 
 import sys
@@ -50,7 +51,7 @@ def test_default_tag(temp_pkg):
     assert dist_dir.check(dir=1)
     wheels = dist_dir.listdir()
     assert len(wheels) == 1
-    assert wheels[0].basename.startswith('Test-1.0-py%s-' % (sys.version[0],))
+    assert wheels[0].basename == 'Test-1.0-py%s-none-any.whl' % (sys.version[0],)
     assert wheels[0].ext == '.whl'
 
 def test_explicit_tag(temp_pkg):
@@ -122,9 +123,9 @@ def test_legacy_wheel_section_in_setup_cfg(temp_pkg):
     assert wheels[0].basename.startswith('Test-1.0-py2.py3-')
     assert wheels[0].ext == '.whl'
 
-def test_plat_tag_purepy(temp_pkg):
+def test_plat_name_purepy(temp_pkg):
     subprocess.check_call(
-        [sys.executable, 'setup.py', 'bdist_wheel', '--plat-tag=testplat.pure'],
+        [sys.executable, 'setup.py', 'bdist_wheel', '--plat-name=testplat.pure'],
         cwd=str(temp_pkg))
     dist_dir = temp_pkg.join('dist')
     assert dist_dir.check(dir=1)
@@ -133,10 +134,10 @@ def test_plat_tag_purepy(temp_pkg):
     assert wheels[0].basename.endswith('-testplat_pure.whl')
     assert wheels[0].ext == '.whl'
 
-def test_plat_tag_ext(temp_ext_pkg):
+def test_plat_name_ext(temp_ext_pkg):
     try:
         subprocess.check_call(
-            [sys.executable, 'setup.py', 'bdist_wheel', '--plat-tag=testplat.arch'],
+            [sys.executable, 'setup.py', 'bdist_wheel', '--plat-name=testplat.arch'],
             cwd=str(temp_ext_pkg))
     except subprocess.CalledProcessError:
         pytest.skip("Cannot compile C Extensions")
@@ -147,8 +148,8 @@ def test_plat_tag_ext(temp_ext_pkg):
     assert wheels[0].basename.endswith('-testplat_arch.whl')
     assert wheels[0].ext == '.whl'
 
-def test_plat_tag_purepy_in_setupcfg(temp_pkg):
-    temp_pkg.join('setup.cfg').write('[bdist_wheel]\nplat_tag=testplat.pure')
+def test_plat_name_purepy_in_setupcfg(temp_pkg):
+    temp_pkg.join('setup.cfg').write('[bdist_wheel]\nplat_name=testplat.pure')
     subprocess.check_call(
         [sys.executable, 'setup.py', 'bdist_wheel'],
         cwd=str(temp_pkg))
@@ -159,8 +160,8 @@ def test_plat_tag_purepy_in_setupcfg(temp_pkg):
     assert wheels[0].basename.endswith('-testplat_pure.whl')
     assert wheels[0].ext == '.whl'
 
-def test_plat_tag_ext_in_setupcfg(temp_ext_pkg):
-    temp_ext_pkg.join('setup.cfg').write('[bdist_wheel]\nplat_tag=testplat.arch')
+def test_plat_name_ext_in_setupcfg(temp_ext_pkg):
+    temp_ext_pkg.join('setup.cfg').write('[bdist_wheel]\nplat_name=testplat.arch')
     try:
         subprocess.check_call(
             [sys.executable, 'setup.py', 'bdist_wheel'],

@@ -1,9 +1,8 @@
 0.27.0
 ======
-- Rename `--plat-name` to `--plat-tag` (`--plat-name` remains as a deprecated
-  option) and support forcing a platform tag on pure-Python wheels, as well as
-  nonstandard platform tags on non-pure wheels (Pull Request #60, Issue #144,
-  thanks Andrés Díaz)
+- Support forcing a platform tag using `--plat-name` on pure-Python wheels, as
+  well as nonstandard platform tags on non-pure wheels (Pull Request #60, Issue
+  #144, thanks Andrés Díaz)
 - Add SOABI tags to platform-specific wheels built for Python 2.X (Pull Request
   #55, Issue #63, Issue #101)
 - Support reproducible wheel files, wheels that can be rebuilt and will hash to

@@ -52,12 +52,9 @@ class bdist_wheel(Command):
 
     user_options = [('bdist-dir=', 'b',
                      "temporary directory for creating the distribution"),
-                    ('plat-tag=', 'p',
-                     "platform tag to embed in generated filenames "
+                    ('plat-name=', 'p',
+                     "platform name to embed in generated filenames "
                      "(default: %s)" % get_platform()),
-                    ('plat-name=', None,
-                     "DEPRECATED. Platform tag to embed in generated "
-                     "filenames (default: %s)" % get_platform()),
                     ('keep-temp', 'k',
                      "keep the pseudo-installation tree around after " +
                      "creating the distribution archive"),
@@ -101,6 +98,7 @@ class bdist_wheel(Command):
         self.group = None
         self.universal = False
         self.python_tag = 'py' + get_impl_ver()[0]
+        self.plat_name_supplied = False
 
     def finalize_options(self):
         if self.bdist_dir is None:
@@ -108,6 +106,7 @@ class bdist_wheel(Command):
             self.bdist_dir = os.path.join(bdist_base, 'wheel')
 
         self.data_dir = self.wheel_dist_name + '.data'
+        self.plat_name_supplied = self.plat_name is not None
 
         need_options = ('dist_dir', 'plat_name', 'skip_build')
 
@@ -132,27 +131,30 @@ class bdist_wheel(Command):
                          safer_version(self.distribution.get_version())))
 
     def get_tag(self):
-        plat_tag = self.plat_tag or self.plat_name
-        if plat_tag:
-            plat_tag = plat_tag.replace('-', '_').replace('.', '_')
-        supported_tags = pep425tags.get_supported(supplied_platform=plat_tag)
+        # bdist sets self.plat_name if unset, we should only use it for purepy
+        # wheels if the user supplied it.
+        if self.plat_name_supplied:
+            plat_name = self.plat_name
+        elif self.root_is_pure:
+            plat_name = 'any'
+        else:
+            plat_name = self.plat_name or get_platform()
+        plat_name = plat_name.replace('-', '_').replace('.', '_')
 
         if self.root_is_pure:
             if self.universal:
                 impl = 'py2.py3'
             else:
                 impl = self.python_tag
-            if not plat_tag:
-                plat_tag = 'any'
-            tag = (impl, 'none', plat_tag)
+            tag = (impl, 'none', plat_name)
         else:
             impl_name = get_abbr_impl()
             impl_ver = get_impl_ver()
             # PEP 3149
             abi_tag = str(get_abi_tag()).lower()
-            if not plat_tag:
-                plat_tag = get_platform().replace('-', '_').replace('.', '_')
-            tag = (impl_name + impl_ver, abi_tag, plat_tag)
+            tag = (impl_name + impl_ver, abi_tag, plat_name)
+            supported_tags = pep425tags.get_supported(
+                supplied_platform=plat_name if self.plat_name_supplied else None)
             # XXX switch to this alternate implementation for non-pure:
             assert tag == supported_tags[0]
         return tag
