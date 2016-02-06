@@ -56,6 +56,7 @@ def make_wheelfile_inner(base_name, base_dir='.'):
             date_time = mtime[0:6]
         zinfo = zipfile.ZipInfo(path, date_time)
         zinfo.external_attr = st.st_mode << 16
+        zinfo.compress_type = zipfile.ZIP_DEFLATED
         with open(path, 'rb') as fp:
             zip.writestr(zinfo, fp.read())
         log.info("adding '%s'" % path)
