@@ -139,3 +139,4 @@ def test_zipfile_attributes():
             for filename, mode in files:
                 info = zf.getinfo(os.path.join(tempdir, filename))
                 assert info.external_attr == (mode | 0o100000) << 16
+                assert info.compress_type == zipfile.ZIP_DEFLATED
