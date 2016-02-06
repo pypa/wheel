@@ -1,3 +1,8 @@
+0.29.0
+======
+- Fix compression type of files in archive (Issue #155, Pull Request #62,
+  thanks Xavier Fernandez)
+
 0.28.0
 ======
 - Fix file modes in archive (Issue #154)
