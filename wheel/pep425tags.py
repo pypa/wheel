@@ -100,7 +100,11 @@ def get_abi_tag():
 def get_platform():
     """Return our platform name 'win32', 'linux_x86_64'"""
     # XXX remove distutils dependency
-    return distutils.util.get_platform().replace('.', '_').replace('-', '_')
+    result = distutils.util.get_platform().replace('.', '_').replace('-', '_')
+    if result == "linux_x86_64" and sys.maxsize == 2147483647:
+        # pip pull request #3497
+        result = "linux_i686"
+    return result
 
 
 def get_supported(versions=None, supplied_platform=None):

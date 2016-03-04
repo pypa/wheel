@@ -11,6 +11,7 @@ import subprocess
 import warnings
 import shutil
 import json
+import sys
 import wheel
 
 try:
@@ -27,13 +28,12 @@ safe_version = pkg_resources.safe_version
 from shutil import rmtree
 from email.generator import Generator
 
-from distutils.util import get_platform
 from distutils.core import Command
 from distutils.sysconfig import get_python_version
 
 from distutils import log as logger
 
-from .pep425tags import get_abbr_impl, get_impl_ver, get_abi_tag
+from .pep425tags import get_abbr_impl, get_impl_ver, get_abi_tag, get_platform
 from .util import native, open_for_csv
 from .archive import archive_wheelfile
 from .pkginfo import read_pkg_info, write_pkg_info
@@ -139,7 +139,10 @@ class bdist_wheel(Command):
             plat_name = 'any'
         else:
             plat_name = self.plat_name or get_platform()
+            if plat_name in ('linux-x86_64', 'linux_x86_64') and sys.maxsize == 2147483647:
+                plat_name = 'linux_i686'
         plat_name = plat_name.replace('-', '_').replace('.', '_')
+
 
         if self.root_is_pure:
             if self.universal:
@@ -156,7 +159,7 @@ class bdist_wheel(Command):
             supported_tags = pep425tags.get_supported(
                 supplied_platform=plat_name if self.plat_name_supplied else None)
             # XXX switch to this alternate implementation for non-pure:
-            assert tag == supported_tags[0]
+            assert tag == supported_tags[0], "%s != %s" % (tag, supported_tags[0])
         return tag
 
     def get_archive_basename(self):
