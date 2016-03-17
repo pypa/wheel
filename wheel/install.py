@@ -360,10 +360,11 @@ class WheelFile(object):
                 os.chmod(dest, info.external_attr >> 16)
 
         record_name = os.path.join(root, self.record_name)
-        writer = csv.writer(open_for_csv(record_name, 'w+'))
-        for reldest, digest, length in sorted(record_data):
-            writer.writerow((reldest, digest, length))
-        writer.writerow((self.record_name, '', ''))
+        with open_for_csv(record_name, 'w+') as record_file:
+            writer = csv.writer(record_file)
+            for reldest, digest, length in sorted(record_data):
+                writer.writerow((reldest, digest, length))
+            writer.writerow((self.record_name, '', ''))
 
     def verify(self, zipfile=None):
         """Configure the VerifyingZipFile `zipfile` by verifying its signature 
