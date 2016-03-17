@@ -244,7 +244,8 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
     pkg_info.replace_header('Metadata-Version', '2.0')
     requires_path = os.path.join(egg_info_path, 'requires.txt')
     if os.path.exists(requires_path):
-        requires = open(requires_path).read()
+        with open(requires_path) as requires_file:
+            requires = requires_file.read()
         for extra, reqs in sorted(pkg_resources.split_sections(requires),
                                   key=lambda x: x[0] or ''):
             condition = ''
