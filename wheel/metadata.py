@@ -111,7 +111,8 @@ def pkginfo_to_dict(path, distribution=None):
         unicode
         pkg_info = read_pkg_info(path)
     except NameError:
-        pkg_info = email.parser.Parser().parsestr(open(path, 'rb').read().decode('utf-8'))
+        with open(path, 'rb') as pkg_info_file:
+            pkg_info = email.parser.Parser().parsestr(pkg_info_file.read().decode('utf-8'))
     description = None
 
     if pkg_info['Summary']:
