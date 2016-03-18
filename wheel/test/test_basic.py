@@ -63,12 +63,13 @@ def test_findable():
 
 def test_egg_re():
     """Make sure egg_info_re matches."""
-    egg_names = open(pkg_resources.resource_filename('wheel', 'eggnames.txt'))
-    for line in egg_names:
-        line = line.strip()
-        if not line:
-            continue
-        assert egg2wheel.egg_info_re.match(line), line
+    egg_names_path = pkg_resources.resource_filename('wheel', 'eggnames.txt')
+    with open(egg_names_path) as egg_names:
+        for line in egg_names:
+            line = line.strip()
+            if not line:
+                continue
+            assert egg2wheel.egg_info_re.match(line), line
 
 def test_compatibility_tags():
     """Test compatibilty tags are working."""
@@ -117,7 +118,8 @@ def test_pydist():
     import jsonschema
 
     def open_json(filename):
-        return json.loads(open(filename, 'rb').read().decode('utf-8'))
+        with open(filename, 'rb') as json_file:
+            return json.loads(json_file.read().decode('utf-8'))
 
     pymeta_schema = open_json(resource_filename('wheel.test',
                                                 'pydist-schema.json'))
