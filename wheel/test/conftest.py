@@ -8,9 +8,13 @@ import warnings
 import pytest
 
 @pytest.yield_fixture(scope='function', autouse=True)
-def fail_on_ResourceWarning():
-    """This fixture captures ResourceWarning's and raises an assertion error
+def error_on_ResourceWarning():
+    """This fixture captures ResourceWarning's and reports an "error"
     describing the file handles left open.
+    
+    This is shown regardless of how successful the test was, if a test fails
+    and leaves files open then those files will be reported.  Ideally, even
+    those files should be closed properly after a test failure or exception.
 
     Since only Python 3 and PyPy3 have ResourceWarning's, this context will
     have no effect when running tests on Python 2 or PyPy.
@@ -34,5 +38,8 @@ def fail_on_ResourceWarning():
         warnings.simplefilter('always', ResourceWarning) # add filter
         yield # run tests in this context
         gc.collect() # run garbage collection (for pypy3)
-        # display the problematic filenames if any warnings were caught
-        assert not caught, '\n'.join((str(warning.message) for warning in caught))
+        if not caught:
+            return
+        pytest.fail('The following file descriptors were not closed properly:\n' +
+                    '\n'.join((str(warning.message) for warning in caught)),
+                    pytrace=False)
