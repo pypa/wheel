@@ -163,7 +163,7 @@ def bdist_wininst2wheel(path, dest_dir=os.path.curdir):
     else:
         bw = _bdist_wheel_tag(distutils.dist.Distribution())
 
-    bw.root_is_purelib = root_is_purelib
+    bw.root_is_pure = root_is_purelib
     bw.plat_name_supplied = True
     bw.plat_name = info['arch'] or 'any'
 
