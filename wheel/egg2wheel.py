@@ -51,6 +51,7 @@ def egg2wheel(egg_path, dest_dir):
         bw = _bdist_wheel_tag(distutils.dist.Distribution())
 
     bw.root_is_pure = root_is_purelib
+    bw.python_tag = pyver
     bw.plat_name_supplied = True
     bw.plat_name = egg_info['arch'] or 'any'
     if not root_is_purelib:
