@@ -236,6 +236,29 @@ def convert_requirements(requirements):
             extras = "[%s]" % extras
         yield (parsed_requirement.project_name + extras + spec)
 
+def generate_requirements(extras_require):
+    """
+    Convert requirements from a setup()-style dictionary to ('Requires-Dist', 'requirement')
+    and ('Provides-Extra', 'extra') tuples.
+
+    extras_require is a dictionary of {extra: [requirements]} as passed to setup(),
+    using the empty extra {'': [requirements]} to hold install_requires.
+    """
+    for extra, depends in extras_require.items():
+        condition = ''
+        if extra and ':' in extra:  # setuptools extra:condition syntax
+            extra, condition = extra.split(':', 1)
+            extra = pkg_resources.safe_extra(extra)
+        if extra:
+            yield ('Provides-Extra', extra)
+            if condition:
+                condition += " and "
+            condition += "extra == '%s'" % extra
+        if condition:
+            condition = '; ' + condition
+        for new_req in convert_requirements(depends):
+            yield ('Requires-Dist', new_req + condition)
+
 def pkginfo_to_metadata(egg_info_path, pkginfo_path):
     """
     Convert .egg-info directory with PKG-INFO to the Metadata 1.3 aka
@@ -249,18 +272,8 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
             requires = requires_file.read()
         for extra, reqs in sorted(pkg_resources.split_sections(requires),
                                   key=lambda x: x[0] or ''):
-            condition = ''
-            if extra and ':' in extra: # setuptools extra:condition syntax
-                extra, condition = extra.split(':', 1)
-            if extra:
-                pkg_info['Provides-Extra'] = extra
-                if condition:
-                    condition += " and "
-                condition += 'extra == %s' % repr(extra)
-            if condition:
-                condition = '; ' + condition
-            for new_req in sorted(convert_requirements(reqs)):
-                pkg_info['Requires-Dist'] = new_req + condition
+            for item in generate_requirements({extra: reqs}):
+                pkg_info[item[0]] = item[1]
 
     description = pkg_info['Description']
     if description:
