@@ -18,12 +18,12 @@ try:
 except NameError:
     _big_number = sys.maxint
 
-from wheel.decorator import reify
-from wheel.util import (urlsafe_b64encode, from_json, urlsafe_b64decode,
-                        native, binary, HashingFile)
-from wheel import signatures
-from wheel.pkginfo import read_pkg_info_bytes
-from wheel.util import open_for_csv
+from .decorator import reify
+from .util import (urlsafe_b64encode, from_json, urlsafe_b64decode,
+                   native, binary, HashingFile)
+from . import signatures
+from .pkginfo import read_pkg_info_bytes
+from .util import open_for_csv
 
 from .pep425tags import get_supported
 from .paths import get_install_paths

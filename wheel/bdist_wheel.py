@@ -12,7 +12,6 @@ import warnings
 import shutil
 import json
 import sys
-import wheel
 
 try:
     import sysconfig
@@ -39,6 +38,7 @@ from .archive import archive_wheelfile
 from .pkginfo import read_pkg_info, write_pkg_info
 from .metadata import pkginfo_to_dict
 from . import pep425tags, metadata
+from . import __version__ as wheel_version
 
 def safer_name(name):
     return safe_name(name).replace('-', '_')
@@ -257,7 +257,7 @@ class bdist_wheel(Command):
             else:
                 rmtree(self.bdist_dir)
 
-    def write_wheelfile(self, wheelfile_base, generator='bdist_wheel (' + wheel.__version__ + ')'):
+    def write_wheelfile(self, wheelfile_base, generator='bdist_wheel (' + wheel_version + ')'):
         from email.message import Message
         msg = Message()
         msg['Wheel-Version'] = '1.0'  # of the spec
@@ -423,7 +423,7 @@ class bdist_wheel(Command):
         adios(egginfo_path)
 
     def write_record(self, bdist_dir, distinfo_dir):
-        from wheel.util import urlsafe_b64encode
+        from .util import urlsafe_b64encode
 
         record_path = os.path.join(distinfo_dir, 'RECORD')
         record_relpath = os.path.relpath(record_path, bdist_dir)

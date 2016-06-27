@@ -33,7 +33,7 @@ wheel export key
 
 import json
 import os.path
-from wheel.util import native, load_config_paths, save_config_path
+from ..util import native, load_config_paths, save_config_path
 
 class WheelKeys(object):
     SCHEMA = 1

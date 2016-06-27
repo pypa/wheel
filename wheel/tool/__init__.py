@@ -6,13 +6,13 @@ import os
 import hashlib
 import sys
 import json
-import wheel.paths
 
 from glob import iglob
 from .. import signatures
 from ..util import (urlsafe_b64decode, urlsafe_b64encode, native, binary,
                     matches_requirement)
-from ..install import WheelFile
+from ..install import WheelFile, VerifyingZipFile
+from ..paths import get_install_command
 
 def require_pkgresources(name):
     try:
@@ -97,8 +97,7 @@ def unsign(wheelfile):
     ordinary archive, with the compressed files and the directory in the same
     order, and without any non-zip content after the truncation point.
     """
-    import wheel.install
-    vzf = wheel.install.VerifyingZipFile(wheelfile, "a")
+    vzf = VerifyingZipFile(wheelfile, "a")
     info = vzf.infolist()
     if not (len(info) and info[-1].filename.endswith('/RECORD.jws')):
         raise WheelError("RECORD.jws not found at end of archive.")
@@ -233,7 +232,7 @@ def install_scripts(distributions):
 
     for dist in distributions:
         pkg_resources_dist = pkg_resources.get_distribution(dist)
-        install = wheel.paths.get_install_command(dist)
+        install = get_install_command(dist)
         command = easy_install.easy_install(install.distribution)
         command.args = ['wheel'] # dummy argument
         command.finalize_options()
