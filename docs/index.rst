@@ -111,9 +111,21 @@ used to specify the Python version tag to use more precisely::
                        equates to the tag "py2.py3".
     --python-tag XXX   Specifies the precise python version tag to use for
                        a pure-python wheel.
+    --py-limited-api {cp32|cp33|cp34|...}
+                       Specifies Python Py_LIMITED_API compatibility with
+                       the version of CPython passed and later versions.
+                       The wheel will be tagged cpNN.abi3.{arch} on CPython 3.
+                       This flag does not affect Python 2 builds or alternate
+                       Python implementations.
 
-Neither of these two flags have any effect when used on a project that includes
-C extension code.
+                       To conform to the limited API, all your C
+                       extensions must use only functions from the limited
+                       API, pass Extension(py_limited_api=True) and e.g.
+                       #define Py_LIMITED_API=0x03020000 depending on
+                       the exact minimun Python you wish to support.
+
+The --universal and --python-tag flags have no effect when used on a
+project that includes C extension code.
 
 The default for a pure Python project (if no explicit flags are given) is "pyN"
 where N is the major version of the Python interpreter used to build the wheel.

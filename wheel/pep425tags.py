@@ -152,7 +152,16 @@ def get_supported(versions=None, supplied_platform=None):
     for abi in abis:
         for arch in platforms:
             supported.append(('%s%s' % (impl, versions[0]), abi, arch))
-            
+
+    # abi3 modules compatible with older version of Python
+    for version in versions[1:]:
+        # abi3 was introduced in Python 3.2
+        if version in ('31', '30'):
+            break
+        for abi in abi3s:   # empty set if not Python 3
+            for arch in platforms:
+                supported.append(("%s%s" % (impl, version), abi, arch))
+
     # No abi / arch, but requires our implementation:
     for i, version in enumerate(versions):
         supported.append(('%s%s' % (impl, version), 'none', 'any'))

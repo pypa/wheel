@@ -12,6 +12,7 @@ import warnings
 import shutil
 import json
 import sys
+import re
 
 try:
     import sysconfig
@@ -39,6 +40,8 @@ from .pkginfo import read_pkg_info, write_pkg_info
 from .metadata import pkginfo_to_dict
 from . import pep425tags, metadata
 from . import __version__ as wheel_version
+
+PY_LIMITED_API_PATTERN = r'cp3\d'
 
 def safer_name(name):
     return safe_name(name).replace('-', '_')
@@ -77,6 +80,9 @@ class bdist_wheel(Command):
                     ('python-tag=', None,
                      "Python implementation compatibility tag"
                      " (default: py%s)" % get_impl_ver()[0]),
+                    ('py-limited-api=', None,
+                     "Python tag (cp32|cp33|cpNN) for abi3 wheel tag"
+                     " (default: false)"),
                     ]
 
     boolean_options = ['keep-temp', 'skip-build', 'relative', 'universal']
@@ -98,6 +104,7 @@ class bdist_wheel(Command):
         self.group = None
         self.universal = False
         self.python_tag = 'py' + get_impl_ver()[0]
+        self.py_limited_api = False
         self.plat_name_supplied = False
 
     def finalize_options(self):
@@ -115,6 +122,9 @@ class bdist_wheel(Command):
 
         self.root_is_pure = not (self.distribution.has_ext_modules()
                                  or self.distribution.has_c_libraries())
+
+        if self.py_limited_api and not re.match(PY_LIMITED_API_PATTERN, self.py_limited_api):
+            raise ValueError("py-limited-api must match '%s'" % PY_LIMITED_API_PATTERN)
 
         # Support legacy [wheel] section for setting universal
         wheel = self.distribution.get_option_dict('wheel')
@@ -153,13 +163,20 @@ class bdist_wheel(Command):
         else:
             impl_name = get_abbr_impl()
             impl_ver = get_impl_ver()
-            # PEP 3149
-            abi_tag = str(get_abi_tag()).lower()
-            tag = (impl_name + impl_ver, abi_tag, plat_name)
+            impl = impl_name + impl_ver
+            # We don't work on CPython 3.1, 3.0.
+            if self.py_limited_api and (impl_name + impl_ver).startswith('cp3'):
+                impl = self.py_limited_api
+                abi_tag = 'abi3'
+            else:
+                abi_tag = str(get_abi_tag()).lower()
+            tag = (impl, abi_tag, plat_name)
             supported_tags = pep425tags.get_supported(
                 supplied_platform=plat_name if self.plat_name_supplied else None)
             # XXX switch to this alternate implementation for non-pure:
-            assert tag == supported_tags[0], "%s != %s" % (tag, supported_tags[0])
+            if not self.py_limited_api:
+                assert tag == supported_tags[0], "%s != %s" % (tag, supported_tags[0])
+            assert tag in supported_tags, "would build wheel with unsupported tag %s" % tag
         return tag
 
     def get_archive_basename(self):
