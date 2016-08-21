@@ -10,6 +10,7 @@ import distutils.dist
 from distutils.archive_util import make_archive
 from argparse import ArgumentParser
 from glob import iglob
+from wheel.wininst2wheel import _bdist_wheel_tag
 
 egg_info_re = re.compile(r'''(?P<name>.+?)-(?P<ver>.+?)
     (-(?P<pyver>.+?))?(-(?P<arch>.+?))?.egg''', re.VERBOSE)
@@ -43,8 +44,20 @@ def egg2wheel(egg_path, dest_dir):
                           abi,
                           arch
                           ))
-    bw = wheel.bdist_wheel.bdist_wheel(distutils.dist.Distribution())
-    bw.root_is_purelib = egg_info['arch'] is None
+    root_is_purelib = egg_info['arch'] is None
+    if root_is_purelib:
+        bw = wheel.bdist_wheel.bdist_wheel(distutils.dist.Distribution())
+    else:
+        bw = _bdist_wheel_tag(distutils.dist.Distribution())
+
+    bw.root_is_pure = root_is_purelib
+    bw.python_tag = pyver
+    bw.plat_name_supplied = True
+    bw.plat_name = egg_info['arch'] or 'any'
+    if not root_is_purelib:
+        bw.full_tag_supplied = True
+        bw.full_tag = (pyver, abi, arch)
+
     dist_info_dir = os.path.join(dir, '%s.dist-info' % dist_info)
     bw.egg2dist(os.path.join(dir, 'EGG-INFO'),
                 dist_info_dir)

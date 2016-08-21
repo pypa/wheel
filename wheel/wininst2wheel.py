@@ -158,8 +158,20 @@ def bdist_wininst2wheel(path, dest_dir=os.path.curdir):
                           abi,
                           arch
                           ))
-    bw = wheel.bdist_wheel.bdist_wheel(distutils.dist.Distribution())
-    bw.root_is_purelib = root_is_purelib
+    if root_is_purelib:
+        bw = wheel.bdist_wheel.bdist_wheel(distutils.dist.Distribution())
+    else:
+        bw = _bdist_wheel_tag(distutils.dist.Distribution())
+
+    bw.root_is_pure = root_is_purelib
+    bw.python_tag = pyver
+    bw.plat_name_supplied = True
+    bw.plat_name = info['arch'] or 'any'
+
+    if not root_is_purelib:
+        bw.full_tag_supplied = True
+        bw.full_tag = (pyver, abi, arch)
+
     dist_info_dir = os.path.join(dir, '%s.dist-info' % dist_info)
     bw.egg2dist(os.path.join(dir, egginfo_name), dist_info_dir)
     bw.write_wheelfile(dist_info_dir, generator='wininst2wheel')
@@ -167,6 +179,23 @@ def bdist_wininst2wheel(path, dest_dir=os.path.curdir):
     
     archive_wheelfile(os.path.join(dest_dir, wheel_name), dir)
     rmtree(dir)
+
+
+class _bdist_wheel_tag(wheel.bdist_wheel.bdist_wheel):
+    # allow the client to override the default generated wheel tag
+    # The default bdist_wheel implementation uses python and abi tags
+    # of the running python process. This is not suitable for
+    # generating/repackaging prebuild binaries.
+
+    full_tag_supplied = False
+    full_tag = None  # None or a (pytag, soabitag, plattag) triple
+
+    def get_tag(self):
+        if self.full_tag_supplied and self.full_tag is not None:
+            return self.full_tag
+        else:
+            return super(_bdist_wheel_tag, self).get_tag()
+
 
 def main():
     parser = ArgumentParser()
