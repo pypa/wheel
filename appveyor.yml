@@ -1,4 +1,4 @@
-version: {build}
+version: "{build}"
 install:
 - cmd: python -m pip install tox
 build_script:
