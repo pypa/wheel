@@ -48,11 +48,13 @@ setup(name='wheel',
       tests_require=['jsonschema', 'pytest', 'coverage', 'pytest-cov'],
       include_package_data=True,
       zip_safe=False,
-      entry_points = """\
-[console_scripts]
-wheel = wheel.tool:main
-
-[distutils.commands]
-bdist_wheel = wheel.bdist_wheel:bdist_wheel"""
+      entry_points = {
+          'console_scripts': [
+              'wheel=wheel.tool:main'
+              ],
+          'distutils.commands': [
+              'bdist_wheel=wheel.bdist_wheel:bdist_wheel'
+              ]
+          }
       )
 
