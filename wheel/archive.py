@@ -8,7 +8,7 @@ import logging
 import os.path
 import zipfile
 
-log = logging.getLogger("wheel")
+from distutils import log
 
 
 def archive_wheelfile(base_name, base_dir):
