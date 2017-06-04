@@ -15,17 +15,22 @@ setup(name='wheel',
       description='A built-package format for Python.',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
-        "Development Status :: 4 - Beta",
-        "Intended Audience :: Developers",
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.6",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.2",
-        "Programming Language :: Python :: 3.3",
-        "Programming Language :: Python :: 3.4",
-        ],
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: MIT License",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 2.6",
+          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.2",
+          "Programming Language :: Python :: 3.3",
+          "Programming Language :: Python :: 3.4",
+          "Programming Language :: Python :: 3.5",
+          "Programming Language :: Python :: 3.6",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+      ],
       author='Daniel Holth',
       author_email='dholth@fastmail.fm',
       url='https://bitbucket.org/pypa/wheel/',
@@ -45,7 +50,13 @@ setup(name='wheel',
           'faster-signatures': ['ed25519ll'],
           'tool': []
           },
-      tests_require=['jsonschema', 'pytest', 'coverage', 'pytest-cov'],
+      tests_require=[
+          # Newer versions of jsonschema do not support Python 2.6.
+          'jsonschema<2.6.0',
+          'pytest',
+          'coverage',
+          'pytest-cov',
+      ],
       include_package_data=True,
       zip_safe=False,
       entry_points = """\
@@ -55,4 +66,3 @@ wheel = wheel.tool:main
 [distutils.commands]
 bdist_wheel = wheel.bdist_wheel:bdist_wheel"""
       )
-
