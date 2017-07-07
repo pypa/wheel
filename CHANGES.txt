@@ -1,3 +1,12 @@
+0.30.0
+======
+- Add py-limited-api {cp32|cp33|cp34|...} flag to produce cpNN.abi3.{arch}
+  tags on CPython 3.
+- Improve Python, abi tagging for `wheel convert`. Thanks Ales Erjavec.
+- Much improved use of context managers for file handling. Thanks Kyle
+  Stewart.
+- Convert absolute imports to relative. Thanks Ashish Bhate.
+
 0.29.0
 ======
 - Fix compression type of files in archive (Issue #155, Pull Request #62,
