@@ -5,10 +5,7 @@ import os
 import base64
 import json
 import hashlib
-try:
-    from collections import OrderedDict
-except ImportError:
-    OrderedDict = dict
+from collections import OrderedDict
 
 __all__ = ['urlsafe_b64encode', 'urlsafe_b64decode', 'utf8',
            'to_json', 'from_json', 'matches_requirement']

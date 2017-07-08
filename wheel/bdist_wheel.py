@@ -14,12 +14,6 @@ import json
 import sys
 import re
 
-try:
-    import sysconfig
-except ImportError:  # pragma nocover
-    # Python < 2.7
-    import distutils.sysconfig as sysconfig
-
 import pkg_resources
 
 safe_name = pkg_resources.safe_name
