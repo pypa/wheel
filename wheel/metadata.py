@@ -5,10 +5,7 @@ Tools for converting old- to new-style metadata.
 from collections import namedtuple
 from .pkginfo import read_pkg_info
 from .util import OrderedDefaultDict
-try:
-    from collections import OrderedDict
-except ImportError:
-    OrderedDict = dict
+from collections import OrderedDict
 
 import re
 import os.path

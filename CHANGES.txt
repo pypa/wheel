@@ -1,3 +1,7 @@
+UNRELEASED
+==========
+- Remove support for Python 2.6.
+
 0.29.0
 ======
 - Fix compression type of files in archive (Issue #155, Pull Request #62,

@@ -20,7 +20,6 @@ setup(name='wheel',
           "License :: OSI Approved :: MIT License",
           "Programming Language :: Python",
           "Programming Language :: Python :: 2",
-          "Programming Language :: Python :: 2.6",
           "Programming Language :: Python :: 2.7",
           "Programming Language :: Python :: 3",
           "Programming Language :: Python :: 3.2",
@@ -43,16 +42,13 @@ setup(name='wheel',
           'wheel.signatures'
           ],
       extras_require={
-          ':python_version=="2.6"': ['argparse'],
           'signatures': ['keyring', 'keyrings.alt'],
           'signatures:sys_platform!="win32"': ['pyxdg'],
-          'signatures:python_version=="2.6"': ['importlib'],
           'faster-signatures': ['ed25519ll'],
           'tool': []
           },
       tests_require=[
-          # Newer versions of jsonschema do not support Python 2.6.
-          'jsonschema<2.6.0',
+          'jsonschema',
           'pytest',
           'coverage',
           'pytest-cov',
