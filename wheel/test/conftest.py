@@ -7,7 +7,8 @@ import warnings
 
 import pytest
 
-@pytest.yield_fixture(scope='function', autouse=True)
+
+@pytest.fixture(autouse=True)
 def error_on_ResourceWarning():
     """This fixture captures ResourceWarning's and reports an "error"
     describing the file handles left open.
@@ -31,6 +32,7 @@ def error_on_ResourceWarning():
         # Python 2, PyPy
         yield
         return
+
     # Python 3, PyPy3
     with warnings.catch_warnings(record=True) as caught:
         warnings.resetwarnings() # clear all filters
