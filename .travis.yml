@@ -1,0 +1,20 @@
+sudo: false
+
+language: python
+
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+
+install: pip install -U setuptools tox-travis tox-virtualenv-no-download
+
+script: tox
+
+notifications:
+  irc:
+    channels:
+      - "irc.freenode.net#pypa-dev"
+    use_notice: true
+    skip_join: true
