@@ -48,14 +48,9 @@ setup(name='wheel',
           'signatures': ['keyring', 'keyrings.alt'],
           'signatures:sys_platform!="win32"': ['pyxdg'],
           'faster-signatures': ['ed25519ll'],
-          'tool': []
+          'tool': [],
+          'testing': ['jsonschema', 'pytest', 'pytest-cov']
           },
-      tests_require=[
-          'jsonschema',
-          'pytest',
-          'coverage',
-          'pytest-cov',
-      ],
       include_package_data=True,
       zip_safe=False,
       entry_points = {
