@@ -8,9 +8,11 @@ python:
   - "3.5"
   - "3.6"
 
-install: pip install -U setuptools tox-travis tox-virtualenv-no-download
+install: pip install -U setuptools tox-travis tox-virtualenv-no-download codecov
 
 script: tox
+
+after_success: codecov --token=acff82f6-e810-47fb-8117-1d23ed9e3078
 
 notifications:
   irc:
