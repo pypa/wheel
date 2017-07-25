@@ -3,7 +3,7 @@ import os.path, codecs, re
 from setuptools import setup
 
 here = os.path.abspath(os.path.dirname(__file__))
-README = codecs.open(os.path.join(here, 'README.txt'), encoding='utf8').read()
+README = codecs.open(os.path.join(here, 'README.rst'), encoding='utf8').read()
 CHANGES = codecs.open(os.path.join(here, 'CHANGES.txt'), encoding='utf8').read()
 
 with codecs.open(os.path.join(os.path.dirname(__file__), 'wheel', '__init__.py'),
