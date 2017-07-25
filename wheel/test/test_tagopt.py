@@ -24,11 +24,13 @@ setup(
 
 EXT_MODULES = "ext_modules=[Extension('_test', sources=['test.c'])],"
 
+
 @pytest.fixture
 def temp_pkg(request, ext=False):
-    tempdir = tempfile.mkdtemp()
     def fin():
         shutil.rmtree(tempdir)
+
+    tempdir = tempfile.mkdtemp()
     request.addfinalizer(fin)
     temppath = py.path.local(tempdir)
     temppath.join('test.py').write('print("Hello, world")')
@@ -40,19 +42,21 @@ def temp_pkg(request, ext=False):
     temppath.join('setup.py').write(setup_py)
     return temppath
 
+
 @pytest.fixture
 def temp_ext_pkg(request):
     return temp_pkg(request, ext=True)
 
+
 def test_default_tag(temp_pkg):
-    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel'],
-            cwd=str(temp_pkg))
+    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel'], cwd=str(temp_pkg))
     dist_dir = temp_pkg.join('dist')
     assert dist_dir.check(dir=1)
     wheels = dist_dir.listdir()
     assert len(wheels) == 1
     assert wheels[0].basename == 'Test-1.0-py%s-none-any.whl' % (sys.version[0],)
     assert wheels[0].ext == '.whl'
+
 
 def test_explicit_tag(temp_pkg):
     subprocess.check_call(
@@ -65,6 +69,7 @@ def test_explicit_tag(temp_pkg):
     assert wheels[0].basename.startswith('Test-1.0-py32-')
     assert wheels[0].ext == '.whl'
 
+
 def test_universal_tag(temp_pkg):
     subprocess.check_call(
         [sys.executable, 'setup.py', 'bdist_wheel', '--universal'],
@@ -76,6 +81,7 @@ def test_universal_tag(temp_pkg):
     assert wheels[0].basename.startswith('Test-1.0-py2.py3-')
     assert wheels[0].ext == '.whl'
 
+
 def test_universal_beats_explicit_tag(temp_pkg):
     subprocess.check_call(
         [sys.executable, 'setup.py', 'bdist_wheel', '--universal', '--python-tag=py32'],
@@ -86,6 +92,7 @@ def test_universal_beats_explicit_tag(temp_pkg):
     assert len(wheels) == 1
     assert wheels[0].basename.startswith('Test-1.0-py2.py3-')
     assert wheels[0].ext == '.whl'
+
 
 def test_universal_in_setup_cfg(temp_pkg):
     temp_pkg.join('setup.cfg').write('[bdist_wheel]\nuniversal=1')
@@ -99,6 +106,7 @@ def test_universal_in_setup_cfg(temp_pkg):
     assert wheels[0].basename.startswith('Test-1.0-py2.py3-')
     assert wheels[0].ext == '.whl'
 
+
 def test_pythontag_in_setup_cfg(temp_pkg):
     temp_pkg.join('setup.cfg').write('[bdist_wheel]\npython_tag=py32')
     subprocess.check_call(
@@ -110,6 +118,7 @@ def test_pythontag_in_setup_cfg(temp_pkg):
     assert len(wheels) == 1
     assert wheels[0].basename.startswith('Test-1.0-py32-')
     assert wheels[0].ext == '.whl'
+
 
 def test_legacy_wheel_section_in_setup_cfg(temp_pkg):
     temp_pkg.join('setup.cfg').write('[wheel]\nuniversal=1')
@@ -123,6 +132,7 @@ def test_legacy_wheel_section_in_setup_cfg(temp_pkg):
     assert wheels[0].basename.startswith('Test-1.0-py2.py3-')
     assert wheels[0].ext == '.whl'
 
+
 def test_plat_name_purepy(temp_pkg):
     subprocess.check_call(
         [sys.executable, 'setup.py', 'bdist_wheel', '--plat-name=testplat.pure'],
@@ -133,6 +143,7 @@ def test_plat_name_purepy(temp_pkg):
     assert len(wheels) == 1
     assert wheels[0].basename.endswith('-testplat_pure.whl')
     assert wheels[0].ext == '.whl'
+
 
 def test_plat_name_ext(temp_ext_pkg):
     try:
@@ -148,6 +159,7 @@ def test_plat_name_ext(temp_ext_pkg):
     assert wheels[0].basename.endswith('-testplat_arch.whl')
     assert wheels[0].ext == '.whl'
 
+
 def test_plat_name_purepy_in_setupcfg(temp_pkg):
     temp_pkg.join('setup.cfg').write('[bdist_wheel]\nplat_name=testplat.pure')
     subprocess.check_call(
@@ -159,6 +171,7 @@ def test_plat_name_purepy_in_setupcfg(temp_pkg):
     assert len(wheels) == 1
     assert wheels[0].basename.endswith('-testplat_pure.whl')
     assert wheels[0].ext == '.whl'
+
 
 def test_plat_name_ext_in_setupcfg(temp_ext_pkg):
     temp_ext_pkg.join('setup.cfg').write('[bdist_wheel]\nplat_name=testplat.arch')

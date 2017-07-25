@@ -2,22 +2,22 @@
 Basic wheel tests.
 """
 
-import os
-import pkg_resources
 import json
+import os
 import sys
+from shutil import rmtree
+from zipfile import ZipFile
 
+import pkg_resources
 from pkg_resources import resource_filename
 
-import wheel.util
 import wheel.tool
-
+import wheel.util
 from wheel import egg2wheel
 from wheel.install import WheelFile
-from zipfile import ZipFile
-from shutil import rmtree
 
 test_distributions = ("complex-dist", "simple.dist", "headers.dist")
+
 
 def teardown_module():
     """Delete eggs/wheels created by tests."""
@@ -29,9 +29,11 @@ def teardown_module():
             except OSError:
                 pass
 
+
 def setup_module():
     build_wheel()
     build_egg()
+
 
 def build_wheel():
     """Build wheels from test distributions."""
@@ -45,6 +47,7 @@ def build_wheel():
         finally:
             os.chdir(pwd)
 
+
 def build_egg():
     """Build eggs from test distributions."""
     for dist in test_distributions:
@@ -57,9 +60,11 @@ def build_egg():
         finally:
             os.chdir(pwd)
 
+
 def test_findable():
     """Make sure pkg_resources can find us."""
     assert pkg_resources.working_set.by_key['wheel'].version
+
 
 def test_egg_re():
     """Make sure egg_info_re matches."""
@@ -71,16 +76,18 @@ def test_egg_re():
                 continue
             assert egg2wheel.egg_info_re.match(line), line
 
+
 def test_compatibility_tags():
     """Test compatibilty tags are working."""
     wf = WheelFile("package-1.0.0-cp32.cp33-noabi-noarch.whl")
     assert (list(wf.compatibility_tags) ==
-                 [('cp32', 'noabi', 'noarch'), ('cp33', 'noabi', 'noarch')])
-    assert (wf.arity == 2)
+            [('cp32', 'noabi', 'noarch'), ('cp33', 'noabi', 'noarch')])
+    assert wf.arity == 2
 
     wf2 = WheelFile("package-1.0.0-1st-cp33-noabi-noarch.whl")
     wf2_info = wf2.parsed_filename.groupdict()
     assert wf2_info['build'] == '1st', wf2_info
+
 
 def test_convert_egg():
     base = pkg_resources.resource_filename('wheel.test', '')
@@ -88,6 +95,7 @@ def test_convert_egg():
         distdir = os.path.join(base, dist, 'dist')
         eggs = [e for e in os.listdir(distdir) if e.endswith('.egg')]
         wheel.tool.convert(eggs, distdir, verbose=False)
+
 
 def test_unpack():
     """
@@ -100,6 +108,7 @@ def test_unpack():
         for wheelfile in (w for w in os.listdir(distdir) if w.endswith('.whl')):
             wheel.tool.unpack(os.path.join(distdir, wheelfile), distdir)
 
+
 def test_no_scripts():
     """Make sure entry point scripts are not generated."""
     dist = "complex-dist"
@@ -109,7 +118,8 @@ def test_no_scripts():
             if filename.endswith('.whl'):
                 whl = ZipFile(os.path.join(dirname, filename))
                 for entry in whl.infolist():
-                    assert not '.data/scripts/' in entry.filename
+                    assert '.data/scripts/' not in entry.filename
+
 
 def test_pydist():
     """Make sure pydist.json exists and validates against our schema."""
@@ -136,6 +146,7 @@ def test_pydist():
                             jsonschema.validate(pymeta, pymeta_schema)
                             valid += 1
     assert valid > 0, "No metadata.json found"
+
 
 def test_util():
     """Test functions in util.py."""
@@ -168,9 +179,11 @@ def test_pick_best():
                   ('cp27', 'noabi', 'linux_i686'), ('py27', 'noabi', 'noarch')]
 
     for supp in (supported, supported2, supported3):
-        context = lambda: list(supp)
-        for wheel in cand_wheels:
-            wheel.context = context
+        def context():
+            return list(supp)
+
+        for wheel_ in cand_wheels:
+            wheel_.context = context
         best = max(cand_wheels)
         assert list(best.tags)[0] == supp[0]
 

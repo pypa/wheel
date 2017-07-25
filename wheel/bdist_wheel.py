@@ -13,19 +13,13 @@ import shutil
 import json
 import sys
 import re
-
-import pkg_resources
-
-safe_name = pkg_resources.safe_name
-safe_version = pkg_resources.safe_version
-
-from shutil import rmtree
 from email.generator import Generator
-
 from distutils.core import Command
 from distutils.sysconfig import get_python_version
-
 from distutils import log as logger
+from shutil import rmtree
+
+import pkg_resources
 
 from .pep425tags import get_abbr_impl, get_impl_ver, get_abi_tag, get_platform
 from .util import native, open_for_csv
@@ -35,13 +29,20 @@ from .metadata import pkginfo_to_dict
 from . import pep425tags, metadata
 from . import __version__ as wheel_version
 
+
+safe_name = pkg_resources.safe_name
+safe_version = pkg_resources.safe_version
+
 PY_LIMITED_API_PATTERN = r'cp3\d'
+
 
 def safer_name(name):
     return safe_name(name).replace('-', '_')
 
+
 def safer_version(version):
     return safe_version(version).replace('-', '_')
+
 
 class bdist_wheel(Command):
 
@@ -146,7 +147,6 @@ class bdist_wheel(Command):
             if plat_name in ('linux-x86_64', 'linux_x86_64') and sys.maxsize == 2147483647:
                 plat_name = 'linux_i686'
         plat_name = plat_name.replace('-', '_').replace('.', '_')
-
 
         if self.root_is_pure:
             if self.universal:
@@ -300,7 +300,7 @@ class bdist_wheel(Command):
     def license_file(self):
         """Return license filename from a license-file key in setup.cfg, or None."""
         metadata = self.distribution.get_option_dict('metadata')
-        if not 'license_file' in metadata:
+        if 'license_file' not in metadata:
             return None
         return metadata['license_file'][1]
 
@@ -329,7 +329,7 @@ class bdist_wheel(Command):
         # our .ini parser folds - to _ in key names:
         for key, title in (('provides_extra', 'Provides-Extra'),
                            ('requires_dist', 'Requires-Dist')):
-            if not key in metadata:
+            if key not in metadata:
                 continue
             field = metadata[key]
             for line in field[1].splitlines():
@@ -341,7 +341,9 @@ class bdist_wheel(Command):
     def add_requirements(self, metadata_path):
         """Add additional requirements from setup.cfg to file metadata_path"""
         additional = list(self.setupcfg_requirements())
-        if not additional: return
+        if not additional:
+            return
+
         pkg_info = read_pkg_info(metadata_path)
         if 'Provides-Extra' in pkg_info or 'Requires-Dist' in pkg_info:
             warnings.warn('setup.cfg requirements overwrite values from setup.py')
@@ -389,10 +391,9 @@ class bdist_wheel(Command):
 
             # ignore common egg metadata that is useless to wheel
             shutil.copytree(egginfo_path, distinfo_path,
-                            ignore=lambda x, y: set(('PKG-INFO',
-                                                     'requires.txt',
-                                                     'SOURCES.txt',
-                                                     'not-zip-safe',)))
+                            ignore=lambda x, y: {'PKG-INFO', 'requires.txt', 'SOURCES.txt',
+                                                 'not-zip-safe'}
+                            )
 
             # delete dependency_links if it is only whitespace
             dependency_links_path = os.path.join(distinfo_path, 'dependency_links.txt')
@@ -419,7 +420,8 @@ class bdist_wheel(Command):
                                             description_filename)
             with open(description_path, "wb") as description_file:
                 description_file.write(description_text.encode('utf-8'))
-            pymeta['extensions']['python.details']['document_names']['description'] = description_filename
+            pymeta['extensions']['python.details']['document_names']['description'] = \
+                description_filename
 
         # XXX heuristically copy any LICENSE/LICENSE.txt?
         license = self.license_file()

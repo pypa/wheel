@@ -1,23 +1,24 @@
 #!/usr/bin/env python
+import distutils.dist
 import os.path
 import re
 import sys
 import tempfile
 import zipfile
-import wheel.bdist_wheel
-import distutils.dist
-from distutils.archive_util import make_archive
-from shutil import rmtree
-from wheel.archive import archive_wheelfile
 from argparse import ArgumentParser
 from glob import iglob
+from shutil import rmtree
+
+import wheel.bdist_wheel
+from wheel.archive import archive_wheelfile
 
 egg_info_re = re.compile(r'''(^|/)(?P<name>[^/]+?)-(?P<ver>.+?)
     (-(?P<pyver>.+?))?(-(?P<arch>.+?))?.egg-info(/|$)''', re.VERBOSE)
 
+
 def parse_info(wininfo_name, egginfo_name):
     """Extract metadata from filenames.
-    
+
     Extracts the 4 metadataitems needed (name, version, pyversion, arch) from
     the installer filename and the name of the egg-info directory embedded in
     the zipfile (if any).
@@ -52,15 +53,14 @@ def parse_info(wininfo_name, egginfo_name):
     if egginfo_name:
         egginfo = egg_info_re.search(egginfo_name)
         if not egginfo:
-            raise ValueError("Egg info filename %s is not valid" %
-                    (egginfo_name,))
+            raise ValueError("Egg info filename %s is not valid" % (egginfo_name,))
 
     # Parse the wininst filename
     # 1. Distribution name (up to the first '-')
     w_name, sep, rest = wininfo_name.partition('-')
     if not sep:
-        raise ValueError("Installer filename %s is not valid" %
-                (wininfo_name,))
+        raise ValueError("Installer filename %s is not valid" % (wininfo_name,))
+
     # Strip '.exe'
     rest = rest[:-4]
     # 2. Python version (from the last '-', must start with 'py')
@@ -78,14 +78,14 @@ def parse_info(wininfo_name, egginfo_name):
     # 3. Version and architecture
     w_ver, sep, w_arch = rest.rpartition('.')
     if not sep:
-        raise ValueError("Installer filename %s is not valid" %
-                (wininfo_name,))
+        raise ValueError("Installer filename %s is not valid" % (wininfo_name,))
 
     if egginfo:
         w_name = egginfo.group('name')
         w_ver = egginfo.group('ver')
 
     return dict(name=w_name, ver=w_ver, arch=w_arch, pyver=w_pyver)
+
 
 def bdist_wininst2wheel(path, dest_dir=os.path.curdir):
     bdw = zipfile.ZipFile(path)
@@ -176,7 +176,7 @@ def bdist_wininst2wheel(path, dest_dir=os.path.curdir):
     bw.egg2dist(os.path.join(dir, egginfo_name), dist_info_dir)
     bw.write_wheelfile(dist_info_dir, generator='wininst2wheel')
     bw.write_record(dir, dist_info_dir)
-    
+
     archive_wheelfile(os.path.join(dest_dir, wheel_name), dir)
     rmtree(dir)
 
@@ -201,7 +201,7 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('installers', nargs='*', help="Installers to convert")
     parser.add_argument('--dest-dir', '-d', default=os.path.curdir,
-            help="Directory to store wheels (default %(default)s)")
+                        help="Directory to store wheels (default %(default)s)")
     parser.add_argument('--verbose', '-v', action='store_true')
     args = parser.parse_args()
     for pat in args.installers:
@@ -211,6 +211,7 @@ def main():
             bdist_wininst2wheel(installer, args.dest_dir)
             if args.verbose:
                 sys.stdout.write("OK\n")
+
 
 if __name__ == "__main__":
     main()

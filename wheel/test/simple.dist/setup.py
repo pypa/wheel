@@ -2,6 +2,7 @@ from setuptools import setup
 
 try:
     unicode
+
     def u8(s):
         return s.decode('unicode-escape').encode('utf-8')
 except NameError:
@@ -14,4 +15,3 @@ setup(name='simple.dist',
       packages=['simpledist'],
       extras_require={'voting': ['beaglevote']},
       )
-

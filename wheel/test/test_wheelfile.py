@@ -1,17 +1,21 @@
-import os
-import wheel.install
-import wheel.archive
+import codecs
 import hashlib
+import os
+import shutil
+import tempfile
+import zipfile
+from contextlib import contextmanager
+
+import pytest
+
+import wheel.archive
+import wheel.install
+
 try:
     from StringIO import StringIO
 except ImportError:
     from io import BytesIO as StringIO
-import codecs
-import zipfile
-import pytest
-import shutil
-import tempfile
-from contextlib import contextmanager
+
 
 @contextmanager
 def environ(key, value):
@@ -25,6 +29,7 @@ def environ(key, value):
         else:
             os.environ[key] = old_value
 
+
 @contextmanager
 def temporary_directory():
     # tempfile.TemporaryDirectory doesn't exist in Python 2.
@@ -33,6 +38,7 @@ def temporary_directory():
         yield tempdir
     finally:
         shutil.rmtree(tempdir)
+
 
 @contextmanager
 def readable_zipfile(path):
@@ -47,14 +53,14 @@ def readable_zipfile(path):
 def test_verifying_zipfile():
     if not hasattr(zipfile.ZipExtFile, '_update_crc'):
         pytest.skip('No ZIP verification. Missing ZipExtFile._update_crc.')
-    
+
     sio = StringIO()
     zf = zipfile.ZipFile(sio, 'w')
     zf.writestr("one", b"first file")
     zf.writestr("two", b"second file")
     zf.writestr("three", b"third file")
     zf.close()
-    
+
     # In default mode, VerifyingZipFile checks the hash of any read file
     # mentioned with set_expected_hash(). Files not mentioned with
     # set_expected_hash() are not checked.
@@ -69,7 +75,7 @@ def test_verifying_zipfile():
         pass
     else:
         raise Exception("expected exception 'BadWheelFile()'")
-    
+
     # In strict mode, VerifyingZipFile requires every read file to be
     # mentioned with set_expected_hash().
     vzf.strict = True
@@ -79,30 +85,32 @@ def test_verifying_zipfile():
         pass
     else:
         raise Exception("expected exception 'BadWheelFile()'")
-        
+
     vzf.set_expected_hash("two", None)
     vzf.open("two").read()
-    
+
+
 def test_pop_zipfile():
     sio = StringIO()
     zf = wheel.install.VerifyingZipFile(sio, 'w')
     zf.writestr("one", b"first file")
     zf.writestr("two", b"second file")
     zf.close()
-    
+
     try:
         zf.pop()
     except RuntimeError:
-        pass # already closed
+        pass  # already closed
     else:
         raise Exception("expected RuntimeError")
-    
+
     zf = wheel.install.VerifyingZipFile(sio, 'a')
     zf.pop()
     zf.close()
-    
+
     zf = wheel.install.VerifyingZipFile(sio, 'r')
     assert len(zf.infolist()) == 1
+
 
 def test_zipfile_timestamp():
     # An environment variable can be used to influence the timestamp on
@@ -121,6 +129,7 @@ def test_zipfile_timestamp():
         with readable_zipfile(zip_filename) as zf:
             for info in zf.infolist():
                 assert info.date_time[:3] == (1980, 1, 1)
+
 
 def test_zipfile_attributes():
     # With the change from ZipFile.write() to .writestr(), we need to manually

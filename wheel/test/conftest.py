@@ -12,7 +12,7 @@ import pytest
 def error_on_ResourceWarning():
     """This fixture captures ResourceWarning's and reports an "error"
     describing the file handles left open.
-    
+
     This is shown regardless of how successful the test was, if a test fails
     and leaves files open then those files will be reported.  Ideally, even
     those files should be closed properly after a test failure or exception.
@@ -35,11 +35,11 @@ def error_on_ResourceWarning():
 
     # Python 3, PyPy3
     with warnings.catch_warnings(record=True) as caught:
-        warnings.resetwarnings() # clear all filters
-        warnings.simplefilter('ignore') # ignore all
-        warnings.simplefilter('always', ResourceWarning) # add filter
-        yield # run tests in this context
-        gc.collect() # run garbage collection (for pypy3)
+        warnings.resetwarnings()  # clear all filters
+        warnings.simplefilter('ignore')  # ignore all
+        warnings.simplefilter('always', ResourceWarning)  # add filter
+        yield  # run tests in this context
+        gc.collect()  # run garbage collection (for pypy3)
         if not caught:
             return
         pytest.fail('The following file descriptors were not closed properly:\n' +

@@ -3,18 +3,16 @@ Archive tools for wheel.
 """
 
 import os
-import time
-import logging
 import os.path
+import time
 import zipfile
-
 from distutils import log
 
 
 def archive_wheelfile(base_name, base_dir):
-    '''Archive all files under `base_dir` in a whl file and name it like
+    """Archive all files under `base_dir` in a whl file and name it like
     `base_name`.
-    '''
+    """
     olddir = os.path.abspath(os.curdir)
     base_name = os.path.abspath(base_name)
     try:

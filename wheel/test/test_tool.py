@@ -1,5 +1,6 @@
 from wheel import tool
 
+
 def test_keygen():
     def get_keyring():
         WheelKeys, keyring = tool.get_keyring()
@@ -13,8 +14,10 @@ def test_keygen():
             def get_keyring(cls):
                 class keyringTest2:
                     pw = None
+
                     def set_password(self, a, b, c):
                         self.pw = c
+
                     def get_password(self, a, b):
                         return self.pw
 

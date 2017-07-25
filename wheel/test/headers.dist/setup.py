@@ -2,6 +2,7 @@ from setuptools import setup
 
 try:
     unicode
+
     def u8(s):
         return s.decode('unicode-escape').encode('utf-8')
 except NameError:
@@ -13,4 +14,3 @@ setup(name='headers.dist',
       description=u8('A distribution with headers'),
       headers=['header.h']
       )
-

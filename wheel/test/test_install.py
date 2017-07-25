@@ -12,23 +12,27 @@
 # The root is PLATLIB
 # So, some in PLATLIB, and one in each of DATA, HEADERS and SCRIPTS.
 
-import wheel.tool
-import wheel.pep425tags
-from wheel.install import WheelFile
-from tempfile import mkdtemp
-import shutil
 import os
+import shutil
+from tempfile import mkdtemp
+
+import wheel.pep425tags
+import wheel.tool
+from wheel.install import WheelFile
 
 THISDIR = os.path.dirname(__file__)
 TESTWHEEL = os.path.join(THISDIR, 'test-1.0-py2.py3-none-win32.whl')
 
+
 def check(*path):
     return os.path.exists(os.path.join(*path))
 
+
 def test_install():
-    tempdir = mkdtemp()
     def get_supported():
         return list(wheel.pep425tags.get_supported()) + [('py3', 'none', 'win32')]
+
+    tempdir = mkdtemp()
     whl = WheelFile(TESTWHEEL, context=get_supported)
     assert whl.supports_current_python(get_supported)
     try:
@@ -48,8 +52,7 @@ def test_install():
     finally:
         shutil.rmtree(tempdir)
 
+
 def test_install_tool():
     """Slightly improve coverage of wheel.install"""
     wheel.tool.install([TESTWHEEL], force=True, dry_run=True)
-
-    

@@ -2,35 +2,33 @@
 Tools for converting old- to new-style metadata.
 """
 
-from collections import namedtuple
-from .pkginfo import read_pkg_info
-from .util import OrderedDefaultDict
-from collections import OrderedDict
-
-import re
-import os.path
-import textwrap
-import pkg_resources
 import email.parser
+import os.path
+import re
+import textwrap
+from collections import namedtuple, OrderedDict
+
+import pkg_resources
 
 from . import __version__ as wheel_version
+from .pkginfo import read_pkg_info
+from .util import OrderedDefaultDict
 
 METADATA_VERSION = "2.0"
 
-PLURAL_FIELDS = { "classifier" : "classifiers",
-                  "provides_dist" : "provides",
-                  "provides_extra" : "extras" }
+PLURAL_FIELDS = {"classifier": "classifiers",
+                 "provides_dist": "provides",
+                 "provides_extra": "extras"}
 
 SKIP_FIELDS = set()
 
-CONTACT_FIELDS = (({"email":"author_email", "name": "author"},
-                    "author"),
-                  ({"email":"maintainer_email", "name": "maintainer"},
-                    "maintainer"))
+CONTACT_FIELDS = (({"email": "author_email", "name": "author"},
+                   "author"),
+                  ({"email": "maintainer_email", "name": "maintainer"},
+                   "maintainer"))
 
 # commonly filled out as "UNKNOWN" by distutils:
-UNKNOWN_FIELDS = set(("author", "author_email", "platform", "home_page",
-                      "license"))
+UNKNOWN_FIELDS = {"author", "author_email", "platform", "home_page", "license"}
 
 # Wheel itself is probably the only program that uses non-extras markers
 # in METADATA/PKG-INFO. Support its syntax with the extra at the end only.
@@ -39,13 +37,14 @@ KEYWORDS_RE = re.compile("[\0-,]+")
 
 MayRequiresKey = namedtuple('MayRequiresKey', ('condition', 'extra'))
 
+
 def unique(iterable):
     """
     Yield unique values in iterable, preserving order.
     """
     seen = set()
     for value in iterable:
-        if not value in seen:
+        if value not in seen:
             seen.add(value)
             yield value
 
@@ -72,6 +71,7 @@ def handle_requires(metadata, pkg_info, key):
 
     if may_requires:
         metadata['run_requires'] = []
+
         def sort_key(item):
             # Both condition and extra could be None, which can't be compared
             # against strings in Python 3.
@@ -79,6 +79,7 @@ def handle_requires(metadata, pkg_info, key):
             if key.condition is None:
                 return ''
             return key.condition
+
         for key, value in sorted(may_requires.items(), key=sort_key):
             may_requirement = OrderedDict((('requires', value),))
             if key.extra:
@@ -87,7 +88,7 @@ def handle_requires(metadata, pkg_info, key):
                 may_requirement['environment'] = key.condition
             metadata['run_requires'].append(may_requirement)
 
-        if not 'extras' in metadata:
+        if 'extras' not in metadata:
             metadata['extras'] = []
         metadata['extras'].extend([key.extra for key in may_requires.keys() if key.extra])
 
@@ -103,7 +104,8 @@ def pkginfo_to_dict(path, distribution=None):
     distribution: optional distutils Distribution()
     """
 
-    metadata = OrderedDefaultDict(lambda: OrderedDefaultDict(lambda: OrderedDefaultDict(OrderedDict)))
+    metadata = OrderedDefaultDict(
+        lambda: OrderedDefaultDict(lambda: OrderedDefaultDict(OrderedDict)))
     metadata["generator"] = "bdist_wheel (" + wheel_version + ")"
     try:
         unicode
@@ -148,12 +150,12 @@ def pkginfo_to_dict(path, distribution=None):
             handle_requires(metadata, pkg_info, key)
 
         elif low_key == 'provides_extra':
-            if not 'extras' in metadata:
+            if 'extras' not in metadata:
                 metadata['extras'] = []
             metadata['extras'].extend(pkg_info.get_all(key))
 
         elif low_key == 'home_page':
-            metadata['extensions']['python.details']['project_urls'] = {'Home':pkg_info[key]}
+            metadata['extensions']['python.details']['project_urls'] = {'Home': pkg_info[key]}
 
         elif low_key == 'keywords':
             metadata['keywords'] = KEYWORDS_RE.split(pkg_info[key])
@@ -173,7 +175,7 @@ def pkginfo_to_dict(path, distribution=None):
                 requirements = getattr(distribution, attr)
                 if isinstance(requirements, list):
                     new_requirements = sorted(convert_requirements(requirements))
-                    metadata[requires] = [{'requires':new_requirements}]
+                    metadata[requires] = [{'requires': new_requirements}]
             except AttributeError:
                 pass
 
@@ -215,6 +217,7 @@ def pkginfo_to_dict(path, distribution=None):
 
     return metadata
 
+
 def requires_to_requires_dist(requirement):
     """Compose the version predicates for requirement in PEP 345 fashion."""
     requires_dist = []
@@ -223,6 +226,7 @@ def requires_to_requires_dist(requirement):
     if not requires_dist:
         return ''
     return " (%s)" % ','.join(requires_dist)
+
 
 def convert_requirements(requirements):
     """Yield Requires-Dist: strings for parsed requirements strings."""
@@ -233,6 +237,7 @@ def convert_requirements(requirements):
         if extras:
             extras = "[%s]" % extras
         yield (parsed_requirement.project_name + extras + spec)
+
 
 def generate_requirements(extras_require):
     """
@@ -256,6 +261,7 @@ def generate_requirements(extras_require):
             condition = '; ' + condition
         for new_req in convert_requirements(depends):
             yield ('Requires-Dist', new_req + condition)
+
 
 def pkginfo_to_metadata(egg_info_path, pkginfo_path):
     """
@@ -290,8 +296,8 @@ def pkginfo_unicode(pkg_info, field):
             return str(text)
         for item in pkg_info.raw_items():
             if item[0].lower() == field:
-                text = item[1].encode('ascii', 'surrogateescape')\
-                                      .decode('utf-8')
+                text = item[1].encode('ascii', 'surrogateescape') \
+                    .decode('utf-8')
                 break
 
     return text
@@ -311,20 +317,22 @@ def dedent_description(pkg_info):
 
     description_lines = description.splitlines()
     description_dedent = '\n'.join(
-            # if the first line of long_description is blank,
-            # the first line here will be indented.
-            (description_lines[0].lstrip(),
-             textwrap.dedent('\n'.join(description_lines[1:])),
-             '\n'))
+        # if the first line of long_description is blank,
+        # the first line here will be indented.
+        (description_lines[0].lstrip(),
+         textwrap.dedent('\n'.join(description_lines[1:])),
+         '\n'))
 
     if surrogates:
-        description_dedent = description_dedent\
-                .encode("utf8")\
-                .decode("ascii", "surrogateescape")
+        description_dedent = description_dedent \
+            .encode("utf8") \
+            .decode("ascii", "surrogateescape")
 
     return description_dedent
 
 
 if __name__ == "__main__":
-    import sys, pprint
+    import sys
+    import pprint
+
     pprint.pprint(pkginfo_to_dict(sys.argv[1]))

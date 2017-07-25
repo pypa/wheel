@@ -2,6 +2,7 @@ from setuptools import setup
 
 try:
     unicode
+
     def u8(s):
         return s.decode('unicode-escape')
 except NameError:
@@ -18,7 +19,7 @@ setup(name='complex-dist',
       packages=['complexdist'],
       setup_requires=["wheel", "setuptools"],
       install_requires=["quux", "splort"],
-      extras_require={'simple':['simple.dist']},
+      extras_require={'simple': ['simple.dist']},
       tests_require=["foo", "bar>=10.0.0"],
       entry_points={
           'console_scripts': [
@@ -27,4 +28,3 @@ setup(name='complex-dist',
           ],
       },
       )
-
