@@ -1,20 +1,22 @@
 # coding: utf-8
-import os.path, codecs, re
+import os.path
+import io
+import re
 
-from setuptools import setup
+from setuptools import setup, find_packages
+
 
 here = os.path.abspath(os.path.dirname(__file__))
-README = codecs.open(os.path.join(here, 'README.rst'), encoding='utf8').read()
-CHANGES = codecs.open(os.path.join(here, 'CHANGES.txt'), encoding='utf8').read()
+README = io.open(os.path.join(here, 'README.rst'), encoding='utf8').read()
+CHANGES = io.open(os.path.join(here, 'CHANGES.txt'), encoding='utf8').read()
 
-with codecs.open(os.path.join(os.path.dirname(__file__), 'wheel', '__init__.py'),
-                 encoding='utf8') as version_file:
+with io.open(os.path.join(here, 'wheel', '__init__.py'), encoding='utf8') as version_file:
     metadata = dict(re.findall(r"""__([a-z]+)__ = "([^"]+)""", version_file.read()))
 
 setup(name='wheel',
       version=metadata['version'],
       description='A built-package format for Python.',
-      long_description=README + '\n\n' +  CHANGES,
+      long_description=README + '\n\n' + CHANGES,
       classifiers=[
           "Development Status :: 5 - Production/Stable",
           "Intended Audience :: Developers",
@@ -38,12 +40,7 @@ setup(name='wheel',
       url='https://github.com/pypa/wheel',
       keywords=['wheel', 'packaging'],
       license='MIT',
-      packages=[
-          'wheel',
-          'wheel.test',
-          'wheel.tool',
-          'wheel.signatures'
-          ],
+      packages=find_packages(),
       extras_require={
           'signatures': ['keyring', 'keyrings.alt'],
           'signatures:sys_platform!="win32"': ['pyxdg'],
@@ -53,7 +50,7 @@ setup(name='wheel',
           },
       include_package_data=True,
       zip_safe=False,
-      entry_points = {
+      entry_points={
           'console_scripts': [
               'wheel=wheel.tool:main'
               ],
