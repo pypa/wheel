@@ -1,4 +1,4 @@
-from .. import tool
+from wheel import tool
 
 def test_keygen():
     def get_keyring():
