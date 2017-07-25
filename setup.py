@@ -1,3 +1,4 @@
+# coding: utf-8
 import os.path, codecs, re
 
 from setuptools import setup
@@ -32,7 +33,9 @@ setup(name='wheel',
       ],
       author='Daniel Holth',
       author_email='dholth@fastmail.fm',
-      url='https://bitbucket.org/pypa/wheel/',
+      maintainer=u'Alex Grönholm',
+      maintainer_email='alex.gronholm@nextday.fi',
+      url='https://github.com/pypa/wheel',
       keywords=['wheel', 'packaging'],
       license='MIT',
       packages=[
