@@ -1,7 +1,6 @@
-import tempfile
-import os.path
-import unittest
 import json
+
+import pytest
 
 from wheel.signatures import keys
 
@@ -36,63 +35,59 @@ wheel_json = """
 """
 
 
-class TestWheelKeys(unittest.TestCase):
-    def setUp(self):
-        def load(*args):
-            return [self.config_path]
+@pytest.fixture
+def wheel_keys(tmpdir, monkeypatch):
+    def load(*args):
+        return [config_path.dirname]
 
-        def save(*args):
-            return self.config_path
+    def save(*args):
+        return config_path.dirname
 
-        self.config = tempfile.NamedTemporaryFile(suffix='.json')
-        self.config.close()
-        self.config_path, self.config_filename = os.path.split(self.config.name)
-        keys.load_config_paths = load
-        keys.save_config_path = save
-        self.wk = keys.WheelKeys()
-        self.wk.CONFIG_NAME = self.config_filename
+    config_path = tmpdir.join('config.json')
+    config_path.write(b'')
 
-    def tearDown(self):
-        os.unlink(self.config.name)
+    monkeypatch.setattr(keys, 'load_config_paths', load)
+    monkeypatch.setattr(keys, 'save_config_path', save)
 
-    def test_load_save(self):
-        self.wk.data = json.loads(wheel_json)
+    wk = keys.WheelKeys()
+    wk.CONFIG_NAME = config_path.basename
+    return wk
 
-        self.wk.add_signer('+', '67890')
-        self.wk.add_signer('scope', 'abcdefg')
 
-        self.wk.trust('epocs', 'gfedcba')
-        self.wk.trust('+', '12345')
+def test_load_save(wheel_keys):
+    wheel_keys.data = json.loads(wheel_json)
 
-        self.wk.save()
+    wheel_keys.add_signer('+', '67890')
+    wheel_keys.add_signer('scope', 'abcdefg')
 
-        del self.wk.data
-        self.wk.load()
+    wheel_keys.trust('epocs', 'gfedcba')
+    wheel_keys.trust('+', '12345')
 
-        signers = self.wk.signers('scope')
-        self.assertTrue(signers[0] == ('scope', 'abcdefg'), self.wk.data['signers'])
-        self.assertTrue(signers[1][0] == '+', self.wk.data['signers'])
+    wheel_keys.save()
 
-        trusted = self.wk.trusted('epocs')
-        self.assertTrue(trusted[0] == ('epocs', 'gfedcba'))
-        self.assertTrue(trusted[1][0] == '+')
+    del wheel_keys.data
+    wheel_keys.load()
 
-        self.wk.untrust('epocs', 'gfedcba')
-        trusted = self.wk.trusted('epocs')
-        self.assertTrue(('epocs', 'gfedcba') not in trusted)
+    signers = wheel_keys.signers('scope')
+    assert signers[0] == ('scope', 'abcdefg'), wheel_keys.data['signers']
+    assert signers[1][0] == '+', wheel_keys.data['signers']
 
-    def test_load_save_incomplete(self):
-        self.wk.data = json.loads(wheel_json)
-        del self.wk.data['signers']
-        self.wk.data['schema'] = self.wk.SCHEMA+1
-        self.wk.save()
-        try:
-            self.wk.load()
-        except ValueError:
-            pass
-        else:
-            raise Exception("Expected ValueError")
+    trusted = wheel_keys.trusted('epocs')
+    assert trusted[0] == ('epocs', 'gfedcba')
+    assert trusted[1][0] == '+'
 
-        del self.wk.data['schema']
-        self.wk.save()
-        self.wk.load()
+    wheel_keys.untrust('epocs', 'gfedcba')
+    trusted = wheel_keys.trusted('epocs')
+    assert ('epocs', 'gfedcba') not in trusted
+
+
+def test_load_save_incomplete(wheel_keys):
+    wheel_keys.data = json.loads(wheel_json)
+    del wheel_keys.data['signers']
+    wheel_keys.data['schema'] = wheel_keys.SCHEMA+1
+    wheel_keys.save()
+    pytest.raises(ValueError, wheel_keys.load)
+
+    del wheel_keys.data['schema']
+    wheel_keys.save()
+    wheel_keys.load()

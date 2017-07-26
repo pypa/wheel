@@ -68,7 +68,7 @@ def test_findable():
 
 def test_egg_re():
     """Make sure egg_info_re matches."""
-    egg_names_path = pkg_resources.resource_filename('wheel', 'eggnames.txt')
+    egg_names_path = os.path.join(os.path.dirname(__file__), 'eggnames.txt')
     with open(egg_names_path) as egg_names:
         for line in egg_names:
             line = line.strip()

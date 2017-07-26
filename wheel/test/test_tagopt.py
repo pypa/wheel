@@ -3,12 +3,10 @@ Tests for the bdist_wheel tag options (--python-tag, --universal, and
 --plat-name)
 """
 
-import sys
-import shutil
-import pytest
-import py.path
-import tempfile
 import subprocess
+import sys
+
+import pytest
 
 SETUP_PY = """\
 from setuptools import setup, Extension
@@ -26,26 +24,18 @@ EXT_MODULES = "ext_modules=[Extension('_test', sources=['test.c'])],"
 
 
 @pytest.fixture
-def temp_pkg(request, ext=False):
-    def fin():
-        shutil.rmtree(tempdir)
+def temp_pkg(request, tmpdir):
+    tmpdir.join('test.py').write('print("Hello, world")')
 
-    tempdir = tempfile.mkdtemp()
-    request.addfinalizer(fin)
-    temppath = py.path.local(tempdir)
-    temppath.join('test.py').write('print("Hello, world")')
+    ext = getattr(request, 'param', False)
     if ext:
-        temppath.join('test.c').write('#include <stdio.h>')
+        tmpdir.join('test.c').write('#include <stdio.h>')
         setup_py = SETUP_PY.format(ext_modules=EXT_MODULES)
     else:
         setup_py = SETUP_PY.format(ext_modules='')
-    temppath.join('setup.py').write(setup_py)
-    return temppath
 
-
-@pytest.fixture
-def temp_ext_pkg(request):
-    return temp_pkg(request, ext=True)
+    tmpdir.join('setup.py').write(setup_py)
+    return tmpdir
 
 
 def test_default_tag(temp_pkg):
@@ -145,14 +135,16 @@ def test_plat_name_purepy(temp_pkg):
     assert wheels[0].ext == '.whl'
 
 
-def test_plat_name_ext(temp_ext_pkg):
+@pytest.mark.parametrize('temp_pkg', [True], indirect=['temp_pkg'])
+def test_plat_name_ext(temp_pkg):
     try:
         subprocess.check_call(
             [sys.executable, 'setup.py', 'bdist_wheel', '--plat-name=testplat.arch'],
-            cwd=str(temp_ext_pkg))
+            cwd=str(temp_pkg))
     except subprocess.CalledProcessError:
         pytest.skip("Cannot compile C Extensions")
-    dist_dir = temp_ext_pkg.join('dist')
+
+    dist_dir = temp_pkg.join('dist')
     assert dist_dir.check(dir=1)
     wheels = dist_dir.listdir()
     assert len(wheels) == 1
@@ -173,15 +165,17 @@ def test_plat_name_purepy_in_setupcfg(temp_pkg):
     assert wheels[0].ext == '.whl'
 
 
-def test_plat_name_ext_in_setupcfg(temp_ext_pkg):
-    temp_ext_pkg.join('setup.cfg').write('[bdist_wheel]\nplat_name=testplat.arch')
+@pytest.mark.parametrize('temp_pkg', [True], indirect=['temp_pkg'])
+def test_plat_name_ext_in_setupcfg(temp_pkg):
+    temp_pkg.join('setup.cfg').write('[bdist_wheel]\nplat_name=testplat.arch')
     try:
         subprocess.check_call(
             [sys.executable, 'setup.py', 'bdist_wheel'],
-            cwd=str(temp_ext_pkg))
+            cwd=str(temp_pkg))
     except subprocess.CalledProcessError:
         pytest.skip("Cannot compile C Extensions")
-    dist_dir = temp_ext_pkg.join('dist')
+
+    dist_dir = temp_pkg.join('dist')
     assert dist_dir.check(dir=1)
     wheels = dist_dir.listdir()
     assert len(wheels) == 1
