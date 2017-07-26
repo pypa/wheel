@@ -6,7 +6,7 @@
 - Much improved use of context managers for file handling. Thanks Kyle
   Stewart.
 - Convert absolute imports to relative. Thanks Ashish Bhate.
-- Remove support for Python 2.6.
+- Remove support for Python 2.6, 3.2 and 3.3.
 
 0.29.0
 ======
