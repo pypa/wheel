@@ -37,7 +37,7 @@ def error_on_ResourceWarning():
     with warnings.catch_warnings(record=True) as caught:
         warnings.resetwarnings()  # clear all filters
         warnings.simplefilter('ignore')  # ignore all
-        warnings.simplefilter('always', ResourceWarning)  # add filter
+        warnings.simplefilter('always', ResourceWarning)  # noqa: F821
         yield  # run tests in this context
         gc.collect()  # run garbage collection (for pypy3)
         if not caught:
