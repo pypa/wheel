@@ -48,6 +48,17 @@ def test_default_tag(temp_pkg):
     assert wheels[0].ext == '.whl'
 
 
+def test_build_number(temp_pkg):
+    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '--build-number=1'],
+                          cwd=str(temp_pkg))
+    dist_dir = temp_pkg.join('dist')
+    assert dist_dir.check(dir=1)
+    wheels = dist_dir.listdir()
+    assert len(wheels) == 1
+    assert (wheels[0].basename == 'Test-1.0-1-py%s-none-any.whl' % (sys.version[0],))
+    assert wheels[0].ext == '.whl'
+
+
 def test_explicit_tag(temp_pkg):
     subprocess.check_call(
         [sys.executable, 'setup.py', 'bdist_wheel', '--python-tag=py32'],

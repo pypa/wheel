@@ -75,6 +75,10 @@ class bdist_wheel(Command):
                     ('python-tag=', None,
                      "Python implementation compatibility tag"
                      " (default: py%s)" % get_impl_ver()[0]),
+                    ('build-number=', None,
+                     "Build number for this particular version. "
+                     "As specified in PEP-0427, this must start with a digit. "
+                     "[default: None]"),
                     ('py-limited-api=', None,
                      "Python tag (cp32|cp33|cpNN) for abi3 wheel tag"
                      " (default: false)"),
@@ -99,6 +103,7 @@ class bdist_wheel(Command):
         self.group = None
         self.universal = False
         self.python_tag = 'py' + get_impl_ver()[0]
+        self.build_number = None
         self.py_limited_api = False
         self.plat_name_supplied = False
 
@@ -129,11 +134,17 @@ class bdist_wheel(Command):
             if val.lower() in ('1', 'true', 'yes'):
                 self.universal = True
 
+        if self.build_number is not None and not self.build_number[:1].isdigit():
+            raise ValueError("Build tag (build-number) must start with a digit.")
+
     @property
     def wheel_dist_name(self):
         """Return distribution full name with - replaced with _"""
-        return '-'.join((safer_name(self.distribution.get_name()),
-                         safer_version(self.distribution.get_version())))
+        components = (safer_name(self.distribution.get_name()),
+                      safer_version(self.distribution.get_version()))
+        if self.build_number:
+            components += (self.build_number,)
+        return '-'.join(components)
 
     def get_tag(self):
         # bdist sets self.plat_name if unset, we should only use it for purepy
@@ -274,6 +285,8 @@ class bdist_wheel(Command):
         msg['Wheel-Version'] = '1.0'  # of the spec
         msg['Generator'] = generator
         msg['Root-Is-Purelib'] = str(self.root_is_pure).lower()
+        if self.build_number is not None:
+            msg['Build'] = self.build_number
 
         # Doesn't work for bdist_wininst
         impl_tag, abi_tag, plat_tag = self.get_tag()
