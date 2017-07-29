@@ -22,7 +22,7 @@ if not _PY3:
 
     def write_pkg_info(path, message):
         with open(path, 'w') as metadata:
-            Generator(metadata, maxheaderlen=0).flatten(message)
+            Generator(metadata, mangle_from_=False, maxheaderlen=0).flatten(message)
 else:
     from email.generator import BytesGenerator
 
@@ -40,4 +40,4 @@ else:
 
     def write_pkg_info(path, message):
         with open(path, "wb") as out:
-            BytesGenerator(out, maxheaderlen=0).flatten(message)
+            BytesGenerator(out, mangle_from_=False, maxheaderlen=0).flatten(message)
