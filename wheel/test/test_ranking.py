@@ -1,7 +1,5 @@
-import unittest
-
-from wheel.pep425tags import get_supported
 from wheel.install import WheelFile
+from wheel.pep425tags import get_supported
 
 WHEELPAT = "%(name)s-%(ver)s-%(pyver)s-%(abi)s-%(arch)s.whl"
 
@@ -39,8 +37,7 @@ COMBINATIONS = (
 WHEELS = [make_wheel(*args) for args in COMBINATIONS]
 
 
-class TestRanking(unittest.TestCase):
-    def test_comparison(self):
-        for i in range(len(WHEELS)-1):
-            for j in range(i):
-                self.assertTrue(WHEELS[j] < WHEELS[i])
+def test_comparison():
+    for i in range(len(WHEELS)-1):
+        for j in range(i):
+            assert WHEELS[j] < WHEELS[i]

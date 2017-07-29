@@ -3,9 +3,15 @@ pytest local configuration plug-in
 """
 
 import gc
-import warnings
+import os.path
+import subprocess
+import sys
+from shutil import rmtree
 
 import pytest
+import warnings
+
+THISDIR = os.path.dirname(__file__)
 
 
 @pytest.fixture(autouse=True)
@@ -40,8 +46,42 @@ def error_on_ResourceWarning():
         warnings.simplefilter('always', ResourceWarning)  # noqa: F821
         yield  # run tests in this context
         gc.collect()  # run garbage collection (for pypy3)
-        if not caught:
-            return
-        pytest.fail('The following file descriptors were not closed properly:\n' +
-                    '\n'.join((str(warning.message) for warning in caught)),
-                    pytrace=False)
+        if caught:
+            pytest.fail('The following file descriptors were not closed properly:\n' +
+                        '\n'.join((str(warning.message) for warning in caught)),
+                        pytrace=False)
+
+
+@pytest.fixture(scope='session')
+def wheels_and_eggs():
+    """Build wheels and eggs from test distributions."""
+    test_distributions = "complex-dist", "simple.dist", "headers.dist"
+    files = []
+    pwd = os.path.abspath(os.curdir)
+    for dist in test_distributions:
+        os.chdir(os.path.join(THISDIR, dist))
+        subprocess.check_call([sys.executable, 'setup.py', 'bdist_egg', 'bdist_wheel'])
+        dist_path = os.path.join(os.curdir, 'dist')
+        files.extend([os.path.abspath(os.path.join(dist_path, fname))
+                      for fname in os.listdir(dist_path)
+                      if os.path.splitext(fname)[1] in ('.whl', '.egg')])
+
+    os.chdir(pwd)
+    yield files
+
+    for dist in test_distributions:
+        for subdir in ('build', 'dist'):
+            try:
+                rmtree(os.path.join(THISDIR, dist, subdir))
+            except OSError:
+                pass
+
+
+@pytest.fixture(scope='session')
+def wheel_paths(wheels_and_eggs):
+    return sorted(fname for fname in wheels_and_eggs if fname.endswith('.whl'))
+
+
+@pytest.fixture(scope='session')
+def egg_paths(wheels_and_eggs):
+    return sorted(fname for fname in wheels_and_eggs if fname.endswith('.egg'))
