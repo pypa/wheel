@@ -225,7 +225,7 @@ def requires_to_requires_dist(requirement):
         requires_dist.append(op + ver)
     if not requires_dist:
         return ''
-    return " (%s)" % ','.join(requires_dist)
+    return " (%s)" % ','.join(sorted(requires_dist))
 
 
 def convert_requirements(requirements):

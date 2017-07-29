@@ -9,6 +9,7 @@
 - Fixed `>` being prepended to lines starting with "From" in the long description
 - Made the order of files in generated ZIP files deterministic.
   Thanks Matthias Bach.
+- Made the order of requirements in metadata deterministic. Thanks Chris Lamb.
 - Remove support for Python 2.6, 3.2 and 3.3.
 
 0.29.0
