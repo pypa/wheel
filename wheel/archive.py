@@ -59,7 +59,10 @@ def make_wheelfile_inner(base_name, base_dir='.'):
         log.info("adding '%s'" % path)
 
     for dirpath, dirnames, filenames in os.walk(base_dir):
-        for name in filenames:
+        # Sort the directory names so that `os.walk` will walk them in a
+        # defined order on the next iteration.
+        dirnames.sort()
+        for name in sorted(filenames):
             path = os.path.normpath(os.path.join(dirpath, name))
 
             if os.path.isfile(path):
