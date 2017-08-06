@@ -106,7 +106,7 @@ def unsign(wheelfile):
     vzf = VerifyingZipFile(wheelfile, "a")
     info = vzf.infolist()
     if not (len(info) and info[-1].filename.endswith('/RECORD.jws')):
-        raise WheelError("RECORD.jws not found at end of archive.")
+        raise WheelError('The wheel is not signed (RECORD.jws not found at end of the archive).')
     vzf.pop()
     vzf.close()
 
@@ -120,7 +120,11 @@ def verify(wheelfile):
     """
     wf = WheelFile(wheelfile)
     sig_name = wf.distinfo_name + '/RECORD.jws'
-    sig = json.loads(native(wf.zipfile.open(sig_name).read()))
+    try:
+        sig = json.loads(native(wf.zipfile.open(sig_name).read()))
+    except KeyError:
+        raise WheelError('The wheel is not signed (RECORD.jws not found at end of the archive).')
+
     verified = signatures.verify(sig)
     sys.stderr.write("Signatures are internally consistent.\n")
     sys.stdout.write(json.dumps(verified, indent=2))

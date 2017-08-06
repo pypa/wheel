@@ -11,6 +11,7 @@
 - Made the order of files in generated ZIP files deterministic.
   Thanks Matthias Bach.
 - Made the order of requirements in metadata deterministic. Thanks Chris Lamb.
+- Improved the error message when trying to verify an unsigned wheel file
 - Remove support for Python 2.6, 3.2 and 3.3.
 
 0.29.0
