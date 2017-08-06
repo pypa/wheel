@@ -181,7 +181,7 @@ class bdist_wheel(Command):
             # XXX switch to this alternate implementation for non-pure:
             if not self.py_limited_api:
                 assert tag == supported_tags[0], "%s != %s" % (tag, supported_tags[0])
-            assert tag in supported_tags, "would build wheel with unsupported tag %s" % tag
+            assert tag in supported_tags, "would build wheel with unsupported tag {}".format(tag)
         return tag
 
     def get_archive_basename(self):
