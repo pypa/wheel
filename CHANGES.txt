@@ -1,18 +1,16 @@
 0.30.0
 ======
-- Add py-limited-api {cp32|cp33|cp34|...} flag to produce cpNN.abi3.{arch}
+- Added py-limited-api {cp32|cp33|cp34|...} flag to produce cpNN.abi3.{arch}
   tags on CPython 3.
-- Improve Python, abi tagging for `wheel convert`. Thanks Ales Erjavec.
-- Much improved use of context managers for file handling. Thanks Kyle
-  Stewart.
-- Convert absolute imports to relative. Thanks Ashish Bhate.
+- Improved Python, abi tagging for `wheel convert`. Thanks Ales Erjavec.
 - Fixed `>` being prepended to lines starting with "From" in the long description
-- Added support for specifying a build number (as per PEP 427). Thanks Ian Cordasco.
+- Added support for specifying a build number (as per PEP 427).
+  Thanks Ian Cordasco.
 - Made the order of files in generated ZIP files deterministic.
   Thanks Matthias Bach.
 - Made the order of requirements in metadata deterministic. Thanks Chris Lamb.
 - Improved the error message when trying to verify an unsigned wheel file
-- Remove support for Python 2.6, 3.2 and 3.3.
+- Removed support for Python 2.6, 3.2 and 3.3.
 
 0.29.0
 ======
