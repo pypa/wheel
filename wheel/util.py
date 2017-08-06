@@ -73,8 +73,8 @@ def binary(s):
 
 
 class HashingFile(object):
-    def __init__(self, fd, hashtype='sha256'):
-        self.fd = fd
+    def __init__(self, path, mode, hashtype='sha256'):
+        self.fd = open(path, mode)
         self.hashtype = hashtype
         self.hash = hashlib.new(hashtype)
         self.length = 0
@@ -92,6 +92,12 @@ class HashingFile(object):
             return self.hash.hexdigest()
         digest = self.hash.digest()
         return self.hashtype + '=' + native(urlsafe_b64encode(digest))
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.fd.close()
 
 
 class OrderedDefaultDict(OrderedDict):

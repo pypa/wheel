@@ -9,6 +9,7 @@
 - Made the order of files in generated ZIP files deterministic.
   Thanks Matthias Bach.
 - Made the order of requirements in metadata deterministic. Thanks Chris Lamb.
+- Fixed `wheel install` clobbering existing files
 - Improved the error message when trying to verify an unsigned wheel file
 - Removed support for Python 2.6, 3.2 and 3.3.
 

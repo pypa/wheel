@@ -14,13 +14,12 @@ import zipfile
 
 from . import signatures
 from .decorator import reify
-from .util import (urlsafe_b64encode, from_json, urlsafe_b64decode,
-                   native, binary, HashingFile)
-from .pkginfo import read_pkg_info_bytes
-from .util import open_for_csv
-
-from .pep425tags import get_supported
 from .paths import get_install_paths
+from .pep425tags import get_supported
+from .pkginfo import read_pkg_info_bytes
+from .util import (
+    urlsafe_b64encode, from_json, urlsafe_b64decode, native, binary, HashingFile,
+    open_for_csv)
 
 try:
     _big_number = sys.maxsize
@@ -345,13 +344,24 @@ class WheelFile(object):
             ddir = os.path.dirname(dest)
             if not os.path.isdir(ddir):
                 os.makedirs(ddir)
-            destination = HashingFile(open(dest, 'wb'))
-            if key == 'scripts':
-                hashbang = source.readline()
-                if hashbang.startswith(b'#!python'):
-                    hashbang = b'#!' + exename + binary(os.linesep)
-                destination.write(hashbang)
-            shutil.copyfileobj(source, destination)
+
+            temp_filename = dest + '.part'
+            try:
+                with HashingFile(temp_filename, 'wb') as destination:
+                    if key == 'scripts':
+                        hashbang = source.readline()
+                        if hashbang.startswith(b'#!python'):
+                            hashbang = b'#!' + exename + binary(os.linesep)
+                        destination.write(hashbang)
+
+                    shutil.copyfileobj(source, destination)
+            except:
+                if os.path.exists(temp_filename):
+                    os.unlink(temp_filename)
+
+                raise
+
+            os.rename(temp_filename, dest)
             reldest = os.path.relpath(dest, root)
             reldest.replace(os.sep, '/')
             record_data.append((reldest, destination.digest(), destination.length))
