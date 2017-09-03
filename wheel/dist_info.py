@@ -7,12 +7,20 @@ A wheel is a built archive format.
 import os
 import shutil
 
-from setuptools.command.egg_info import egg_info
+from distutils.core import Command
 
 
-class dist_info(egg_info):
+class dist_info(Command):
 
     description = 'create a .dist-info directory'
+
+    user_options = [
+        ('egg-base=', 'e', "directory containing .egg-info directories"
+                           " (default: top of the source tree)"),
+    ]
+
+    def initialize_options(self):
+        self.egg_base = None
 
     def finalize_options(self):
         pass
