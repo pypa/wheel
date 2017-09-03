@@ -5,6 +5,7 @@ Tests for the bdist_wheel tag options (--python-tag, --universal, and
 
 import subprocess
 import sys
+import os
 
 import pytest
 
@@ -192,3 +193,20 @@ def test_plat_name_ext_in_setupcfg(temp_pkg):
     assert len(wheels) == 1
     assert wheels[0].basename.endswith('-testplat_arch.whl')
     assert wheels[0].ext == '.whl'
+
+
+def test_dist_info(temp_pkg):
+    subprocess.check_call(
+        [sys.executable, 'setup.py', 'dist_info', '--egg-base=pip-egg-info'],
+        cwd=str(temp_pkg))
+
+    dist_info_base = os.path.join(temp_pkg, 'pip-egg-info')
+    assert os.path.exists(dist_info_base)
+
+    dist_info_dirname = [
+        d for d in os.listdir(dist_info_base) if d.endswith('.dist-info')
+    ][0]
+    dist_info_dir = os.path.join(dist_info_base, dist_info_dirname)
+
+    assert os.path.exists(dist_info_dir)
+    assert os.path.exists(os.path.join(dist_info_dir, 'METADATA'))
