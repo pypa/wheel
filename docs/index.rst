@@ -157,24 +157,45 @@ Defining conditional dependencies
 
 In wheel, the only way to have conditional dependencies (that might only be
 needed on certain platforms) is to use environment markers as defined by
-PEP 426.
+:pep:`426`.
 
 As of wheel 0.24.0, the recommended way to do this is in the setuptools
-`extras_require` parameter. A `:` separates the extra name from the marker.
+``extras_require`` parameter. A ``:`` separates the extra name from the marker.
 Wheel's own setup.py has an example::
-      extras_require={
-          ':python_version=="2.6"': ['argparse'],
-          'signatures': ['keyring'],
-          'signatures:sys_platform!="win32"': ['pyxdg'],
-          'faster-signatures': ['ed25519ll'],
-          'tool': []
-          },
 
-The extra named '' signifies a default requirement, as if it was passed to
-`install_requires`.
+   extras_require={
+       ':python_version=="2.6"': ['argparse'],
+       'signatures': ['keyring'],
+       'signatures:sys_platform!="win32"': ['pyxdg'],
+       'faster-signatures': ['ed25519ll'],
+       'tool': []
+   },
 
-Older versions of bdist_wheel supported passing requirements in a
-now-deprecated [metadata] section in setup.cfg.
+Leaving out the name of the extra (like with "argparse" here) means that only
+the conditions after ``:`` determine whether the dependencies will be installed
+or not.
+
+As of setuptools 36.2.1, you can pass extras as part of ``install_requires``.
+The above requirements could thus be written like this::
+
+   install_requires=[
+       'argparse; python_version=="2.6"',
+       'keyring; extra=="signatures"',
+       'pyxdg; extra=="signatures" and sys_platform!="win32"',
+       'ed25519ll; extra=="faster-signatures"'
+   ]
+
+Alternatively (as of setuptools 36.2.7), you can specify your requirements in
+the ``[options]`` section of your setup.cfg:
+
+.. code-block:: cfg
+
+   [options]
+   install_requires =
+       argparse; python_version=="2.6"
+       keyring; extra=="signatures"
+       pyxdg; extra=="signatures" and sys_platform!="win32"
+       ed25519ll; extra=="faster-signatures"
 
 Automatically sign wheel files
 ------------------------------
