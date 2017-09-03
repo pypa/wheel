@@ -208,19 +208,22 @@ include a trust model.
 the environment variable `WHEEL_TOOL` is set to the path of the `wheel`
 command line tool.::
 
-	# Install the wheel tool and its dependencies
-	$ pip install wheel[tool]
-	# Generate a signing key (only once)
-	$ wheel keygen
+    # Install wheel with dependencies for generating signatures
+    $ pip install wheel[signatures]
+    # Generate a signing key (only once)
+    $ wheel keygen
 
-	$ export WHEEL_TOOL=/path/to/wheel
-	$ python setup.py bdist_wheel
+    $ export WHEEL_TOOL=/path/to/wheel
+    $ python setup.py bdist_wheel
 
 Signing is done in a subprocess because it is not convenient for the
 build environment to contain bindings to the keyring and cryptography
 libraries. The keyring library may not be able to find your keys (choosing
 a different key storage back end based on available dependencies) unless
 you run it from the same environment used for keygen.
+
+.. note:: You can also include the ``faster-signatures`` extra when
+          installing "wheel" to improve the performance of wheel signing.
 
 Format
 ------
