@@ -38,6 +38,10 @@
       "description": "A one-line summary of what the distribution does.",
       "type": "string"
     },
+    "description_content_type": {
+      "description": "The MIME type of the long description.",
+      "type": "string"
+    },
     "extras": {
       "description": "A list of optional sets of dependencies that may be used to define conditional dependencies in \"may_require\" and similar fields.",
       "type": "array",
