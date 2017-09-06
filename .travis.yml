@@ -26,7 +26,6 @@ jobs:
 
     - env: TOXENV=flake8
       python: "2.7"
-      install: skip
       after_success: skip
 
     - stage: deploy to PyPI
@@ -44,9 +43,7 @@ jobs:
   allow_failures:
     - python: nightly
 
-install:
-  - pip install -U setuptools
-  - pip install tox
+install: pip install tox
 
 script: tox
 
