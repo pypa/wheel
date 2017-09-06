@@ -51,7 +51,8 @@ setup(name='wheel',
               'wheel=wheel.tool:main'
               ],
           'distutils.commands': [
-              'bdist_wheel=wheel.bdist_wheel:bdist_wheel'
+              'bdist_wheel=wheel.bdist_wheel:bdist_wheel',
+              'dist_info=wheel.dist_info:dist_info',
               ]
           }
       )
