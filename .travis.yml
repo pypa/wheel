@@ -30,6 +30,7 @@ jobs:
 
     - stage: deploy to PyPI
       install: pip install -U setuptools
+      script: skip
       after_success: skip
       deploy:
         provider: pypi
