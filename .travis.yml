@@ -1,35 +1,58 @@
 language: python
 sudo: false
 
-matrix:
+jobs:
   include:
     - env: TOXENV=pypy
       python: pypy
+
     - env: TOXENV=pypy3
       python: pypy3
+
     - env: TOXENV=py27
       python: "2.7"
+
     - env: TOXENV=py34
       python: "3.4"
+
     - env: TOXENV=py35
       python: "3.5"
+
     - env: TOXENV=py36
       python: "3.6"
+
     - env: TOXENV=py37
       python: nightly
+
     - env: TOXENV=flake8
       python: "2.7"
+      install: skip
+      after_success: skip
+
+    - stage: deploy to PyPI
+      install: pip install -U setuptools
+      after_success: skip
+      deploy:
+        provider: pypi
+        user: agronholm
+        password:
+          secure: K00H32qxXisjvRVQJmRPBl6FeOapE46eceOSHOoAMKV28xG+vURg4S/DoTJ6WXP+a0Z3/WdpMgfOKexEwNsJwHwp4ASREeiPLDAGzCJjF4jjYbz6EdDGRNrt/gI2NfavOx96piDPofpqmiB6N56uhcBCkwhzKG6biq0Pb6IDQ5NazKQ6x3NL5xOa6lEy/1Uvr5vWLSCfXnu1+b0/IJtQmjGwL3Wcue9os+rzONqrKj2kToCtdQWEipiru7RFwFTsb36YZWI4XoslRxRiytRb0D9cWcOW3RJSrt9hOiXOTj/56T42qv1fO1Z2BPgmeln+IQf9i9N5mHwGjfTShHTNSou7OI+LE9VSzFCXrd5tNe47lfqj6+Gp3BKK5t2pKoYLMib163JgGz1D9dvk1WpMlf6AYQ4iTlFyQZDxJfTJvME2o9n3efpcbFtHu1rWfGQwf9UcsrlaAj0r1+hjuFvVBVvYequXcsTt2mvXU0oMiQOnrfxydKIKdwvagn4FbSAVksP8y9ip26iDyiDOOWJSMdMVGErm7O3NKHDdTrxB1rnpDJmNV5ftFnAJ9PPo4r5+NmID9RyNoZkHxWmzqs4tuv5DDPQZUrY/L7deL7DNGJsN10vmQWH2mJdOhGir8D0z9njd7TmI8b7vHdB6x4+FwqedPgUlySfDx/bXJgR01fk=
+        distributions: sdist bdist_wheel
+        on:
+          tags: true
+          repo: pypa/wheel
   allow_failures:
     - python: nightly
-    - python: pypy3
 
 install:
   - pip install -U setuptools
-  - pip install tox codecov
+  - pip install tox
 
 script: tox
 
-after_success: codecov --token=acff82f6-e810-47fb-8117-1d23ed9e3078
+after_success:
+  - pip install codecov
+  - codecov --token=acff82f6-e810-47fb-8117-1d23ed9e3078
 
 notifications:
   irc:
