@@ -1,6 +1,7 @@
 """Generate and work with PEP 425 Compatibility Tags."""
 
 import distutils.util
+import platform
 import sys
 import sysconfig
 import warnings
@@ -16,15 +17,17 @@ def get_config_var(var):
 
 def get_abbr_impl():
     """Return abbreviated implementation name."""
-    if hasattr(sys, 'pypy_version_info'):
-        pyimpl = 'pp'
-    elif sys.platform.startswith('java'):
-        pyimpl = 'jy'
-    elif sys.platform == 'cli':
-        pyimpl = 'ip'
-    else:
-        pyimpl = 'cp'
-    return pyimpl
+    impl = platform.python_implementation()
+    if impl == 'PyPy':
+        return 'pp'
+    elif impl == 'Jython':
+        return 'jy'
+    elif impl == 'IronPython':
+        return 'ip'
+    elif impl == 'CPython':
+        return 'cp'
+
+    raise LookupError('Unknown Python implementation: ' + impl)
 
 
 def get_impl_ver():
