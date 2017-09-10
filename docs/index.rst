@@ -200,6 +200,29 @@ the ``[options]`` section of your setup.cfg:
 .. warning:: Specifying extras via ``install_requires`` does not yet work with
    pip (v9.0.1 as of this writing).
 
+Including the license in the generated wheel file
+-------------------------------------------------
+
+Several open source licenses require the license text to be included in every
+distributable artifact of the project. Currently, the only way to to do this
+with "wheel" is to specify the ``license_file`` key in the ``[metadata]``
+section of the project's ``setup.cfg``:
+
+.. code-block:: cfg
+
+   [metadata]
+   license_file = LICENSE.txt
+
+The file path should be relative to the project root. The file will be
+packaged as ``LICENSE.txt`` (regardless of the original name) in the
+``.dist-info`` directory in the wheel.
+
+There is currently no way to include multiple license related files, but
+this is going to change in the near future. You can track the progress
+by subscribing to `issue 138`_ on Github.
+
+.. _issue 138: https://github.com/pypa/wheel/issues/138
+
 Automatically sign wheel files
 ------------------------------
 

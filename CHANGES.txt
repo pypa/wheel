@@ -2,6 +2,7 @@
 ======
 - Added py-limited-api {cp32|cp33|cp34|...} flag to produce cpNN.abi3.{arch}
   tags on CPython 3.
+- Documented the ``license_file`` metadata key
 - Improved Python, abi tagging for `wheel convert`. Thanks Ales Erjavec.
 - Fixed `>` being prepended to lines starting with "From" in the long description
 - Added support for specifying a build number (as per PEP 427).
