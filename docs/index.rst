@@ -197,6 +197,9 @@ the ``[options]`` section of your setup.cfg:
        pyxdg; extra=="signatures" and sys_platform!="win32"
        ed25519ll; extra=="faster-signatures"
 
+.. warning:: Specifying extras via ``install_requires`` does not yet work with
+   pip (v9.0.1 as of this writing).
+
 Automatically sign wheel files
 ------------------------------
 
