@@ -403,10 +403,8 @@ class bdist_wheel(Command):
             pkg_info = self._pkginfo_to_metadata(egginfo_path, pkginfo_path)
 
             # ignore common egg metadata that is useless to wheel
-            shutil.copytree(egginfo_path, distinfo_path,
-                            ignore=lambda x, y: {'PKG-INFO', 'requires.txt', 'SOURCES.txt',
-                                                 'not-zip-safe'}
-                            )
+            ignore = ('PKG-INFO', 'requires.txt', 'SOURCES.txt', 'not-zip-safe')
+            shutil.copytree(egginfo_path, distinfo_path, ignore=lambda x, y: set(ignore))
 
             # delete dependency_links if it is only whitespace
             dependency_links_path = os.path.join(distinfo_path, 'dependency_links.txt')
