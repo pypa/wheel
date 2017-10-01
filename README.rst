@@ -1,43 +1,29 @@
-Wheel
+wheel
 =====
 
-A built-package format for Python.
+This library is the reference implementation of the Python wheel packaging
+standard, as defined in `PEP 427`_.
 
-A wheel is a ZIP-format archive with a specially formatted filename
-and the .whl extension. It is designed to contain all the files for a
-PEP 376 compatible install in a way that is very close to the on-disk
-format. Many packages will be properly installed with only the "Unpack"
-step (simply extracting the file onto sys.path), and the unpacked archive
-preserves enough information to "Spread" (copy data and scripts to their
-final locations) at any later time.
+It has two different roles:
 
-The wheel project provides a `bdist_wheel` command for setuptools
-(requires setuptools >= 0.8.0). Wheel files can be installed with a
-newer `pip` from https://github.com/pypa/pip or with wheel's own command
-line utility.
+#. A setuptools_ extension for building wheels that provides the
+   ``bdist_wheel`` setuptools command
+#. A command line tool for working with wheel files
 
-The wheel documentation is at https://wheel.readthedocs.io/. The file format is
-documented in PEP 427 (https://www.python.org/dev/peps/pep-0427/).
+Links:
 
-The reference implementation is at https://github.com/pypa/wheel
+* `Installation <http://wheel.readthedocs.io/en/stable/installing.html>`_
+* `Documentation <http://wheel.readthedocs.io/>`_
+* `Changelog <http://wheel.readthedocs.io/en/stable/news.html>`_
+* `GitHub Page <https://github.com/pypa/wheel>`_
+* `Issue Tracking <https://github.com/pypa/wheel/issues>`_
+* `User mailing list <http://groups.google.com/group/python-virtualenv>`_
+* `Dev mailing list <http://groups.google.com/group/pypa-dev>`_
+* User IRC: #pypa on Freenode
+* Dev IRC: #pypa-dev on Freenode
 
-Why not egg?
-------------
-
-Python's egg format predates the packaging related standards we have
-today, the most important being PEP 376 "Database of Installed Python
-Distributions" which specifies the .dist-info directory (instead of
-.egg-info) and PEP 426 "Metadata for Python Software Packages 2.0"
-which specifies how to express dependencies (instead of requires.txt
-in .egg-info).
-
-Wheel implements these things. It also provides a richer file naming
-convention that communicates the Python implementation and ABI as well
-as simply the language version used in a particular package.
-
-Unlike .egg, wheel will be a fully-documented standard at the binary
-level that is truly easy to install even if you do not want to use the
-reference implementation.
+.. _PEP 427: https://www.python.org/dev/peps/pep-0427/
+.. _setuptools: https://pypi.org/project/setuptools/
 
 
 Code of Conduct

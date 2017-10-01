@@ -8,7 +8,6 @@ from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = io.open(os.path.join(here, 'README.rst'), encoding='utf8').read()
-CHANGES = io.open(os.path.join(here, 'CHANGES.txt'), encoding='utf8').read()
 
 with io.open(os.path.join(here, 'wheel', '__init__.py'), encoding='utf8') as version_file:
     metadata = dict(re.findall(r"""__([a-z]+)__ = "([^"]+)""", version_file.read()))
@@ -16,7 +15,7 @@ with io.open(os.path.join(here, 'wheel', '__init__.py'), encoding='utf8') as ver
 setup(name='wheel',
       version=metadata['version'],
       description='A built-package format for Python.',
-      long_description=README + '\n\n' + CHANGES,
+      long_description=README,
       classifiers=[
           "Development Status :: 5 - Production/Stable",
           "Intended Audience :: Developers",
