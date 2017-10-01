@@ -7,7 +7,8 @@ Release Notes
   tags on CPython 3.
 - Documented the ``license_file`` metadata key
 - Improved Python, abi tagging for ``wheel convert``. Thanks Ales Erjavec.
-- Fixed ``>`` being prepended to lines starting with "From" in the long description
+- Fixed ``>`` being prepended to lines starting with "From" in the long
+  description
 - Added support for specifying a build number (as per PEP 427).
   Thanks Ian Cordasco.
 - Made the order of files in generated ZIP files deterministic.
@@ -28,9 +29,9 @@ Release Notes
 
 **0.27.0**
 
-- Support forcing a platform tag using ``--plat-name`` on pure-Python wheels, as
-  well as nonstandard platform tags on non-pure wheels (Pull Request #60, Issue
-  #144, thanks Andrés Díaz)
+- Support forcing a platform tag using ``--plat-name`` on pure-Python wheels,
+  as well as nonstandard platform tags on non-pure wheels (Pull Request #60,
+  Issue #144, thanks Andrés Díaz)
 - Add SOABI tags to platform-specific wheels built for Python 2.X (Pull Request
   #55, Issue #63, Issue #101)
 - Support reproducible wheel files, wheels that can be rebuilt and will hash to
