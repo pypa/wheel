@@ -271,5 +271,3 @@ Wheel
    :maxdepth: 2
 
    story
-   api
-
