@@ -1,31 +1,34 @@
-0.30.0
-======
+Release Notes
+=============
+
+**0.30.0**
+
 - Added py-limited-api {cp32|cp33|cp34|...} flag to produce cpNN.abi3.{arch}
   tags on CPython 3.
 - Documented the ``license_file`` metadata key
-- Improved Python, abi tagging for `wheel convert`. Thanks Ales Erjavec.
-- Fixed `>` being prepended to lines starting with "From" in the long description
+- Improved Python, abi tagging for ``wheel convert``. Thanks Ales Erjavec.
+- Fixed ``>`` being prepended to lines starting with "From" in the long description
 - Added support for specifying a build number (as per PEP 427).
   Thanks Ian Cordasco.
 - Made the order of files in generated ZIP files deterministic.
   Thanks Matthias Bach.
 - Made the order of requirements in metadata deterministic. Thanks Chris Lamb.
-- Fixed `wheel install` clobbering existing files
+- Fixed ``wheel install`` clobbering existing files
 - Improved the error message when trying to verify an unsigned wheel file
 - Removed support for Python 2.6, 3.2 and 3.3.
 
-0.29.0
-======
+**0.29.0**
+
 - Fix compression type of files in archive (Issue #155, Pull Request #62,
   thanks Xavier Fernandez)
 
-0.28.0
-======
+**0.28.0**
+
 - Fix file modes in archive (Issue #154)
 
-0.27.0
-======
-- Support forcing a platform tag using `--plat-name` on pure-Python wheels, as
+**0.27.0**
+
+- Support forcing a platform tag using ``--plat-name`` on pure-Python wheels, as
   well as nonstandard platform tags on non-pure wheels (Pull Request #60, Issue
   #144, thanks Andrés Díaz)
 - Add SOABI tags to platform-specific wheels built for Python 2.X (Pull Request
@@ -38,16 +41,16 @@
 - Use the file context manager when checking if dependency_links.txt is empty,
   fixes problems building wheels under PyPy on Windows  (Issue #150, thanks
   Cosimo Lupo)
-- Don't attempt to (recursively) create a build directory ending with `..`
+- Don't attempt to (recursively) create a build directory ending with ``..``
   (invalid on all platforms, but code was only executed on Windows) (Issue #91)
 - Added the PyPA Code of Conduct (Pull Request #56)
 
-0.26.0
-======
+**0.26.0**
+
 - Fix multiple entrypoint comparison failure on Python 3 (Issue #148)
 
-0.25.0
-======
+**0.25.0**
+
 - Add Python 3.5 to tox configuration
 - Deterministic (sorted) metadata
 - Fix tagging for Python 3.5 compatibility
@@ -55,8 +58,8 @@
 - Treat data-only wheels as pure
 - Write to temporary file and rename when using wheel install --force
 
-0.24.0
-======
+**0.24.0**
+
 - The python tag used for pure-python packages is now .pyN (major version
   only). This change actually occurred in 0.23.0 when the --python-tag
   option was added, but was not explicitly mentioned in the changelog then.
@@ -69,8 +72,8 @@
   should work the same whether the package is installed by wheel or
   by setup.py.
 
-0.23.0
-======
+**0.23.0**
+
 - Compatibility tag flags added to the bdist_wheel command
 - sdist should include files necessary for tests
 - 'wheel convert' can now also convert unpacked eggs to wheel
@@ -83,15 +86,15 @@
   command can be used to generate the scripts in such cases.
 - Thank you contributors
 
-0.22.0
-======
+**0.22.0**
+
 - Include entry_points.txt, scripts a.k.a. commands, in experimental
   pydist.json
 - Improved test_requires parsing
 - Python 2.6 fixes, "wheel version" command courtesy pombredanne
 
-0.21.0
-======
+**0.21.0**
+
 - Pregenerated scripts are the default again.
 - "setup.py bdist_wheel --skip-scripts" turns them off.
 - setuptools is no longer a listed requirement for the 'wheel'
@@ -99,100 +102,89 @@
   to work.
 - "python -m wheel" avoids importing pkg_resources until it's necessary.
 
-0.20.0
-======
+**0.20.0**
+
 - No longer include console_scripts in wheels. Ordinary scripts (shell files,
   standalone Python files) are included as usual.
 - Include new command "python -m wheel install-scripts [distribution
   [distribution ...]]" to install the console_scripts (setuptools-style
   scripts using pkg_resources) for a distribution.
 
-0.19.0
-======
+**0.19.0**
+
 - pymeta.json becomes pydist.json
 
-0.18.0
-======
+**0.18.0**
+
 - Python 3 Unicode improvements
 
-0.17.0
-======
+**0.17.0**
+
 - Support latest PEP-426 "pymeta.json" (json-format metadata)
 
-0.16.0
-======
+**0.16.0**
+
 - Python 2.6 compatibility bugfix (thanks John McFarlane)
-- Non-prerelease version number
-
-1.0.0a2
-=======
 - Bugfix for C-extension tags for CPython 3.3 (using SOABI)
-
-1.0.0a1
-=======
 - Bugfix for bdist_wininst converter "wheel convert"
 - Bugfix for dists where "is pure" is None instead of True or False
-
-1.0.0a0
-=======
-- Update for version 1.0 of Wheel (PEP accepted).
 - Python 3 fix for moving Unicode Description to metadata body
 - Include rudimentary API documentation in Sphinx (thanks Kevin Horn)
 
-0.15.0
-======
+**0.15.0**
+
 - Various improvements
 
-0.14.0
-======
+**0.14.0**
+
 - Changed the signature format to better comply with the current JWS spec.
   Breaks all existing signatures.
 - Include ``wheel unsign`` command to remove RECORD.jws from an archive.
 - Put the description in the newly allowed payload section of PKG-INFO
   (METADATA) files.
 
-0.13.0
-======
+**0.13.0**
+
 - Use distutils instead of sysconfig to get installation paths; can install
   headers.
 - Improve WheelFile() sort.
 - Allow bootstrap installs without any pkg_resources.
 
-0.12.0
-======
+**0.12.0**
+
 - Unit test for wheel.tool.install
 
-0.11.0
-======
+**0.11.0**
+
 - API cleanup
 
-0.10.3
-======
+**0.10.3**
+
 - Scripts fixer fix
 
-0.10.2
-======
+**0.10.2**
+
 - Fix keygen
 
-0.10.1
-======
+**0.10.1**
+
 - Preserve attributes on install.
 
-0.10.0
-======
+**0.10.0**
+
 - Include a copy of pkg_resources. Wheel can now install into a virtualenv
   that does not have distribute (though most packages still require
   pkg_resources to actually work; wheel install distribute)
 - Define a new setup.cfg section [wheel]. universal=1 will
   apply the py2.py3-none-any tag for pure python wheels.
 
-0.9.7
-=====
+**0.9.7**
+
 - Only import dirspec when needed. dirspec is only needed to find the
   configuration for keygen/signing operations.
 
-0.9.6
-=====
+**0.9.6**
+
 - requires-dist from setup.cfg overwrites any requirements from setup.py
   Care must be taken that the requirements are the same in both cases,
   or just always install from wheel.
@@ -200,8 +192,8 @@
 - improved command line utility, adds 'wheel convert [egg or wininst]' to
   convert legacy binary formats to wheel
 
-0.9.5
-=====
+**0.9.5**
+
 - Wheel's own wheel file can be executed by Python, and can install itself:
   ``python wheel-0.9.5-py27-none-any/wheel install ...``
 - Use argparse; basic ``wheel install`` command should run with only stdlib
@@ -210,78 +202,78 @@
   dependencies in setup.py, but will only be interpreted when installing
   from wheel, not from sdist. Can be qualified with environment markers.
 
-0.9.4
-=====
+**0.9.4**
+
 - Fix wheel.signatures in sdist
 
-0.9.3
-=====
+**0.9.3**
+
 - Integrated digital signatures support without C extensions.
 - Integrated "wheel install" command (single package, no dependency
   resolution) including compatibility check.
 - Support Python 3.3
 - Use Metadata 1.3 (PEP 426)
 
-0.9.2
-=====
+**0.9.2**
+
 - Automatic signing if WHEEL_TOOL points to the wheel binary
 - Even more Python 3 fixes
 
-0.9.1
-=====
+**0.9.1**
+
 - 'wheel sign' uses the keys generated by 'wheel keygen' (instead of generating
   a new key at random each time)
 - Python 2/3 encoding/decoding fixes
 - Run tests on Python 2.6 (without signature verification)
 
-0.9
-===
+**0.9**
+
 - Updated digital signatures scheme
 - Python 3 support for digital signatures
 - Always verify RECORD hashes on extract
 - "wheel" command line tool to sign, verify, unpack wheel files
 
-0.8
-===
+**0.8**
+
 - none/any draft pep tags update
 - improved wininst2wheel script
 - doc changes and other improvements
 
-0.7
-===
+**0.7**
+
 - sort .dist-info at end of wheel archive
 - Windows & Python 3 fixes from Paul Moore
 - pep8
 - scripts to convert wininst & egg to wheel
 
-0.6
-===
+**0.6**
+
 - require distribute >= 0.6.28
 - stop using verlib
 
-0.5
-===
+**0.5**
+
 - working pretty well
 
-0.4.2
-=====
+**0.4.2**
+
 - hyphenated name fix
 
-0.4
-===
+**0.4**
+
 - improve test coverage
 - improve Windows compatibility
 - include tox.ini courtesy of Marc Abramowitz
 - draft hmac sha-256 signing function
 
-0.3
-===
+**0.3**
+
 - prototype egg2wheel conversion script
 
-0.2
-===
+**0.2**
+
 - Python 3 compatibility
 
-0.1
-===
+**0.1**
+
 - Initial version
