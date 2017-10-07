@@ -1,14 +1,17 @@
 User Guide
 ==========
 
-.. toctree::
-
 Building Wheels
 ---------------
 
+Building wheels from a setuptools_ based project is simple::
+
     python setup.py bdist_wheel
 
-If your project contains no binary wheels and is expected to work on both
+This will build any C extensions in the project and then package those and the
+pure Python code into a ``.whl`` file in the ``dist`` directory.
+
+If your project contains no C extensions and is expected to work on both
 Python 2 and 3, you will want to tell wheel to produce universal wheels by
 adding this to your ``setup.cfg`` file:
 
@@ -16,6 +19,8 @@ adding this to your ``setup.cfg`` file:
 
     [bdist_wheel]
     universal = 1
+
+.. _setuptools: https://pypi.org/project/setuptools/
 
 Signing and Verifying Wheels
 ----------------------------
@@ -93,4 +98,4 @@ being the path to your ``site-packages`` directory::
     $ wheel unpack -d <site-packages-dir> someproject-X.Y.Z-py2-py3-none.whl
     $ wheel install-scripts someproject
 
-.. _pip: https://pip.pypa.io/en/stable/installing/
+.. _pip: https://pypi.org/project/pip/
