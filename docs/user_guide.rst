@@ -60,7 +60,7 @@ The wheel tool is capable of converting eggs to the wheel format.
 It works on both ``.egg`` files and ``.egg`` directories, and you can convert
 multiple eggs with a single command::
 
-    wheel convert blah-1.2.3.egg foo-2.0b1.egg
+    wheel convert blah-1.2.3-py2.7.egg foo-2.0b1-py3.5.egg
 
 The command supports wildcard expansion as well (via :func:`~glob.iglob`) to
 accommodate shells that do not do such expansion natively::
@@ -70,7 +70,7 @@ accommodate shells that do not do such expansion natively::
 By default, the resulting wheels are written to the current working directory.
 This can be changed with the ``--dest-dir`` option::
 
-    wheel convert --dest-dir /tmp blah-1.2.3.egg
+    wheel convert --dest-dir /tmp blah-1.2.3-py2.7.egg
 
 Installing Wheels
 -----------------
