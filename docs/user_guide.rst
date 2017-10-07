@@ -39,24 +39,19 @@ need to do this more than once.
 
 To sign an existing wheel file with this key::
 
-    $ wheel sign someproject-X.Y.Z-py2-py3-none.whl
+    $ wheel sign someproject-1.5.0-py2-py3-none.whl
 
-Verifying a wheel file can be done with following command::
+Verifying the signature in a wheel file can be done with following command::
 
-    $ wheel verify someproject-X.Y.Z-py2-py3-none.whl
+    $ wheel verify someproject-1.5.0-py2-py3-none.whl
 
-This will verify the internal consistency of the wheel file against the
-contained signatures. It will also print out the key algorithm, verification
-key and the hash of the wheel file for verification against external sources.
-
-.. warning:: Wheel can only verify that the archive contents match the signing
-    key. It **cannot** verify that the wheel was created by a trusted entity.
-    For that, you must manually compare the verification key (``vk`` in the
-    output) against the expected key(s).
+This will verify the internal consistency of the signature in the wheel file.
+It will also print out the key algorithm, verification key and the hash of the
+key.
 
 You can also use wheel to remove the signature from a wheel file::
 
-    $ wheel unsign someproject-X.Y.Z-py2-py3-none.whl
+    $ wheel unsign someproject-1.5.0-py2-py3-none.whl
 
 Converting Eggs to Wheels
 -------------------------
@@ -87,7 +82,7 @@ Installing Wheels
 
 To install a wheel file in ``site-packages``::
 
-    $ wheel install someproject-X.Y.Z-py2-py3-none.whl
+    $ wheel install someproject-1.5.0-py2-py3-none.whl
 
 This will unpack the archive in your current site packages directory and
 install any console scripts contained in the wheel.
