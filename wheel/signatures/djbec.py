@@ -34,7 +34,7 @@ except NameError:  # pragma nocover
 
 b = 256
 q = 2 ** 255 - 19
-l = 2 ** 252 + 27742317777372353535851937790883648493
+l = 2 ** 252 + 27742317777372353535851937790883648493  # noqa: E741
 
 
 def H(m):
@@ -59,7 +59,7 @@ def inv(x):
 
 
 d = -121665 * inv(121666)
-I = expmod(2, (q - 1) // 4, q)
+I = expmod(2, (q - 1) // 4, q)  # noqa: E741
 
 
 def xrecover(y):

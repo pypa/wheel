@@ -355,7 +355,7 @@ class WheelFile(object):
                         destination.write(hashbang)
 
                     shutil.copyfileobj(source, destination)
-            except:
+            except BaseException:
                 if os.path.exists(temp_filename):
                     os.unlink(temp_filename)
 
@@ -406,7 +406,7 @@ class WheelFile(object):
         if sig:
             headers, payload = signatures.verify(sig)
             if payload['hash'] != "sha256=" + native(record_digest):
-                msg = "RECORD.sig claimed RECORD hash {0} != computed hash {1}."
+                msg = "RECORD.jws claimed RECORD hash {} != computed hash {}."
                 raise BadWheelFile(msg.format(payload['hash'],
                                               native(record_digest)))
 
