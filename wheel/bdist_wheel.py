@@ -274,9 +274,8 @@ class bdist_wheel(Command):
             ('bdist_wheel', get_python_version(), wheel_name))
 
         if not self.keep_temp:
-            if self.dry_run:
-                logger.info('removing %s', self.bdist_dir)
-            else:
+            logger.info('removing %s', self.bdist_dir)
+            if not self.dry_run:
                 rmtree(self.bdist_dir)
 
     def write_wheelfile(self, wheelfile_base, generator='bdist_wheel (' + wheel_version + ')'):
