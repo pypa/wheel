@@ -204,7 +204,7 @@ Including the license in the generated wheel file
 -------------------------------------------------
 
 Several open source licenses require the license text to be included in every
-distributable artifact of the project. Currently, the only way to to do this
+distributable artifact of the project. Currently, the only way to do this
 with "wheel" is to specify the ``license_file`` key in the ``[metadata]``
 section of the project's ``setup.cfg``:
 
