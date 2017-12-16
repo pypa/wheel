@@ -5,7 +5,7 @@ A built-package format for Python.
 
 A wheel is a ZIP-format archive with a specially formatted filename
 and the .whl extension. It is designed to contain all the files for a
-PEP 376 compatible install in a way that is very close to the on-disk
+`PEP 376`_ compatible install in a way that is very close to the on-disk
 format. Many packages will be properly installed with only the "Unpack"
 step (simply extracting the file onto sys.path), and the unpacked archive
 preserves enough information to "Spread" (copy data and scripts to their
@@ -17,7 +17,7 @@ newer `pip` from https://github.com/pypa/pip or with wheel's own command
 line utility.
 
 The wheel documentation is at http://wheel.rtfd.org/. The file format
-is documented in PEP 427 (http://www.python.org/dev/peps/pep-0427/).
+is documented in `PEP 427`_.
 
 The reference implementation is at https://github.com/pypa/wheel
 
@@ -25,9 +25,9 @@ Why not egg?
 ------------
 
 Python's egg format predates the packaging related standards we have
-today, the most important being PEP 376 "Database of Installed Python
+today, the most important being `PEP 376`_ "Database of Installed Python
 Distributions" which specifies the .dist-info directory (instead of
-.egg-info) and PEP 426 "Metadata for Python Software Packages 2.0"
+.egg-info) and `PEP 426`_ "Metadata for Python Software Packages 2.0"
 which specifies how to express dependencies (instead of requires.txt
 in .egg-info).
 
@@ -46,4 +46,7 @@ Code of Conduct
 Everyone interacting in the wheel project's codebases, issue trackers, chat
 rooms, and mailing lists is expected to follow the `PyPA Code of Conduct`_.
 
+.. _PEP 376: https://www.python.org/dev/peps/pep-0376/
+.. _PEP 426: https://www.python.org/dev/peps/pep-0426/
+.. _PEP 427: https://www.python.org/dev/peps/pep-0427/
 .. _PyPA Code of Conduct: https://www.pypa.io/en/latest/code-of-conduct/
