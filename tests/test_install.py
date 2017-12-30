@@ -100,3 +100,9 @@ def test_install():
 def test_install_tool():
     """Slightly improve coverage of wheel.install"""
     wheel.tool.install([TESTWHEEL], force=True, dry_run=True)
+
+
+def test_wheelfile_re():
+    # Regression test for #208
+    wf = WheelFile('foo-2-py3-none-any.whl')
+    assert wf.distinfo_name == 'foo-2.dist-info'

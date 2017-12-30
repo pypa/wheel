@@ -34,9 +34,8 @@ VERSION_TOO_HIGH = (1, 0)
 # Non-greedy matching of an optional build number may be too clever (more
 # invalid wheel filenames will match). Separate regex for .dist-info?
 WHEEL_INFO_RE = re.compile(
-    r"""^(?P<namever>(?P<name>.+?)(-(?P<ver>\d.+?))?)
-    ((-(?P<build>\d.*?))?-(?P<pyver>.+?)-(?P<abi>.+?)-(?P<plat>.+?)
-    \.whl|\.dist-info)$""",
+    r"""^(?P<namever>(?P<name>.+?)-(?P<ver>\d.*?))(-(?P<build>\d.*?))?
+     -(?P<pyver>[a-z].+?)-(?P<abi>.+?)-(?P<plat>.+?)(\.whl|\.dist-info)$""",
     re.VERBOSE).match
 
 

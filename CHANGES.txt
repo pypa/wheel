@@ -1,6 +1,7 @@
 Unreleased
 ==========
 - Fixed displaying of errors on Python 3
+- Fixed single digit versions in wheel files not being properly recognized
 
 0.30.0
 ======
