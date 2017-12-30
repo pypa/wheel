@@ -207,10 +207,12 @@ def main():
     for pat in args.installers:
         for installer in iglob(pat):
             if args.verbose:
-                sys.stdout.write("{0}... ".format(installer))
+                print("{}... ".format(installer))
+                sys.stdout.flush()
+
             bdist_wininst2wheel(installer, args.dest_dir)
             if args.verbose:
-                sys.stdout.write("OK\n")
+                print("OK")
 
 
 if __name__ == "__main__":

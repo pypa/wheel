@@ -3,6 +3,8 @@ Operations on existing wheel files, including basic installation.
 """
 # XXX see patched pip to install
 
+from __future__ import print_function
+
 import csv
 import hashlib
 import os.path
@@ -417,8 +419,9 @@ class WheelFile(object):
             hash = row[1]
             if not hash:
                 if filename not in (record_name, sig_name):
-                    sys.stderr.write("%s has no hash!\n" % filename)
+                    print("%s has no hash!" % filename, file=sys.stderr)
                 continue
+
             algo, data = row[1].split('=', 1)
             assert algo == "sha256", "Unsupported hash algorithm"
             zipfile.set_expected_hash(filename, urlsafe_b64decode(binary(data)))

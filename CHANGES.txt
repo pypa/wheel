@@ -1,3 +1,7 @@
+Unreleased
+==========
+- Fixed displaying of errors on Python 3
+
 0.30.0
 ======
 - Added py-limited-api {cp32|cp33|cp34|...} flag to produce cpNN.abi3.{arch}

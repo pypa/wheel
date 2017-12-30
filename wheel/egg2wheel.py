@@ -80,10 +80,12 @@ def main():
     for pat in args.eggs:
         for egg in iglob(pat):
             if args.verbose:
-                sys.stdout.write("{0}... ".format(egg))
+                print("{}... ".format(egg))
+                sys.stdout.flush()
+
             egg2wheel(egg, args.dest_dir)
             if args.verbose:
-                sys.stdout.write("OK\n")
+                print("OK")
 
 
 if __name__ == "__main__":

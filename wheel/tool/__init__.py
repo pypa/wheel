@@ -2,6 +2,8 @@
 Wheel command-line utility.
 """
 
+from __future__ import print_function
+
 import argparse
 import hashlib
 import json
@@ -52,14 +54,14 @@ def keygen(get_keyring=get_keyring):
     sk = native(urlsafe_b64encode(keypair.sk))
     kr = keyring.get_keyring()
     kr.set_password("wheel", vk, sk)
-    sys.stdout.write("Created Ed25519 keypair with vk={0}\n".format(vk))
-    sys.stdout.write("in {0!r}\n".format(kr))
+    print("Created Ed25519 keypair with vk={}".format(vk))
+    print("in {!r}".format(kr))
 
     sk2 = kr.get_password('wheel', vk)
     if sk2 != sk:
         raise WheelError("Keyring is broken. Could not retrieve secret key.")
 
-    sys.stdout.write("Trusting {0} to sign and verify all packages.\n".format(vk))
+    print("Trusting {} to sign and verify all packages.".format(vk))
     wk.add_signer('+', vk)
     wk.trust('+', vk)
     wk.save()
@@ -76,7 +78,7 @@ def sign(wheelfile, replace=False, get_keyring=get_keyring):
 
     name = wf.parsed_filename.group('name')
     sign_with = wk.signers(name)[0]
-    sys.stdout.write("Signing {0} with {1}\n".format(name, sign_with[1]))
+    print("Signing {} with {}".format(name, sign_with[1]))
 
     vk = sign_with[1]
     kr = keyring.get_keyring()
@@ -126,9 +128,8 @@ def verify(wheelfile):
         raise WheelError('The wheel is not signed (RECORD.jws not found at end of the archive).')
 
     verified = signatures.verify(sig)
-    sys.stderr.write("Signatures are internally consistent.\n")
-    sys.stdout.write(json.dumps(verified, indent=2))
-    sys.stdout.write('\n')
+    print("Signatures are internally consistent.", file=sys.stderr)
+    print(json.dumps(verified, indent=2))
 
 
 def unpack(wheelfile, dest='.'):
@@ -143,7 +144,7 @@ def unpack(wheelfile, dest='.'):
     wf = WheelFile(wheelfile)
     namever = wf.parsed_filename.group('namever')
     destination = os.path.join(dest, namever)
-    sys.stderr.write("Unpacking to: %s\n" % (destination))
+    print("Unpacking to: %s" % (destination), file=sys.stderr)
     wf.zipfile.extractall(destination)
     wf.zipfile.close()
 
@@ -221,14 +222,14 @@ def install(requirements, requirements_file=None,
 
     # We now have a list of wheels to install
     if list_files:
-        sys.stdout.write("Installing:\n")
+        print("Installing:")
 
     if dry_run:
         return
 
     for wf in to_install:
         if list_files:
-            sys.stdout.write("    {0}\n".format(wf.filename))
+            print("    {}".format(wf.filename))
             continue
         wf.install(force=force)
         wf.zipfile.close()
@@ -267,11 +268,11 @@ def convert(installers, dest_dir, verbose):
             else:
                 conv = bdist_wininst2wheel
             if verbose:
-                sys.stdout.write("{0}... ".format(installer))
+                print("{}... ".format(installer))
                 sys.stdout.flush()
             conv(installer, dest_dir)
             if verbose:
-                sys.stdout.write("OK\n")
+                print("OK")
 
 
 def parser():
@@ -349,7 +350,7 @@ def parser():
 
     def version_f(args):
         from .. import __version__
-        sys.stdout.write("wheel %s\n" % __version__)
+        print("wheel %s" % __version__)
     version_parser = s.add_parser('version', help='Print version and exit')
     version_parser.set_defaults(func=version_f)
 
@@ -372,5 +373,6 @@ def main():
             args.func(args)
             return 0
         except WheelError as e:
-            sys.stderr.write(e.message + "\n")
+            print(e, file=sys.stderr)
+
     return 1
