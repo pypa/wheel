@@ -11,14 +11,20 @@ from distutils.archive_util import make_archive
 from glob import iglob
 
 import wheel.bdist_wheel
+from wheel.tool import WheelError
 from wheel.wininst2wheel import _bdist_wheel_tag
 
-egg_info_re = re.compile(r'''(?P<name>.+?)-(?P<ver>.+?)
+egg_info_re = re.compile(r'''(?P<name>.+?)-(?P<ver>\d.*?)
     (-(?P<pyver>.+?))?(-(?P<arch>.+?))?.egg''', re.VERBOSE)
 
 
 def egg2wheel(egg_path, dest_dir):
-    egg_info = egg_info_re.match(os.path.basename(egg_path)).groupdict()
+    filename = os.path.basename(egg_path)
+    match = egg_info_re.match(filename)
+    if not match:
+        raise WheelError('Invalid egg file name: {}'.format(filename))
+
+    egg_info = match.groupdict()
     dir = tempfile.mkdtemp(suffix="_e2w")
     if os.path.isfile(egg_path):
         # assume we have a bdist_egg otherwise
