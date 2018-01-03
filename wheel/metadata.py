@@ -255,7 +255,7 @@ def generate_requirements(extras_require):
         if extra:
             yield ('Provides-Extra', extra)
             if condition:
-                condition += " and "
+                condition = "(" + condition + ") and "
             condition += "extra == '%s'" % extra
         if condition:
             condition = '; ' + condition
