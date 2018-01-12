@@ -37,6 +37,7 @@ setup(name='wheel',
       keywords=['wheel', 'packaging'],
       license='MIT',
       packages=find_packages(),
+      python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
       extras_require={
           'signatures': ['keyring', 'keyrings.alt'],
           'signatures:sys_platform!="win32"': ['pyxdg'],
