@@ -122,7 +122,7 @@ if sys.platform == 'win32':
     import ctypes.wintypes
     # CSIDL_APPDATA for reference - not used here for compatibility with
     # dirspec, which uses LOCAL_APPDATA and COMMON_APPDATA in that order
-    csidl = dict(CSIDL_APPDATA=26, CSIDL_LOCAL_APPDATA=28, CSIDL_COMMON_APPDATA=35)
+    csidl = {'CSIDL_APPDATA': 26, 'CSIDL_LOCAL_APPDATA': 28, 'CSIDL_COMMON_APPDATA': 35}
 
     def get_path(name):
         SHGFP_TYPE_CURRENT = 0
