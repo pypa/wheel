@@ -255,7 +255,7 @@ Format
 ------
 
 The wheel format is documented as PEP 427 "The Wheel Binary Package
-Format..." (http://www.python.org/dev/peps/pep-0427/).
+Format..." (https://www.python.org/dev/peps/pep-0427/).
 
 Slogans
 -------

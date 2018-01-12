@@ -1,9 +1,9 @@
 # Ed25519 digital signatures
-# Based on http://ed25519.cr.yp.to/python/ed25519.py
-# See also http://ed25519.cr.yp.to/software.html
+# Based on https://ed25519.cr.yp.to/python/ed25519.py
+# See also https://ed25519.cr.yp.to/software.html
 # Adapted by Ron Garret
 # Sped up considerably using coordinate transforms found on:
-# http://www.hyperelliptic.org/EFD/g1p/auto-twisted-extended-1.html
+# https://www.hyperelliptic.org/EFD/g1p/auto-twisted-extended-1.html
 # Specifically add-2008-hwcd-4 and dbl-2008-hwcd
 
 import hashlib
@@ -96,7 +96,7 @@ B = [Bx % q, By % q]
 #    return Q
 
 # Faster (!) version based on:
-# http://www.hyperelliptic.org/EFD/g1p/auto-twisted-extended-1.html
+# https://www.hyperelliptic.org/EFD/g1p/auto-twisted-extended-1.html
 
 def xpt_add(pt1, pt2):
     (X1, Y1, Z1, T1) = pt1
@@ -236,7 +236,7 @@ def checkvalid(s, m, pk):
 ##########################################################
 #
 # Curve25519 reference implementation by Matthew Dempsky, from:
-# http://cr.yp.to/highspeed/naclcrypto-20090310.pdf
+# https://cr.yp.to/highspeed/naclcrypto-20090310.pdf
 
 # P = 2 ** 255 - 19
 P = q
