@@ -2,6 +2,7 @@ Unreleased
 ==========
 - Fixed displaying of errors on Python 3
 - Fixed single digit versions in wheel files not being properly recognized
+- Enabled Zip64 support in wheels by default
 
 0.30.0
 ======

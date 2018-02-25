@@ -428,13 +428,13 @@ class WheelFile(object):
 
 class VerifyingZipFile(zipfile.ZipFile):
     """ZipFile that can assert that each of its extracted contents matches
-    an expected sha256 hash. Note that each file must be completly read in
+    an expected sha256 hash. Note that each file must be completely read in
     order for its hash to be checked."""
 
     def __init__(self, file, mode="r",
                  compression=zipfile.ZIP_STORED,
-                 allowZip64=False):
-        zipfile.ZipFile.__init__(self, file, mode, compression, allowZip64)
+                 allowZip64=True):
+        super(VerifyingZipFile, self).__init__(file, mode, compression, allowZip64)
 
         self.strict = False
         self._expected_hashes = {}
@@ -450,7 +450,7 @@ class VerifyingZipFile(zipfile.ZipFile):
     def open(self, name_or_info, mode="r", pwd=None):
         """Return file-like object for 'name'."""
         # A non-monkey-patched version would contain most of zipfile.py
-        ef = zipfile.ZipFile.open(self, name_or_info, mode, pwd)
+        ef = super(VerifyingZipFile, self).open(name_or_info, mode, pwd)
         if isinstance(name_or_info, zipfile.ZipInfo):
             name = name_or_info.filename
         else:
