@@ -6,7 +6,7 @@ from wheel.pkginfo import write_pkg_info
 def test_pkginfo_mangle_from(tmpdir):
     """Test that write_pkginfo() will not prepend a ">" to a line starting with "From"."""
     metadata = """\
-Metadata-Version: 2.0
+Metadata-Version: 2.1
 Name: foo
 
 From blahblah

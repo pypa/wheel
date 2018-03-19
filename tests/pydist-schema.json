@@ -1,7 +1,7 @@
 {
   "id": "http://www.python.org/dev/peps/pep-0426/",
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Metadata for Python Software Packages 2.0",
+  "title": "Metadata for Python Software Packages 2.1",
   "type": "object",
   "properties": {
     "metadata_version": {
