@@ -426,14 +426,8 @@ class bdist_wheel(Command):
                                  distribution=self.distribution)
 
         if 'description' in pymeta:
-            description_filename = 'DESCRIPTION.rst'
-            description_text = pymeta.pop('description')
-            description_path = os.path.join(distinfo_path,
-                                            description_filename)
-            with open(description_path, "wb") as description_file:
-                description_file.write(description_text.encode('utf-8'))
-            pymeta['extensions']['python.details']['document_names']['description'] = \
-                description_filename
+            # Don't include `description` in JSON metadata
+            pymeta.pop('description')
 
         # XXX heuristically copy any LICENSE/LICENSE.txt?
         license = self.license_file()
