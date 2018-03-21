@@ -14,8 +14,11 @@ import wheel.bdist_wheel
 from wheel.tool import WheelError
 from wheel.wininst2wheel import _bdist_wheel_tag
 
-egg_info_re = re.compile(r'''(?P<name>.+?)-(?P<ver>\d.*?)
-    (-(?P<pyver>.+?))?(-(?P<arch>.+?))?.egg''', re.VERBOSE)
+egg_info_re = re.compile(r'''
+    (?P<name>.+?)-(?P<ver>.+?)
+    (-(?P<pyver>py\d\.\d)
+     (-(?P<arch>.+?))?
+    )?.egg$''', re.VERBOSE)
 
 
 def egg2wheel(egg_path, dest_dir):
@@ -39,19 +42,15 @@ def egg2wheel(egg_path, dest_dir):
             else:
                 shutil.copytree(src, os.path.join(dir, pth))
 
-    dist_info = "%s-%s" % (egg_info['name'], egg_info['ver'])
-    abi = 'none'
-    pyver = egg_info['pyver'].replace('.', '')
+    pyver = egg_info['pyver']
+    if pyver:
+        pyver = pyver.replace('.', '')
+
     arch = (egg_info['arch'] or 'any').replace('.', '_').replace('-', '_')
-    if arch != 'any':
-        # assume all binary eggs are for CPython
-        pyver = 'cp' + pyver[2:]
-    wheel_name = '-'.join((
-                          dist_info,
-                          pyver,
-                          abi,
-                          arch
-                          ))
+
+    # assume all binary eggs are for CPython
+    abi = 'cp' + pyver[2:] if arch != 'any' else 'none'
+
     root_is_purelib = egg_info['arch'] is None
     if root_is_purelib:
         bw = wheel.bdist_wheel.bdist_wheel(distutils.dist.Distribution())
@@ -66,11 +65,11 @@ def egg2wheel(egg_path, dest_dir):
         bw.full_tag_supplied = True
         bw.full_tag = (pyver, abi, arch)
 
-    dist_info_dir = os.path.join(dir, '%s.dist-info' % dist_info)
-    bw.egg2dist(os.path.join(dir, 'EGG-INFO'),
-                dist_info_dir)
+    dist_info_dir = os.path.join(dir, '{name}-{ver}.dist-info'.format(**egg_info))
+    bw.egg2dist(os.path.join(dir, 'EGG-INFO'), dist_info_dir)
     bw.write_wheelfile(dist_info_dir, generator='egg2wheel')
     bw.write_record(dir, dist_info_dir)
+    wheel_name = '{name}-{ver}-{pyver}-{}-{arch}'.format(abi, **egg_info)
     filename = make_archive(os.path.join(dest_dir, wheel_name), 'zip', root_dir=dir)
     os.rename(filename, filename[:-3] + 'whl')
     shutil.rmtree(dir)
