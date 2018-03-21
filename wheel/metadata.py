@@ -14,7 +14,7 @@ from . import __version__ as wheel_version
 from .pkginfo import read_pkg_info
 from .util import OrderedDefaultDict
 
-METADATA_VERSION = "2.0"
+METADATA_VERSION = "2.1"
 
 PLURAL_FIELDS = {"classifier": "classifiers",
                  "provides_dist": "provides",
@@ -265,11 +265,10 @@ def generate_requirements(extras_require):
 
 def pkginfo_to_metadata(egg_info_path, pkginfo_path):
     """
-    Convert .egg-info directory with PKG-INFO to the Metadata 1.3 aka
-    old-draft Metadata 2.0 format.
+    Convert .egg-info directory with PKG-INFO to the Metadata 2.1 format
     """
     pkg_info = read_pkg_info(pkginfo_path)
-    pkg_info.replace_header('Metadata-Version', '2.0')
+    pkg_info.replace_header('Metadata-Version', '2.1')
     requires_path = os.path.join(egg_info_path, 'requires.txt')
     if os.path.exists(requires_path):
         with open(requires_path) as requires_file:
