@@ -66,7 +66,7 @@ def test_zipfile_timestamp(tmpdir, monkeypatch):
 
     zip_base_name = str(tmpdir.join('dummy'))
     zip_filename = wheel.archive.make_wheelfile_inner(zip_base_name, str(tmpdir))
-    with zipfile.ZipFile(zip_filename, 'r') as zf:
+    with zipfile.ZipFile(zip_filename, 'r', allowZip64=True) as zf:
         for info in zf.infolist():
             assert info.date_time[:3] == (1980, 1, 1)
 
@@ -82,7 +82,7 @@ def test_zipfile_attributes(tmpdir):
 
     zip_base_name = str(tmpdir.join('dummy'))
     zip_filename = wheel.archive.make_wheelfile_inner(zip_base_name, str(tmpdir))
-    with zipfile.ZipFile(zip_filename, 'r') as zf:
+    with zipfile.ZipFile(zip_filename, 'r', allowZip64=True) as zf:
         for filename, mode in files:
             info = zf.getinfo(str(tmpdir.join(filename)))
             assert info.external_attr == (mode | 0o100000) << 16
