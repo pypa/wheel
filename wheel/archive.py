@@ -40,11 +40,7 @@ def make_wheelfile_inner(base_name, base_dir='.'):
     else:
         date_time = time.gmtime(int(timestamp))[0:6]
 
-    # XXX support bz2, xz when available
-    zip = zipfile.ZipFile(zip_filename, "w", compression=zipfile.ZIP_DEFLATED)
-
     score = {'WHEEL': 1, 'METADATA': 2, 'RECORD': 3}
-    deferred = []
 
     def writefile(path, date_time):
         st = os.stat(path)
@@ -58,23 +54,24 @@ def make_wheelfile_inner(base_name, base_dir='.'):
             zip.writestr(zinfo, fp.read())
         log.info("adding '%s'" % path)
 
-    for dirpath, dirnames, filenames in os.walk(base_dir):
-        # Sort the directory names so that `os.walk` will walk them in a
-        # defined order on the next iteration.
-        dirnames.sort()
-        for name in sorted(filenames):
-            path = os.path.normpath(os.path.join(dirpath, name))
+    with zipfile.ZipFile(zip_filename, "w", compression=zipfile.ZIP_DEFLATED,
+                         allowZip64=True) as zip:
+        deferred = []
+        for dirpath, dirnames, filenames in os.walk(base_dir):
+            # Sort the directory names so that `os.walk` will walk them in a
+            # defined order on the next iteration.
+            dirnames.sort()
+            for name in sorted(filenames):
+                path = os.path.normpath(os.path.join(dirpath, name))
 
-            if os.path.isfile(path):
-                if dirpath.endswith('.dist-info'):
-                    deferred.append((score.get(name, 0), path))
-                else:
-                    writefile(path, date_time)
+                if os.path.isfile(path):
+                    if dirpath.endswith('.dist-info'):
+                        deferred.append((score.get(name, 0), path))
+                    else:
+                        writefile(path, date_time)
 
-    deferred.sort()
-    for score, path in deferred:
-        writefile(path, date_time)
-
-    zip.close()
+        deferred.sort()
+        for score, path in deferred:
+            writefile(path, date_time)
 
     return zip_filename
