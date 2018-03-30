@@ -8,7 +8,6 @@ import csv
 import hashlib
 import os
 import subprocess
-import warnings
 import shutil
 import sys
 import re
@@ -23,7 +22,7 @@ import pkg_resources
 from .pep425tags import get_abbr_impl, get_impl_ver, get_abi_tag, get_platform
 from .util import native, open_for_csv
 from .archive import archive_wheelfile
-from .pkginfo import read_pkg_info, write_pkg_info
+from .pkginfo import write_pkg_info
 from .metadata import pkginfo_to_metadata
 from . import pep425tags
 from . import __version__ as wheel_version
@@ -312,55 +311,6 @@ class bdist_wheel(Command):
             return None
         return metadata['license_file'][1]
 
-    def setupcfg_requirements(self):
-        """Generate requirements from setup.cfg as
-        ('Requires-Dist', 'requirement; qualifier') tuples. From a metadata
-        section in setup.cfg:
-
-        [metadata]
-        provides-extra = extra1
-            extra2
-        requires-dist = requirement; qualifier
-            another; qualifier2
-            unqualified
-
-        Yields
-
-        ('Provides-Extra', 'extra1'),
-        ('Provides-Extra', 'extra2'),
-        ('Requires-Dist', 'requirement; qualifier'),
-        ('Requires-Dist', 'another; qualifier2'),
-        ('Requires-Dist', 'unqualified')
-        """
-        metadata = self.distribution.get_option_dict('metadata')
-
-        # our .ini parser folds - to _ in key names:
-        for key, title in (('provides_extra', 'Provides-Extra'),
-                           ('requires_dist', 'Requires-Dist')):
-            if key not in metadata:
-                continue
-            field = metadata[key]
-            for line in field[1].splitlines():
-                line = line.strip()
-                if not line:
-                    continue
-                yield (title, line)
-
-    def add_requirements(self, metadata_path):
-        """Add additional requirements from setup.cfg to file metadata_path"""
-        additional = list(self.setupcfg_requirements())
-        if not additional:
-            return
-
-        pkg_info = read_pkg_info(metadata_path)
-        if 'Provides-Extra' in pkg_info or 'Requires-Dist' in pkg_info:
-            warnings.warn('setup.cfg requirements overwrite values from setup.py')
-            del pkg_info['Provides-Extra']
-            del pkg_info['Requires-Dist']
-        for k, v in additional:
-            pkg_info[k] = v
-        write_pkg_info(metadata_path, pkg_info)
-
     def egg2dist(self, egginfo_path, distinfo_path):
         """Convert an .egg-info directory into a .dist-info directory"""
         def adios(p):
@@ -411,10 +361,6 @@ class bdist_wheel(Command):
                 adios(dependency_links_path)
 
         write_pkg_info(os.path.join(distinfo_path, 'METADATA'), pkg_info)
-
-        # XXX deprecated. Still useful for current distribute/setuptools.
-        metadata_path = os.path.join(distinfo_path, 'METADATA')
-        self.add_requirements(metadata_path)
 
         # XXX heuristically copy any LICENSE/LICENSE.txt?
         license = self.license_file()

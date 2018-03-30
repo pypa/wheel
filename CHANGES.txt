@@ -5,6 +5,8 @@ Unreleased
 - Enabled Zip64 support in wheels by default
 - Metadata-Version is now 2.1
 - Dropped DESCRIPTION.rst and metadata.json from the list of generated files
+- Dropped support for the non-standard, undocumented ``provides-extra`` and
+  ``requires-dist`` keywords in setup.cfg metadata
 
 0.30.0
 ======
