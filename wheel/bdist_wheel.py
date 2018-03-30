@@ -366,7 +366,7 @@ class bdist_wheel(Command):
         license = self.license_file()
         if license:
             license_filename = 'LICENSE.txt'
-            shutil.copy(license, os.path.join(self.distinfo_dir, license_filename))
+            shutil.copy(license, os.path.join(distinfo_path, license_filename))
 
         adios(egginfo_path)
 
