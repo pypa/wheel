@@ -42,7 +42,7 @@ setup(name='wheel',
           'signatures:sys_platform!="win32"': ['pyxdg'],
           'faster-signatures': ['ed25519ll'],
           'tool': [],
-          'test': ['jsonschema', 'pytest >= 3.0.0', 'pytest-cov']
+          'test': ['pytest >= 3.0.0', 'pytest-cov']
           },
       include_package_data=True,
       zip_safe=False,

@@ -4,7 +4,7 @@ Unreleased
 - Fixed single digit versions in wheel files not being properly recognized
 - Enabled Zip64 support in wheels by default
 - Metadata-Version is now 2.1
-- Don't create a DESCRIPTION.RST anymore.
+- Dropped DESCRIPTION.rst and metadata.json from the list of generated files
 
 0.30.0
 ======

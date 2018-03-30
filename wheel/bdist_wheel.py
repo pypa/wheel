@@ -10,7 +10,6 @@ import os
 import subprocess
 import warnings
 import shutil
-import json
 import sys
 import re
 from email.generator import Generator
@@ -25,7 +24,6 @@ from .pep425tags import get_abbr_impl, get_impl_ver, get_abi_tag, get_platform
 from .util import native, open_for_csv
 from .archive import archive_wheelfile
 from .pkginfo import read_pkg_info, write_pkg_info
-from .metadata import pkginfo_to_dict
 from . import pep425tags, metadata
 from . import __version__ as wheel_version
 
@@ -420,24 +418,11 @@ class bdist_wheel(Command):
         metadata_path = os.path.join(distinfo_path, 'METADATA')
         self.add_requirements(metadata_path)
 
-        # XXX intentionally a different path than the PEP.
-        metadata_json_path = os.path.join(distinfo_path, 'metadata.json')
-        pymeta = pkginfo_to_dict(metadata_path,
-                                 distribution=self.distribution)
-
-        if 'description' in pymeta:
-            # Don't include `description` in JSON metadata
-            pymeta.pop('description')
-
         # XXX heuristically copy any LICENSE/LICENSE.txt?
         license = self.license_file()
         if license:
             license_filename = 'LICENSE.txt'
             shutil.copy(license, os.path.join(self.distinfo_dir, license_filename))
-            pymeta['extensions']['python.details']['document_names']['license'] = license_filename
-
-        with open(metadata_json_path, "w") as metadata_json:
-            json.dump(pymeta, metadata_json, sort_keys=True)
 
         adios(egginfo_path)
 
