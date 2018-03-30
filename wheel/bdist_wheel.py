@@ -24,7 +24,8 @@ from .pep425tags import get_abbr_impl, get_impl_ver, get_abi_tag, get_platform
 from .util import native, open_for_csv
 from .archive import archive_wheelfile
 from .pkginfo import read_pkg_info, write_pkg_info
-from . import pep425tags, metadata
+from .metadata import pkginfo_to_metadata
+from . import pep425tags
 from . import __version__ as wheel_version
 
 
@@ -304,9 +305,6 @@ class bdist_wheel(Command):
             path = drive + path[1:]
         return path
 
-    def _pkginfo_to_metadata(self, egg_info_path, pkginfo_path):
-        return metadata.pkginfo_to_metadata(egg_info_path, pkginfo_path)
-
     def license_file(self):
         """Return license filename from a license-file key in setup.cfg, or None."""
         metadata = self.distribution.get_option_dict('metadata')
@@ -392,12 +390,12 @@ class bdist_wheel(Command):
         if os.path.isfile(egginfo_path):
             # .egg-info is a single file
             pkginfo_path = egginfo_path
-            pkg_info = self._pkginfo_to_metadata(egginfo_path, egginfo_path)
+            pkg_info = pkginfo_to_metadata(egginfo_path, egginfo_path)
             os.mkdir(distinfo_path)
         else:
             # .egg-info is a directory
             pkginfo_path = os.path.join(egginfo_path, 'PKG-INFO')
-            pkg_info = self._pkginfo_to_metadata(egginfo_path, pkginfo_path)
+            pkg_info = pkginfo_to_metadata(egginfo_path, pkginfo_path)
 
             # ignore common egg metadata that is useless to wheel
             shutil.copytree(egginfo_path, distinfo_path,
