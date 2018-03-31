@@ -157,7 +157,7 @@ Defining conditional dependencies
 
 In wheel, the only way to have conditional dependencies (that might only be
 needed on certain platforms) is to use environment markers as defined by
-:pep:`496`.
+:pep:`508`.
 
 As of wheel 0.24.0, the recommended way to do this is in the setuptools
 ``extras_require`` parameter. A ``:`` separates the extra name from the marker.
