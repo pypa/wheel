@@ -5,7 +5,7 @@ WHEELPAT = "%(name)s-%(ver)s-%(pyver)s-%(abi)s-%(arch)s.whl"
 
 
 def make_wheel(name, ver, pyver, abi, arch):
-    name = WHEELPAT % dict(name=name, ver=ver, pyver=pyver, abi=abi, arch=arch)
+    name = WHEELPAT % {'name': name, 'ver': ver, 'pyver': pyver, 'abi': abi, 'arch': arch}
     return WheelFile(name)
 
 

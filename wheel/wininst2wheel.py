@@ -84,7 +84,7 @@ def parse_info(wininfo_name, egginfo_name):
         w_name = egginfo.group('name')
         w_ver = egginfo.group('ver')
 
-    return dict(name=w_name, ver=w_ver, arch=w_arch, pyver=w_pyver)
+    return {'name': w_name, 'ver': w_ver, 'arch': w_arch, 'pyver': w_pyver}
 
 
 def bdist_wininst2wheel(path, dest_dir=os.path.curdir):
