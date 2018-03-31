@@ -41,8 +41,14 @@ def get_keyring():
     return keys.WheelKeys, keyring
 
 
+def warn_signatures():
+    print('WARNING: The wheel signing and signature verification commands have been deprecated '
+          'and will be removed before the v1.0.0 release.', file=sys.stderr)
+
+
 def keygen(get_keyring=get_keyring):
     """Generate a public/private key pair."""
+    warn_signatures()
     WheelKeys, keyring = get_keyring()
 
     ed25519ll = signatures.get_ed25519ll()
@@ -69,6 +75,7 @@ def keygen(get_keyring=get_keyring):
 
 def sign(wheelfile, replace=False, get_keyring=get_keyring):
     """Sign a wheel"""
+    warn_signatures()
     WheelKeys, keyring = get_keyring()
 
     ed25519ll = signatures.get_ed25519ll()
@@ -105,6 +112,7 @@ def unsign(wheelfile):
     ordinary archive, with the compressed files and the directory in the same
     order, and without any non-zip content after the truncation point.
     """
+    warn_signatures()
     vzf = VerifyingZipFile(wheelfile, "a")
     info = vzf.infolist()
     if not (len(info) and info[-1].filename.endswith('/RECORD.jws')):
@@ -120,6 +128,7 @@ def verify(wheelfile):
     Wheel's own unpack/install commands verify the manifest against the
     signature and file contents.
     """
+    warn_signatures()
     wf = WheelFile(wheelfile)
     sig_name = wf.distinfo_name + '/RECORD.jws'
     try:

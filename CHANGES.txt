@@ -9,6 +9,7 @@ Unreleased
 - Dropped DESCRIPTION.rst and metadata.json from the list of generated files
 - Dropped support for the non-standard, undocumented ``provides-extra`` and
   ``requires-dist`` keywords in setup.cfg metadata
+- Deprecated all wheel signing and signature verification commands
 
 0.30.0
 ======
