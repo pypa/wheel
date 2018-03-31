@@ -157,7 +157,7 @@ Defining conditional dependencies
 
 In wheel, the only way to have conditional dependencies (that might only be
 needed on certain platforms) is to use environment markers as defined by
-:pep:`426`.
+:pep:`496`.
 
 As of wheel 0.24.0, the recommended way to do this is in the setuptools
 ``extras_require`` parameter. A ``:`` separates the extra name from the marker.
@@ -244,6 +244,9 @@ build environment to contain bindings to the keyring and cryptography
 libraries. The keyring library may not be able to find your keys (choosing
 a different key storage back end based on available dependencies) unless
 you run it from the same environment used for keygen.
+
+.. warning:: This functionality has been scheduled for removal before the
+    v1.0.0 release.
 
 .. note:: You can also include the ``faster-signatures`` extra when
           installing "wheel" to improve the performance of wheel signing.
