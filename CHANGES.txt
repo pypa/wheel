@@ -10,6 +10,7 @@ Unreleased
 - Dropped support for the non-standard, undocumented ``provides-extra`` and
   ``requires-dist`` keywords in setup.cfg metadata
 - Deprecated all wheel signing and signature verification commands
+- Removed the (already defunct) ``tool`` extras from setup.py
 
 0.30.0
 ======

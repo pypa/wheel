@@ -41,7 +41,6 @@ setup(name='wheel',
           'signatures': ['keyring', 'keyrings.alt'],
           'signatures:sys_platform!="win32"': ['pyxdg'],
           'faster-signatures': ['ed25519ll'],
-          'tool': [],
           'test': ['pytest >= 3.0.0', 'pytest-cov']
           },
       include_package_data=True,

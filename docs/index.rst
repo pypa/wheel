@@ -164,11 +164,9 @@ As of wheel 0.24.0, the recommended way to do this is in the setuptools
 Wheel's own setup.py has an example::
 
    extras_require={
-       ':python_version=="2.6"': ['argparse'],
        'signatures': ['keyring'],
        'signatures:sys_platform!="win32"': ['pyxdg'],
-       'faster-signatures': ['ed25519ll'],
-       'tool': []
+       'faster-signatures': ['ed25519ll']
    },
 
 Leaving out the name of the extra (like with "argparse" here) means that only
@@ -179,7 +177,6 @@ As of setuptools 36.2.1, you can pass extras as part of ``install_requires``.
 The above requirements could thus be written like this::
 
    install_requires=[
-       'argparse; python_version=="2.6"',
        'keyring; extra=="signatures"',
        'pyxdg; extra=="signatures" and sys_platform!="win32"',
        'ed25519ll; extra=="faster-signatures"'
