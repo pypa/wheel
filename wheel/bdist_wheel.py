@@ -399,6 +399,11 @@ class bdist_wheel(Command):
                     digest = hashlib.sha256(data).digest()
                     hash = 'sha256=' + native(urlsafe_b64encode(digest))
                     size = len(data)
-                record_path = os.path.relpath(
-                    path, bdist_dir).replace(os.path.sep, '/')
+
+                record_path = os.path.relpath(path, bdist_dir).replace(os.path.sep, '/')
+
+                # On Python 2, re-encode the path as UTF-8 from the default file system encoding
+                if isinstance(record_path, bytes):
+                    record_path = record_path.decode(sys.getfilesystemencoding()).encode('utf-8')
+
                 writer.writerow((record_path, hash, size))

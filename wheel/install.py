@@ -411,7 +411,7 @@ class WheelFile(object):
                 raise BadWheelFile(msg.format(payload['hash'],
                                               native(record_digest)))
 
-        reader = csv.reader((native(r) for r in record.splitlines()))
+        reader = csv.reader((native(r, 'utf-8') for r in record.splitlines()))
 
         for row in reader:
             filename = row[0]

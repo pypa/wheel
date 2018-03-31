@@ -55,7 +55,7 @@ def error_on_ResourceWarning():
 @pytest.fixture(scope='session')
 def wheels_and_eggs():
     """Build wheels and eggs from test distributions."""
-    test_distributions = "complex-dist", "simple.dist", "headers.dist"
+    test_distributions = "complex-dist", "simple.dist", "headers.dist", "unicode.dist"
     files = []
     pwd = os.path.abspath(os.curdir)
     for dist in test_distributions:

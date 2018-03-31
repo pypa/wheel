@@ -15,14 +15,14 @@ __all__ = ['urlsafe_b64encode', 'urlsafe_b64decode', 'utf8',
 if sys.version_info[0] < 3:
     text_type = unicode  # noqa: F821
 
-    def native(s):
+    def native(s, encoding='ascii'):
         return s
 else:
     text_type = str
 
-    def native(s):
+    def native(s, encoding='ascii'):
         if isinstance(s, bytes):
-            return s.decode('ascii')
+            return s.decode(encoding)
         return s
 
 
@@ -49,13 +49,12 @@ def from_json(j):
 
 def open_for_csv(name, mode):
     if sys.version_info[0] < 3:
-        nl = {}
-        bin = 'b'
+        kwargs = {}
+        mode += 'b'
     else:
-        nl = {'newline': ''}
-        bin = ''
+        kwargs = {'newline': '', 'encoding': 'utf-8'}
 
-    return open(name, mode + bin, **nl)
+    return open(name, mode, **kwargs)
 
 
 def utf8(data):

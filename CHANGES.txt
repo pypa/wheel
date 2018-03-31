@@ -2,6 +2,8 @@ Unreleased
 ==========
 - Fixed displaying of errors on Python 3
 - Fixed single digit versions in wheel files not being properly recognized
+- Fixed wrong character encodings being used (instead of UTF-8) to read and
+  write ``RECORD`` (this sometimes crashed bdist_wheel too)
 - Enabled Zip64 support in wheels by default
 - Metadata-Version is now 2.1
 - Dropped DESCRIPTION.rst and metadata.json from the list of generated files
