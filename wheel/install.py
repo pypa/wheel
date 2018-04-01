@@ -15,13 +15,11 @@ import warnings
 import zipfile
 
 from . import signatures
-from .decorator import reify
 from .paths import get_install_paths
 from .pep425tags import get_supported
 from .pkginfo import read_pkg_info_bytes
 from .util import (
-    urlsafe_b64encode, from_json, urlsafe_b64decode, native, binary, HashingFile,
-    open_for_csv)
+    urlsafe_b64encode, from_json, urlsafe_b64decode, native, binary, HashingFile, open_for_csv)
 
 try:
     _big_number = sys.maxsize
@@ -47,6 +45,24 @@ def parse_version(version):
     except ImportError:
         from distutils.version import LooseVersion as parse_version
     return parse_version(version)
+
+
+class reify(object):
+    """Put the result of a method which uses this (non-data)
+    descriptor decorator in the instance dict after the first call,
+    effectively replacing the decorator with an instance variable.
+    """
+
+    def __init__(self, wrapped):
+        self.wrapped = wrapped
+        self.__doc__ = wrapped.__doc__
+
+    def __get__(self, inst, objtype=None):
+        if inst is None:
+            return self
+        val = self.wrapped(inst)
+        setattr(inst, self.wrapped.__name__, val)
+        return val
 
 
 class BadWheelFile(ValueError):
