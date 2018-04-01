@@ -40,13 +40,13 @@ dependencies.  By installing from those cached wheels
 you can recreate that environment quickly and with no surprises.
 
 To build an individual wheel, run ``python setup.py bdist_wheel``.  Note that
-``bdist_wheel`` only works with distribute (``import setuptools``); plain
+``bdist_wheel`` only works with setuptools (``import setuptools``); plain
 ``distutils`` does not support pluggable commands like ``bdist_wheel``.  On
 the other hand ``pip`` always runs ``setup.py`` with setuptools enabled.
 
 Wheel also includes its own installer that can only install wheels (not
 sdists) from a local file or folder, but has the advantage of working
-even when distribute or pip has not been installed.
+even when setuptools or pip has not been installed.
 
 Wheel's builtin utility can be invoked directly from wheel's own wheel::
 
