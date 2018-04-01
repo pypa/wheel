@@ -1,5 +1,5 @@
-Unreleased
-==========
+0.31.0
+======
 - Fixed displaying of errors on Python 3
 - Fixed single digit versions in wheel files not being properly recognized
 - Fixed wrong character encodings being used (instead of UTF-8) to read and
