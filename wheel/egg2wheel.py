@@ -69,7 +69,7 @@ def egg2wheel(egg_path, dest_dir):
     bw.egg2dist(os.path.join(dir, 'EGG-INFO'), dist_info_dir)
     bw.write_wheelfile(dist_info_dir, generator='egg2wheel')
     bw.write_record(dir, dist_info_dir)
-    wheel_name = '{name}-{ver}-{pyver}-{}-{arch}'.format(abi, **egg_info)
+    wheel_name = '{name}-{ver}-{pyver}-{}-{}'.format(abi, arch, **egg_info)
     filename = make_archive(os.path.join(dest_dir, wheel_name), 'zip', root_dir=dir)
     os.rename(filename, filename[:-3] + 'whl')
     shutil.rmtree(dir)
