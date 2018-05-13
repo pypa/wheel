@@ -246,7 +246,11 @@ class WheelFile(object):
             mode = "a"
         vzf = VerifyingZipFile(self.fp if self.fp else self.filename, mode)
         if not self.append:
-            self.verify(vzf)
+            try:
+                self.verify(vzf)
+            except:
+                vzf.close()
+                raise
         return vzf
 
     @reify
@@ -440,6 +444,13 @@ class WheelFile(object):
             algo, data = row[1].split('=', 1)
             assert algo == "sha256", "Unsupported hash algorithm"
             zipfile.set_expected_hash(filename, urlsafe_b64decode(binary(data)))
+
+    def close(self):
+        # zipfile is a non-data descriptor that overrides itself. If the
+        # attribute was never accessed, the underline ZipFile instance does not
+        # exist yet and we do not want to create it just to close it forthwith.
+        if 'zipfile' in self.__dict__:
+            self.zipfile.close()
 
 
 class VerifyingZipFile(zipfile.ZipFile):
