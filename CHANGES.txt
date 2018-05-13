@@ -1,5 +1,5 @@
-UNRELEASED
-==========
+0.31.1
+======
 - Fixed arch as ``None`` when converting eggs to wheels
 
 0.31.0
