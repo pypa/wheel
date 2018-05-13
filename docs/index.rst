@@ -25,10 +25,10 @@ built packages::
         pip wheel --wheel-dir=/tmp/wheelhouse pyramid
 
         # Install from cached wheels
-        pip install --use-wheel --no-index --find-links=/tmp/wheelhouse pyramid
+        pip install --no-index --find-links=/tmp/wheelhouse pyramid
 
         # Install from cached wheels remotely
-        pip install --use-wheel --no-index --find-links=https://wheelhouse.example.com/ pyramid
+        pip install --no-index --find-links=https://wheelhouse.example.com/ pyramid
 
 
 For lxml, an up to 3-minute "search for the newest version and compile"
