@@ -2,9 +2,11 @@ import base64
 import hashlib
 import json
 import sys
+from distutils import dist
+from distutils.command import install
 
-__all__ = ['urlsafe_b64encode', 'urlsafe_b64decode', 'utf8',
-           'to_json', 'from_json', 'matches_requirement']
+__all__ = ('urlsafe_b64encode', 'urlsafe_b64decode', 'utf8', 'to_json', 'from_json',
+           'matches_requirement', 'get_install_command')
 
 
 if sys.version_info[0] < 3:
@@ -113,3 +115,11 @@ def matches_requirement(req, wheels):
         if dist in req:
             selected.append(wf)
     return selected
+
+
+def get_install_command(name):
+    # late binding due to potential monkeypatching
+    d = dist.Distribution({'name': name})
+    i = install.install(d)
+    i.finalize_options()
+    return i

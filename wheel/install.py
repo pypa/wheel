@@ -13,11 +13,11 @@ import shutil
 import sys
 import warnings
 import zipfile
+from distutils.command import install
 
-from .paths import get_install_paths
 from .pep425tags import get_supported
 from .pkginfo import read_pkg_info_bytes
-from .util import urlsafe_b64decode, native, binary, HashingFile, open_for_csv
+from .util import urlsafe_b64decode, native, binary, HashingFile, open_for_csv, get_install_command
 
 try:
     _big_number = sys.maxsize
@@ -61,6 +61,31 @@ class reify(object):
         val = self.wrapped(inst)
         setattr(inst, self.wrapped.__name__, val)
         return val
+
+
+def get_install_paths(name):
+    """
+    Return the (distutils) install paths for the named dist.
+
+    A dict with ('purelib', 'platlib', 'headers', 'scripts', 'data') keys.
+    """
+    paths = {}
+
+    i = get_install_command(name)
+
+    for key in install.SCHEME_KEYS:
+        paths[key] = getattr(i, 'install_' + key)
+
+    # pip uses a similar path as an alternative to the system's (read-only)
+    # include directory:
+    if hasattr(sys, 'real_prefix'):  # virtualenv
+        paths['headers'] = os.path.join(sys.prefix,
+                                        'include',
+                                        'site',
+                                        'python' + sys.version[:3],
+                                        name)
+
+    return paths
 
 
 class BadWheelFile(ValueError):

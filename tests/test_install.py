@@ -14,14 +14,20 @@
 
 import os
 import shutil
+from distutils.command.install import SCHEME_KEYS
 from tempfile import mkdtemp
 
 import wheel.pep425tags
 import wheel.tool
-from wheel.install import WheelFile
+from wheel.install import WheelFile, get_install_paths
 
 THISDIR = os.path.dirname(__file__)
 TESTWHEEL = os.path.join(THISDIR, 'test-1.0-py2.py3-none-win32.whl')
+
+
+def test_path():
+    d = get_install_paths('wheel')
+    assert len(d) == len(SCHEME_KEYS)
 
 
 def test_compatibility_tags():

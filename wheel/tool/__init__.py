@@ -10,8 +10,7 @@ import sys
 from glob import iglob
 
 from ..install import WheelFile
-from ..paths import get_install_command
-from ..util import matches_requirement
+from ..util import matches_requirement, get_install_command
 
 
 def require_pkgresources(name):
