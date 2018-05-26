@@ -1,20 +1,18 @@
 import base64
-import hashlib
-import json
 import sys
-
-__all__ = ('urlsafe_b64encode', 'urlsafe_b64decode', 'utf8', 'to_json', 'from_json')
 
 
 if sys.version_info[0] < 3:
     text_type = unicode  # noqa: F821
 
-    def native(s, encoding='ascii'):
+    def native(s, encoding='utf-8'):
+        if isinstance(s, unicode):
+            return s.encode(encoding)
         return s
 else:
     text_type = str
 
-    def native(s, encoding='ascii'):
+    def native(s, encoding='utf-8'):
         if isinstance(s, bytes):
             return s.decode(encoding)
         return s
@@ -22,23 +20,13 @@ else:
 
 def urlsafe_b64encode(data):
     """urlsafe_b64encode without padding"""
-    return base64.urlsafe_b64encode(data).rstrip(binary('='))
+    return base64.urlsafe_b64encode(data).rstrip(b'=')
 
 
 def urlsafe_b64decode(data):
     """urlsafe_b64decode without padding"""
     pad = b'=' * (4 - (len(data) & 3))
     return base64.urlsafe_b64decode(data + pad)
-
-
-def to_json(o):
-    """Convert given data to JSON."""
-    return json.dumps(o, sort_keys=True)
-
-
-def from_json(j):
-    """Decode a JSON payload."""
-    return json.loads(j)
 
 
 def open_for_csv(name, mode):
@@ -51,43 +39,13 @@ def open_for_csv(name, mode):
     return open(name, mode, **kwargs)
 
 
-def utf8(data):
-    """Utf-8 encode data."""
-    if isinstance(data, text_type):
-        return data.encode('utf-8')
-    return data
-
-
-def binary(s):
-    if isinstance(s, text_type):
-        return s.encode('ascii')
+def as_unicode(s):
+    if isinstance(s, bytes):
+        return s.decode('utf-8')
     return s
 
 
-class HashingFile(object):
-    def __init__(self, path, mode, hashtype='sha256'):
-        self.fd = open(path, mode)
-        self.hashtype = hashtype
-        self.hash = hashlib.new(hashtype)
-        self.length = 0
-
-    def write(self, data):
-        self.hash.update(data)
-        self.length += len(data)
-        self.fd.write(data)
-
-    def close(self):
-        self.fd.close()
-
-    def digest(self):
-        if self.hashtype == 'md5':
-            return self.hash.hexdigest()
-        digest = self.hash.digest()
-        return self.hashtype + '=' + native(urlsafe_b64encode(digest))
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.fd.close()
-
+def as_bytes(s):
+    if isinstance(s, text_type):
+        return s.encode('utf-8')
+    return s

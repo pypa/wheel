@@ -50,7 +50,7 @@ setup(name='wheel',
       zip_safe=False,
       entry_points={
           'console_scripts': [
-              'wheel=wheel.tool:main'
+              'wheel=wheel.cli:main'
               ],
           'distutils.commands': [
               'bdist_wheel=wheel.bdist_wheel:bdist_wheel'

@@ -1,6 +1,6 @@
 import os.path
 
-from wheel import egg2wheel
+from wheel.cli.convert import convert, egg_info_re
 
 
 def test_egg_re():
@@ -10,4 +10,9 @@ def test_egg_re():
         for line in egg_names:
             line = line.strip()
             if line:
-                assert egg2wheel.egg_info_re.match(line), line
+                assert egg_info_re.match(line), line
+
+
+def test_convert_egg(egg_paths, tmpdir):
+    convert(egg_paths, str(tmpdir), verbose=False)
+    assert len(tmpdir.listdir()) == len(egg_paths)
