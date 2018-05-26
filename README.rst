@@ -10,17 +10,8 @@ It has two different roles:
    ``bdist_wheel`` setuptools command
 #. A command line tool for working with wheel files
 
-Links:
-
-* `Installation <http://wheel.readthedocs.io/en/stable/installing.html>`_
-* `Documentation <http://wheel.readthedocs.io/>`_
-* `Changelog <http://wheel.readthedocs.io/en/stable/news.html>`_
-* `GitHub Page <https://github.com/pypa/wheel>`_
-* `Issue Tracking <https://github.com/pypa/wheel/issues>`_
-* `User mailing list <http://groups.google.com/group/python-virtualenv>`_
-* `Dev mailing list <http://groups.google.com/group/pypa-dev>`_
-* User IRC: #pypa on Freenode
-* Dev IRC: #pypa-dev on Freenode
+It should be noted that wheel is **not** intended to be used as a library, and
+as such there is no stable, public API.
 
 .. _PEP 427: https://www.python.org/dev/peps/pep-0427/
 .. _setuptools: https://pypi.org/project/setuptools/

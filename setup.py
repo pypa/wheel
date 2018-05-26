@@ -33,6 +33,11 @@ setup(name='wheel',
       maintainer=u'Alex Grönholm',
       maintainer_email='alex.gronholm@nextday.fi',
       url='https://github.com/pypa/wheel',
+      project_urls={
+          'Documentation': 'https://wheel.readthedocs.io/',
+          'Changelog': 'https://wheel.readthedocs.io/en/stable/news.html',
+          'Issue Tracker': 'https://github.com/pypa/wheel/issues'
+      },
       keywords=['wheel', 'packaging'],
       license='MIT',
       packages=find_packages(),
