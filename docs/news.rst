@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Removed wheel signing and verifying features
+
 **0.31.1**
 
 - Fixed arch as ``None`` when converting eggs to wheels

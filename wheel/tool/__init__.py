@@ -5,16 +5,13 @@ Wheel command-line utility.
 from __future__ import print_function
 
 import argparse
-import hashlib
-import json
 import os
 import sys
 from glob import iglob
 
-from .. import signatures
-from ..install import WheelFile, VerifyingZipFile
+from ..install import WheelFile
 from ..paths import get_install_command
-from ..util import urlsafe_b64decode, urlsafe_b64encode, native, binary, matches_requirement
+from ..util import matches_requirement
 
 
 def require_pkgresources(name):
@@ -26,119 +23,6 @@ def require_pkgresources(name):
 
 class WheelError(Exception):
     pass
-
-
-# For testability
-def get_keyring():
-    try:
-        from ..signatures import keys
-        import keyring
-        assert keyring.get_keyring().priority
-    except (ImportError, AssertionError):
-        raise WheelError(
-            "Install wheel[signatures] (requires keyring, keyrings.alt, pyxdg) for signatures.")
-
-    return keys.WheelKeys, keyring
-
-
-def warn_signatures():
-    print('WARNING: The wheel signing and signature verification commands have been deprecated '
-          'and will be removed before the v1.0.0 release.', file=sys.stderr)
-
-
-def keygen(get_keyring=get_keyring):
-    """Generate a public/private key pair."""
-    warn_signatures()
-    WheelKeys, keyring = get_keyring()
-
-    ed25519ll = signatures.get_ed25519ll()
-
-    wk = WheelKeys().load()
-
-    keypair = ed25519ll.crypto_sign_keypair()
-    vk = native(urlsafe_b64encode(keypair.vk))
-    sk = native(urlsafe_b64encode(keypair.sk))
-    kr = keyring.get_keyring()
-    kr.set_password("wheel", vk, sk)
-    print("Created Ed25519 keypair with vk={}".format(vk))
-    print("in {!r}".format(kr))
-
-    sk2 = kr.get_password('wheel', vk)
-    if sk2 != sk:
-        raise WheelError("Keyring is broken. Could not retrieve secret key.")
-
-    print("Trusting {} to sign and verify all packages.".format(vk))
-    wk.add_signer('+', vk)
-    wk.trust('+', vk)
-    wk.save()
-
-
-def sign(wheelfile, replace=False, get_keyring=get_keyring):
-    """Sign a wheel"""
-    warn_signatures()
-    WheelKeys, keyring = get_keyring()
-
-    ed25519ll = signatures.get_ed25519ll()
-
-    wf = WheelFile(wheelfile, append=True)
-    wk = WheelKeys().load()
-
-    name = wf.parsed_filename.group('name')
-    sign_with = wk.signers(name)[0]
-    print("Signing {} with {}".format(name, sign_with[1]))
-
-    vk = sign_with[1]
-    kr = keyring.get_keyring()
-    sk = kr.get_password('wheel', vk)
-    keypair = ed25519ll.Keypair(urlsafe_b64decode(binary(vk)),
-                                urlsafe_b64decode(binary(sk)))
-
-    record_name = wf.distinfo_name + '/RECORD'
-    sig_name = wf.distinfo_name + '/RECORD.jws'
-    if sig_name in wf.zipfile.namelist():
-        raise WheelError("Wheel is already signed.")
-    record_data = wf.zipfile.read(record_name)
-    payload = {"hash": "sha256=" + native(urlsafe_b64encode(hashlib.sha256(record_data).digest()))}
-    sig = signatures.sign(payload, keypair)
-    wf.zipfile.writestr(sig_name, json.dumps(sig, sort_keys=True))
-    wf.zipfile.close()
-
-
-def unsign(wheelfile):
-    """
-    Remove RECORD.jws from a wheel by truncating the zip file.
-
-    RECORD.jws must be at the end of the archive. The zip file must be an
-    ordinary archive, with the compressed files and the directory in the same
-    order, and without any non-zip content after the truncation point.
-    """
-    warn_signatures()
-    vzf = VerifyingZipFile(wheelfile, "a")
-    info = vzf.infolist()
-    if not (len(info) and info[-1].filename.endswith('/RECORD.jws')):
-        raise WheelError('The wheel is not signed (RECORD.jws not found at end of the archive).')
-    vzf.pop()
-    vzf.close()
-
-
-def verify(wheelfile):
-    """Verify a wheel.
-
-    The signature will be verified for internal consistency ONLY and printed.
-    Wheel's own unpack/install commands verify the manifest against the
-    signature and file contents.
-    """
-    warn_signatures()
-    wf = WheelFile(wheelfile)
-    sig_name = wf.distinfo_name + '/RECORD.jws'
-    try:
-        sig = json.loads(native(wf.zipfile.open(sig_name).read()))
-    except KeyError:
-        raise WheelError('The wheel is not signed (RECORD.jws not found at end of the archive).')
-
-    verified = signatures.verify(sig)
-    print("Signatures are internally consistent.", file=sys.stderr)
-    print(json.dumps(verified, indent=2))
 
 
 def unpack(wheelfile, dest='.'):
@@ -287,29 +171,6 @@ def convert(installers, dest_dir, verbose):
 def parser():
     p = argparse.ArgumentParser()
     s = p.add_subparsers(help="commands")
-
-    def keygen_f(args):
-        keygen()
-    keygen_parser = s.add_parser('keygen', help='Generate signing key')
-    keygen_parser.set_defaults(func=keygen_f)
-
-    def sign_f(args):
-        sign(args.wheelfile)
-    sign_parser = s.add_parser('sign', help='Sign wheel')
-    sign_parser.add_argument('wheelfile', help='Wheel file')
-    sign_parser.set_defaults(func=sign_f)
-
-    def unsign_f(args):
-        unsign(args.wheelfile)
-    unsign_parser = s.add_parser('unsign', help=unsign.__doc__)
-    unsign_parser.add_argument('wheelfile', help='Wheel file')
-    unsign_parser.set_defaults(func=unsign_f)
-
-    def verify_f(args):
-        verify(args.wheelfile)
-    verify_parser = s.add_parser('verify', help=verify.__doc__)
-    verify_parser.add_argument('wheelfile', help='Wheel file')
-    verify_parser.set_defaults(func=verify_f)
 
     def unpack_f(args):
         unpack(args.wheelfile, args.dest)

@@ -5,7 +5,6 @@ Tools for converting old- to new-style metadata.
 import os.path
 import re
 import textwrap
-from collections import namedtuple
 
 import pkg_resources
 
@@ -14,8 +13,6 @@ from .pkginfo import read_pkg_info
 # Wheel itself is probably the only program that uses non-extras markers
 # in METADATA/PKG-INFO. Support its syntax with the extra at the end only.
 EXTRA_RE = re.compile("""^(?P<package>.*?)(;\s*(?P<condition>.*?)(extra == '(?P<extra>.*?)')?)$""")
-
-MayRequiresKey = namedtuple('MayRequiresKey', ('condition', 'extra'))
 
 
 def requires_to_requires_dist(requirement):

@@ -14,12 +14,10 @@ import sys
 import warnings
 import zipfile
 
-from . import signatures
 from .paths import get_install_paths
 from .pep425tags import get_supported
 from .pkginfo import read_pkg_info_bytes
-from .util import (
-    urlsafe_b64encode, from_json, urlsafe_b64decode, native, binary, HashingFile, open_for_csv)
+from .util import urlsafe_b64decode, native, binary, HashingFile, open_for_csv
 
 try:
     _big_number = sys.maxsize
@@ -397,38 +395,25 @@ class WheelFile(object):
             writer.writerow((self.record_name, '', ''))
 
     def verify(self, zipfile=None):
-        """Configure the VerifyingZipFile `zipfile` by verifying its signature
-        and setting expected hashes for every hash in RECORD.
-        Caller must complete the verification process by completely reading
-        every file in the archive (e.g. with extractall)."""
-        sig = None
+        """Configure the VerifyingZipFile `zipfile` by setting expected hashes for every hash in
+        RECORD. Caller must complete the verification process by completely reading every file in
+        the archive (e.g. with extractall).
+
+        """
         if zipfile is None:
             zipfile = self.zipfile
         zipfile.strict = True
 
         record_name = '/'.join((self.distinfo_name, 'RECORD'))
+        # tolerate JWS and s/mime signatures:
         sig_name = '/'.join((self.distinfo_name, 'RECORD.jws'))
-        # tolerate s/mime signatures:
         smime_sig_name = '/'.join((self.distinfo_name, 'RECORD.p7s'))
         zipfile.set_expected_hash(record_name, None)
         zipfile.set_expected_hash(sig_name, None)
         zipfile.set_expected_hash(smime_sig_name, None)
         record = zipfile.read(record_name)
 
-        record_digest = urlsafe_b64encode(hashlib.sha256(record).digest())
-        try:
-            sig = from_json(native(zipfile.read(sig_name)))
-        except KeyError:  # no signature
-            pass
-        if sig:
-            headers, payload = signatures.verify(sig)
-            if payload['hash'] != "sha256=" + native(record_digest):
-                msg = "RECORD.jws claimed RECORD hash {} != computed hash {}."
-                raise BadWheelFile(msg.format(payload['hash'],
-                                              native(record_digest)))
-
         reader = csv.reader((native(r, 'utf-8') for r in record.splitlines()))
-
         for row in reader:
             filename = row[0]
             hash = row[1]

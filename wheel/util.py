@@ -1,17 +1,12 @@
-"""Utility functions."""
-
 import base64
 import hashlib
 import json
-import os
 import sys
 
 __all__ = ['urlsafe_b64encode', 'urlsafe_b64decode', 'utf8',
            'to_json', 'from_json', 'matches_requirement']
 
 
-# For encoding ascii back and forth between bytestrings, as is repeatedly
-# necessary in JSON-based crypto under Python 3
 if sys.version_info[0] < 3:
     text_type = unicode  # noqa: F821
 
@@ -96,42 +91,6 @@ class HashingFile(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.fd.close()
-
-
-if sys.platform == 'win32':
-    import ctypes.wintypes
-    # CSIDL_APPDATA for reference - not used here for compatibility with
-    # dirspec, which uses LOCAL_APPDATA and COMMON_APPDATA in that order
-    csidl = {'CSIDL_APPDATA': 26, 'CSIDL_LOCAL_APPDATA': 28, 'CSIDL_COMMON_APPDATA': 35}
-
-    def get_path(name):
-        SHGFP_TYPE_CURRENT = 0
-        buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
-        ctypes.windll.shell32.SHGetFolderPathW(0, csidl[name], 0, SHGFP_TYPE_CURRENT, buf)
-        return buf.value
-
-    def save_config_path(*resource):
-        appdata = get_path("CSIDL_LOCAL_APPDATA")
-        path = os.path.join(appdata, *resource)
-        if not os.path.isdir(path):
-            os.makedirs(path)
-        return path
-
-    def load_config_paths(*resource):
-        ids = ["CSIDL_LOCAL_APPDATA", "CSIDL_COMMON_APPDATA"]
-        for id in ids:
-            base = get_path(id)
-            path = os.path.join(base, *resource)
-            if os.path.exists(path):
-                yield path
-else:
-    def save_config_path(*resource):
-        import xdg.BaseDirectory
-        return xdg.BaseDirectory.save_config_path(*resource)
-
-    def load_config_paths(*resource):
-        import xdg.BaseDirectory
-        return xdg.BaseDirectory.load_config_paths(*resource)
 
 
 def matches_requirement(req, wheels):
