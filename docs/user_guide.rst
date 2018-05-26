@@ -22,37 +22,6 @@ adding this to your ``setup.cfg`` file:
 
 .. _setuptools: https://pypi.org/project/setuptools/
 
-Signing and Verifying Wheels
-----------------------------
-
-.. note:: For wheel signing to work, the appropriate dependencies must be
-    installed. See the :doc:`installing` section for more information.
-
-Wheels can be signed to help ensure that their contents have not been tampered
-with after they were created. To sign a wheel, you must first have an ED25519
-keypair which can be generated as such::
-
-    $ wheel keygen
-
-This will generate and store a key pair on your hard drive. You do not normally
-need to do this more than once.
-
-To sign an existing wheel file with this key::
-
-    $ wheel sign someproject-1.5.0-py2-py3-none.whl
-
-Verifying the signature in a wheel file can be done with following command::
-
-    $ wheel verify someproject-1.5.0-py2-py3-none.whl
-
-This will verify the internal consistency of the signature in the wheel file.
-It will also print out the key algorithm, verification key and the hash of the
-key.
-
-You can also use wheel to remove the signature from a wheel file::
-
-    $ wheel unsign someproject-1.5.0-py2-py3-none.whl
-
 Converting Eggs to Wheels
 -------------------------
 

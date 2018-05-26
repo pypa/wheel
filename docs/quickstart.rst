@@ -7,18 +7,17 @@ To build a wheel for your setuptools based project::
 
 The wheel will go to ``dist/yourproject-<tags>.whl``.
 
-To generate a key for signing wheels (you just need to do this **once**)::
+If you want to make universal (Python 2/3 compatible, pure Python) wheels, add the following
+section to your ``setup.cfg``::
 
-    wheel keygen
+    [bdist_wheel]
+    universal = 1
 
-To sign a wheel file::
-
-    wheel sign yourwheelfile.whl
-
-To verify the signature of a signed wheel file::
-
-    wheel verify yourwheelfile.whl
-
-To convert an ``.egg`` file to a wheel::
+To convert an ``.egg`` or file to a wheel::
 
     wheel convert youreggfile.egg
+
+Similarly, to convert a Windows installer (made using ``python setup.py bdist_wininst``) to a
+wheel::
+
+    wheel convert yourinstaller.exe
