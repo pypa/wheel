@@ -13,11 +13,10 @@ import shutil
 import sys
 import warnings
 import zipfile
-from distutils.command import install
 
 from .pep425tags import get_supported
 from .pkginfo import read_pkg_info_bytes
-from .util import urlsafe_b64decode, native, binary, HashingFile, open_for_csv, get_install_command
+from .util import urlsafe_b64decode, native, binary, HashingFile, open_for_csv
 
 try:
     _big_number = sys.maxsize
@@ -61,31 +60,6 @@ class reify(object):
         val = self.wrapped(inst)
         setattr(inst, self.wrapped.__name__, val)
         return val
-
-
-def get_install_paths(name):
-    """
-    Return the (distutils) install paths for the named dist.
-
-    A dict with ('purelib', 'platlib', 'headers', 'scripts', 'data') keys.
-    """
-    paths = {}
-
-    i = get_install_command(name)
-
-    for key in install.SCHEME_KEYS:
-        paths[key] = getattr(i, 'install_' + key)
-
-    # pip uses a similar path as an alternative to the system's (read-only)
-    # include directory:
-    if hasattr(sys, 'real_prefix'):  # virtualenv
-        paths['headers'] = os.path.join(sys.prefix,
-                                        'include',
-                                        'site',
-                                        'python' + sys.version[:3],
-                                        name)
-
-    return paths
 
 
 class BadWheelFile(ValueError):
@@ -281,143 +255,6 @@ class WheelFile(object):
         version = self.parsed_wheel_info['Wheel-Version']
         if tuple(map(int, version.split('.'))) >= VERSION_TOO_HIGH:
             raise ValueError("Wheel version is too high")
-
-    @reify
-    def install_paths(self):
-        """
-        Consult distutils to get the install paths for our dist.  A dict with
-        ('purelib', 'platlib', 'headers', 'scripts', 'data').
-
-        We use the name from our filename as the dist name, which means headers
-        could be installed in the wrong place if the filesystem-escaped name
-        is different than the Name.  Who cares?
-        """
-        name = self.parsed_filename.group('name')
-        return get_install_paths(name)
-
-    def install(self, force=False, overrides={}):
-        """
-        Install the wheel into site-packages.
-        """
-
-        # Utility to get the target directory for a particular key
-        def get_path(key):
-            return overrides.get(key) or self.install_paths[key]
-
-        # The base target location is either purelib or platlib
-        if self.parsed_wheel_info['Root-Is-Purelib'] == 'true':
-            root = get_path('purelib')
-        else:
-            root = get_path('platlib')
-
-        # Parse all the names in the archive
-        name_trans = {}
-        for info in self.zipfile.infolist():
-            name = info.filename
-            # Zip files can contain entries representing directories.
-            # These end in a '/'.
-            # We ignore these, as we create directories on demand.
-            if name.endswith('/'):
-                continue
-
-            # Pathnames in a zipfile namelist are always /-separated.
-            # In theory, paths could start with ./ or have other oddities
-            # but this won't happen in practical cases of well-formed wheels.
-            # We'll cover the simple case of an initial './' as it's both easy
-            # to do and more common than most other oddities.
-            if name.startswith('./'):
-                name = name[2:]
-
-            # Split off the base directory to identify files that are to be
-            # installed in non-root locations
-            basedir, sep, filename = name.partition('/')
-            if sep and basedir == self.datadir_name:
-                # Data file. Target destination is elsewhere
-                key, sep, filename = filename.partition('/')
-                if not sep:
-                    raise ValueError("Invalid filename in wheel: {0}".format(name))
-                target = get_path(key)
-            else:
-                # Normal file. Target destination is root
-                key = ''
-                target = root
-                filename = name
-
-            # Map the actual filename from the zipfile to its intended target
-            # directory and the pathname relative to that directory.
-            dest = os.path.normpath(os.path.join(target, filename))
-            name_trans[info] = (key, target, filename, dest)
-
-        # We're now ready to start processing the actual install. The process
-        # is as follows:
-        #   1. Prechecks - is the wheel valid, is its declared architecture
-        #      OK, etc. [[Responsibility of the caller]]
-        #   2. Overwrite check - do any of the files to be installed already
-        #      exist?
-        #   3. Actual install - put the files in their target locations.
-        #   4. Update RECORD - write a suitably modified RECORD file to
-        #      reflect the actual installed paths.
-
-        if not force:
-            for info, v in name_trans.items():
-                k = info.filename
-                key, target, filename, dest = v
-                if os.path.exists(dest):
-                    raise ValueError(
-                        "Wheel file {0} would overwrite {1}. Use force if this is intended".format(
-                            k, dest))
-
-        # Get the name of our executable, for use when replacing script
-        # wrapper hashbang lines.
-        # We encode it using getfilesystemencoding, as that is "the name of
-        # the encoding used to convert Unicode filenames into system file
-        # names".
-        exename = sys.executable.encode(sys.getfilesystemencoding())
-        record_data = []
-        record_name = self.distinfo_name + '/RECORD'
-        for info, (key, target, filename, dest) in name_trans.items():
-            name = info.filename
-            source = self.zipfile.open(info)
-            # Skip the RECORD file
-            if name == record_name:
-                continue
-            ddir = os.path.dirname(dest)
-            if not os.path.isdir(ddir):
-                os.makedirs(ddir)
-
-            temp_filename = dest + '.part'
-            try:
-                with HashingFile(temp_filename, 'wb') as destination:
-                    if key == 'scripts':
-                        hashbang = source.readline()
-                        if hashbang.startswith(b'#!python'):
-                            hashbang = b'#!' + exename + binary(os.linesep)
-                        destination.write(hashbang)
-
-                    shutil.copyfileobj(source, destination)
-            except BaseException:
-                if os.path.exists(temp_filename):
-                    os.unlink(temp_filename)
-
-                raise
-
-            os.rename(temp_filename, dest)
-            reldest = os.path.relpath(dest, root)
-            reldest.replace(os.sep, '/')
-            record_data.append((reldest, destination.digest(), destination.length))
-            destination.close()
-            source.close()
-            # preserve attributes (especially +x bit for scripts)
-            attrs = info.external_attr >> 16
-            if attrs:  # tends to be 0 if Windows.
-                os.chmod(dest, info.external_attr >> 16)
-
-        record_name = os.path.join(root, self.record_name)
-        with open_for_csv(record_name, 'w+') as record_file:
-            writer = csv.writer(record_file)
-            for reldest, digest, length in sorted(record_data):
-                writer.writerow((reldest, digest, length))
-            writer.writerow((self.record_name, '', ''))
 
     def verify(self, zipfile=None):
         """Configure the VerifyingZipFile `zipfile` by setting expected hashes for every hash in

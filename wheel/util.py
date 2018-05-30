@@ -2,11 +2,8 @@ import base64
 import hashlib
 import json
 import sys
-from distutils import dist
-from distutils.command import install
 
-__all__ = ('urlsafe_b64encode', 'urlsafe_b64decode', 'utf8', 'to_json', 'from_json',
-           'matches_requirement', 'get_install_command')
+__all__ = ('urlsafe_b64encode', 'urlsafe_b64decode', 'utf8', 'to_json', 'from_json')
 
 
 if sys.version_info[0] < 3:
@@ -94,32 +91,3 @@ class HashingFile(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.fd.close()
 
-
-def matches_requirement(req, wheels):
-    """List of wheels matching a requirement.
-
-    :param req: The requirement to satisfy
-    :param wheels: List of wheels to search.
-    """
-    try:
-        from pkg_resources import Distribution, Requirement
-    except ImportError:
-        raise RuntimeError("Cannot use requirements without pkg_resources")
-
-    req = Requirement.parse(req)
-
-    selected = []
-    for wf in wheels:
-        f = wf.parsed_filename
-        dist = Distribution(project_name=f.group("name"), version=f.group("ver"))
-        if dist in req:
-            selected.append(wf)
-    return selected
-
-
-def get_install_command(name):
-    # late binding due to potential monkeypatching
-    d = dist.Distribution({'name': name})
-    i = install.install(d)
-    i.finalize_options()
-    return i

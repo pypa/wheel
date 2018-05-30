@@ -10,7 +10,6 @@ import sys
 from glob import iglob
 
 from ..install import WheelFile
-from ..util import matches_requirement, get_install_command
 
 
 def require_pkgresources(name):
@@ -39,111 +38,6 @@ def unpack(wheelfile, dest='.'):
     print("Unpacking to: %s" % (destination), file=sys.stderr)
     wf.zipfile.extractall(destination)
     wf.zipfile.close()
-
-
-def install(requirements, requirements_file=None,
-            wheel_dirs=None, force=False, list_files=False,
-            dry_run=False):
-    """Install wheels.
-
-    :param requirements: A list of requirements or wheel files to install.
-    :param requirements_file: A file containing requirements to install.
-    :param wheel_dirs: A list of directories to search for wheels.
-    :param force: Install a wheel file even if it is not compatible.
-    :param list_files: Only list the files to install, don't install them.
-    :param dry_run: Do everything but the actual install.
-    """
-
-    # If no wheel directories specified, use the WHEELPATH environment
-    # variable, or the current directory if that is not set.
-    if not wheel_dirs:
-        wheelpath = os.getenv("WHEELPATH")
-        if wheelpath:
-            wheel_dirs = wheelpath.split(os.pathsep)
-        else:
-            wheel_dirs = [os.path.curdir]
-
-    # Get a list of all valid wheels in wheel_dirs
-    all_wheels = []
-    for d in wheel_dirs:
-        for w in os.listdir(d):
-            if w.endswith('.whl'):
-                wf = WheelFile(os.path.join(d, w))
-                if wf.compatible:
-                    all_wheels.append(wf)
-
-    # If there is a requirements file, add it to the list of requirements
-    if requirements_file:
-        # If the file doesn't exist, search for it in wheel_dirs
-        # This allows standard requirements files to be stored with the
-        # wheels.
-        if not os.path.exists(requirements_file):
-            for d in wheel_dirs:
-                name = os.path.join(d, requirements_file)
-                if os.path.exists(name):
-                    requirements_file = name
-                    break
-
-        with open(requirements_file) as fd:
-            requirements.extend(fd)
-
-    to_install = []
-    for req in requirements:
-        if req.endswith('.whl'):
-            # Explicitly specified wheel filename
-            if os.path.exists(req):
-                wf = WheelFile(req)
-                if wf.compatible or force:
-                    to_install.append(wf)
-                else:
-                    msg = ("{0} is not compatible with this Python. "
-                           "--force to install anyway.".format(req))
-                    raise WheelError(msg)
-            else:
-                # We could search on wheel_dirs, but it's probably OK to
-                # assume the user has made an error.
-                raise WheelError("No such wheel file: {}".format(req))
-            continue
-
-        # We have a requirement spec
-        # If we don't have pkg_resources, this will raise an exception
-        matches = matches_requirement(req, all_wheels)
-        if not matches:
-            raise WheelError("No match for requirement {}".format(req))
-        to_install.append(max(matches))
-
-    # We now have a list of wheels to install
-    if list_files:
-        print("Installing:")
-
-    if dry_run:
-        return
-
-    for wf in to_install:
-        if list_files:
-            print("    {}".format(wf.filename))
-            continue
-        wf.install(force=force)
-        wf.zipfile.close()
-
-
-def install_scripts(distributions):
-    """
-    Regenerate the entry_points console_scripts for the named distribution.
-    """
-    try:
-        from setuptools.command import easy_install
-        import pkg_resources
-    except ImportError:
-        raise RuntimeError("'wheel install_scripts' needs setuptools.")
-
-    for dist in distributions:
-        pkg_resources_dist = pkg_resources.get_distribution(dist)
-        install = get_install_command(dist)
-        command = easy_install.easy_install(install.distribution)
-        command.args = ['wheel']  # dummy argument
-        command.finalize_options()
-        command.install_egg_scripts(pkg_resources_dist)
 
 
 def convert(installers, dest_dir, verbose):
@@ -178,35 +72,6 @@ def parser():
                                default='.')
     unpack_parser.add_argument('wheelfile', help='Wheel file')
     unpack_parser.set_defaults(func=unpack_f)
-
-    def install_f(args):
-        install(args.requirements, args.requirements_file,
-                args.wheel_dirs, args.force, args.list_files)
-    install_parser = s.add_parser('install', help='Install wheels')
-    install_parser.add_argument('requirements', nargs='*',
-                                help='Requirements to install.')
-    install_parser.add_argument('--force', default=False,
-                                action='store_true',
-                                help='Install incompatible wheel files.')
-    install_parser.add_argument('--wheel-dir', '-d', action='append',
-                                dest='wheel_dirs',
-                                help='Directories containing wheels.')
-    install_parser.add_argument('--requirements-file', '-r',
-                                help="A file containing requirements to "
-                                "install.")
-    install_parser.add_argument('--list', '-l', default=False,
-                                dest='list_files',
-                                action='store_true',
-                                help="List wheels which would be installed, "
-                                "but don't actually install anything.")
-    install_parser.set_defaults(func=install_f)
-
-    def install_scripts_f(args):
-        install_scripts(args.distributions)
-    install_scripts_parser = s.add_parser('install-scripts', help='Install console_scripts')
-    install_scripts_parser.add_argument('distributions', nargs='*',
-                                        help='Regenerate console_scripts for these distributions')
-    install_scripts_parser.set_defaults(func=install_scripts_f)
 
     def convert_f(args):
         convert(args.installers, args.dest_dir, args.verbose)
