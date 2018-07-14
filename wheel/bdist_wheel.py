@@ -91,7 +91,6 @@ class bdist_wheel(Command):
         self.format = 'zip'
         self.keep_temp = False
         self.dist_dir = None
-        self.distinfo_dir = None
         self.egginfo_dir = None
         self.root_is_pure = None
         self.skip_build = None
@@ -248,14 +247,12 @@ class bdist_wheel(Command):
 
         self.set_undefined_options(
             'install_egg_info', ('target', 'egginfo_dir'))
-        self.distinfo_dir = os.path.join(self.bdist_dir,
-                                         '%s.dist-info' % self.wheel_dist_name)
-        self.egg2dist(self.egginfo_dir,
-                      self.distinfo_dir)
+        distinfo_dir = os.path.join(self.bdist_dir, '%s.dist-info' % self.wheel_dist_name)
+        self.egg2dist(self.egginfo_dir, distinfo_dir)
 
-        self.write_wheelfile(self.distinfo_dir)
+        self.write_wheelfile(distinfo_dir)
 
-        self.write_record(self.bdist_dir, self.distinfo_dir)
+        self.write_record(self.bdist_dir, distinfo_dir)
 
         # Make the archive
         if not os.path.exists(self.dist_dir):
