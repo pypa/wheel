@@ -19,6 +19,7 @@ setup(name='wheel',
       classifiers=[
           "Development Status :: 5 - Production/Stable",
           "Intended Audience :: Developers",
+          "Topic :: System :: Archiving :: Packaging",
           "License :: OSI Approved :: MIT License",
           "Programming Language :: Python",
           "Programming Language :: Python :: 2",
