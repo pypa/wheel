@@ -20,6 +20,9 @@ Commands
   ``unpack``
     Unpack wheel
 
+  ``pack``
+    Repack a previously unpacked wheel
+
   ``convert``
     Convert egg or wininst to wheel
 

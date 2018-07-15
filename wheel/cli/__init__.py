@@ -25,6 +25,11 @@ def unpack_f(args):
     unpack(args.wheelfile, args.dest)
 
 
+def pack_f(args):
+    from .pack import pack
+    pack(args.directory, args.dest_dir)
+
+
 def convert_f(args):
     from .convert import convert
     convert(args.files, args.dest_dir, args.verbose)
@@ -44,6 +49,12 @@ def parser():
                                default='.')
     unpack_parser.add_argument('wheelfile', help='Wheel file')
     unpack_parser.set_defaults(func=unpack_f)
+
+    repack_parser = s.add_parser('pack', help='Repack wheel')
+    repack_parser.add_argument('directory', help='Root directory of the unpacked wheel')
+    repack_parser.add_argument('--dest-dir', '-d', default=os.path.curdir,
+                               help="Directory to store the wheel (default %(default)s)")
+    repack_parser.set_defaults(func=pack_f)
 
     convert_parser = s.add_parser('convert', help='Convert egg or wininst to wheel')
     convert_parser.add_argument('files', nargs='*', help='Files to convert')

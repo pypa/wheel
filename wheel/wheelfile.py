@@ -100,6 +100,28 @@ class WheelFile(ZipFile):
 
         return ef
 
+    def write_files(self, base_dir):
+        logger.info("creating '%s' and adding '%s' to it", self.filename, base_dir)
+        deferred = []
+        for root, dirnames, filenames in os.walk(base_dir):
+            # Sort the directory names so that `os.walk` will walk them in a
+            # defined order on the next iteration.
+            dirnames.sort()
+            for name in sorted(filenames):
+                path = os.path.normpath(os.path.join(root, name))
+                if os.path.isfile(path):
+                    arcname = os.path.relpath(path, base_dir)
+                    if arcname == self.record_path:
+                        pass
+                    elif root.endswith('.dist-info'):
+                        deferred.append((path, arcname))
+                    else:
+                        self.write(path, arcname)
+
+        deferred.sort()
+        for path, arcname in deferred:
+            self.write(path, arcname)
+
     def write(self, filename, arcname=None, compress_type=None):
         with open(filename, 'rb') as f:
             st = os.fstat(f.fileno())

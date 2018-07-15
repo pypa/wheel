@@ -5,6 +5,7 @@ Release Notes
 
 - Removed wheel signing and verifying features
 - Removed the "wheel install" and "wheel installscripts" commands
+- Added the ``wheel pack`` command
 
 **0.31.1**
 
