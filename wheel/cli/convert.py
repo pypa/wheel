@@ -4,12 +4,11 @@ import shutil
 import sys
 import tempfile
 import zipfile
-from distutils.archive_util import make_archive
 from distutils import dist
 from glob import iglob
 
 from ..bdist_wheel import bdist_wheel
-from ..archive import archive_wheelfile
+from ..wheelfile import WheelFile
 from . import WheelError, require_pkgresources
 
 egg_info_re = re.compile(r'''
@@ -82,10 +81,10 @@ def egg2wheel(egg_path, dest_dir):
     dist_info_dir = os.path.join(dir, '{name}-{ver}.dist-info'.format(**egg_info))
     bw.egg2dist(os.path.join(dir, 'EGG-INFO'), dist_info_dir)
     bw.write_wheelfile(dist_info_dir, generator='egg2wheel')
-    bw.write_record(dir, dist_info_dir)
-    wheel_name = '{name}-{ver}-{pyver}-{}-{}'.format(abi, arch, **egg_info)
-    filename = make_archive(os.path.join(dest_dir, wheel_name), 'zip', root_dir=dir)
-    os.rename(filename, filename[:-3] + 'whl')
+    wheel_name = '{name}-{ver}-{pyver}-{}-{}.whl'.format(abi, arch, **egg_info)
+    with WheelFile(os.path.join(dest_dir, wheel_name), 'w') as wf:
+        wf.write_files(dir)
+
     shutil.rmtree(dir)
 
 
@@ -242,9 +241,11 @@ def wininst2wheel(path, dest_dir):
     dist_info_dir = os.path.join(dir, '%s.dist-info' % dist_info)
     bw.egg2dist(os.path.join(dir, egginfo_name), dist_info_dir)
     bw.write_wheelfile(dist_info_dir, generator='wininst2wheel')
-    bw.write_record(dir, dist_info_dir)
 
-    archive_wheelfile(os.path.join(dest_dir, wheel_name), dir)
+    wheel_path = os.path.join(dest_dir, wheel_name)
+    with WheelFile(wheel_path, 'w') as wf:
+        wf.write_files(dir)
+
     shutil.rmtree(dir)
 
 
