@@ -6,6 +6,11 @@ import sys
 import sysconfig
 import warnings
 
+try:
+    from importlib.machinery import get_all_suffixes
+except ImportError:
+    from imp import get_suffixes as get_all_suffixes
+
 
 def get_config_var(var):
     try:
@@ -132,8 +137,7 @@ def get_supported(versions=None, supplied_platform=None):
         abis[0:0] = [abi]
 
     abi3s = set()
-    import imp
-    for suffix in imp.get_suffixes():
+    for suffix in get_all_suffixes():
         if suffix[0].startswith('.abi'):
             abi3s.add(suffix[0].split('.', 2)[1])
 
