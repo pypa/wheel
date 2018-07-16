@@ -4,8 +4,6 @@ Create a wheel (.whl) distribution.
 A wheel is a built archive format.
 """
 
-import csv
-import hashlib
 import os
 import shutil
 import sys
@@ -19,10 +17,9 @@ from shutil import rmtree
 import pkg_resources
 
 from .pep425tags import get_abbr_impl, get_impl_ver, get_abi_tag, get_platform
-from .util import native, open_for_csv
-from .archive import archive_wheelfile
 from .pkginfo import write_pkg_info
 from .metadata import pkginfo_to_metadata
+from .wheelfile import WheelFile
 from . import pep425tags
 from . import __version__ as wheel_version
 
@@ -180,18 +177,6 @@ class bdist_wheel(Command):
             assert tag in supported_tags, "would build wheel with unsupported tag {}".format(tag)
         return tag
 
-    def get_archive_basename(self):
-        """Return archive name without extension"""
-
-        impl_tag, abi_tag, plat_tag = self.get_tag()
-
-        archive_basename = "%s-%s-%s-%s" % (
-            self.wheel_dist_name,
-            impl_tag,
-            abi_tag,
-            plat_tag)
-        return archive_basename
-
     def run(self):
         build_scripts = self.reinitialize_command('build_scripts')
         build_scripts.executable = 'python'
@@ -235,9 +220,8 @@ class bdist_wheel(Command):
 
         self.run_command('install')
 
-        archive_basename = self.get_archive_basename()
-
-        pseudoinstall_root = os.path.join(self.dist_dir, archive_basename)
+        impl_tag, abi_tag, plat_tag = self.get_tag()
+        archive_basename = "{}-{}-{}-{}".format(self.wheel_dist_name, impl_tag, abi_tag, plat_tag)
         if not self.relative:
             archive_root = self.bdist_dir
         else:
@@ -245,23 +229,23 @@ class bdist_wheel(Command):
                 self.bdist_dir,
                 self._ensure_relative(install.install_base))
 
-        self.set_undefined_options(
-            'install_egg_info', ('target', 'egginfo_dir'))
+        self.set_undefined_options('install_egg_info', ('target', 'egginfo_dir'))
         distinfo_dir = os.path.join(self.bdist_dir, '%s.dist-info' % self.wheel_dist_name)
         self.egg2dist(self.egginfo_dir, distinfo_dir)
 
         self.write_wheelfile(distinfo_dir)
 
-        self.write_record(self.bdist_dir, distinfo_dir)
-
         # Make the archive
         if not os.path.exists(self.dist_dir):
             os.makedirs(self.dist_dir)
-        wheel_name = archive_wheelfile(pseudoinstall_root, archive_root)
+
+        wheel_path = os.path.join(self.dist_dir, archive_basename + '.whl')
+        with WheelFile(wheel_path, 'w') as wf:
+            wf.write_files(archive_root)
 
         # Add to 'Distribution.dist_files' so that the "upload" command works
         getattr(self.distribution, 'dist_files', []).append(
-            ('bdist_wheel', get_python_version(), wheel_name))
+            ('bdist_wheel', get_python_version(), wheel_path))
 
         if not self.keep_temp:
             logger.info('removing %s', self.bdist_dir)
@@ -361,41 +345,3 @@ class bdist_wheel(Command):
             shutil.copy(license, os.path.join(distinfo_path, license_filename))
 
         adios(egginfo_path)
-
-    def write_record(self, bdist_dir, distinfo_dir):
-        from .util import urlsafe_b64encode
-
-        record_path = os.path.join(distinfo_dir, 'RECORD')
-        record_relpath = os.path.relpath(record_path, bdist_dir)
-
-        def walk():
-            for dir, dirs, files in os.walk(bdist_dir):
-                dirs.sort()
-                for f in sorted(files):
-                    yield os.path.join(dir, f)
-
-        def skip(path):
-            """Wheel hashes every possible file."""
-            return (path == record_relpath)
-
-        with open_for_csv(record_path, 'w+') as record_file:
-            writer = csv.writer(record_file)
-            for path in walk():
-                relpath = os.path.relpath(path, bdist_dir)
-                if skip(relpath):
-                    hash = ''
-                    size = ''
-                else:
-                    with open(path, 'rb') as f:
-                        data = f.read()
-                    digest = hashlib.sha256(data).digest()
-                    hash = 'sha256=' + native(urlsafe_b64encode(digest))
-                    size = len(data)
-
-                record_path = os.path.relpath(path, bdist_dir).replace(os.path.sep, '/')
-
-                # On Python 2, re-encode the path as UTF-8 from the default file system encoding
-                if isinstance(record_path, bytes):
-                    record_path = record_path.decode(sys.getfilesystemencoding()).encode('utf-8')
-
-                writer.writerow((record_path, hash, size))

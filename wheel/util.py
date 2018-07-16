@@ -29,16 +29,6 @@ def urlsafe_b64decode(data):
     return base64.urlsafe_b64decode(data + pad)
 
 
-def open_for_csv(name, mode):
-    if sys.version_info[0] < 3:
-        kwargs = {}
-        mode += 'b'
-    else:
-        kwargs = {'newline': '', 'encoding': 'utf-8'}
-
-    return open(name, mode, **kwargs)
-
-
 def as_unicode(s):
     if isinstance(s, bytes):
         return s.decode('utf-8')
