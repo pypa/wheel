@@ -21,5 +21,5 @@ def test_generate_requirements():
         ('Requires-Dist',
          'pytest; (python_version >= "3.4" or python_version == "2.7") and extra == \'test\''),
     ]
-    generated_metadata = sorted(set(generate_requirements(extras_require)))
+    generated_metadata = sorted(generate_requirements(extras_require))
     assert generated_metadata == expected_metadata

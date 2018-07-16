@@ -9,6 +9,8 @@ Release Notes
 - Allowed multiple license files to be specified using the ``license_files``
   option
 - Deprecated the ``license_file`` option
+- Eliminated duplicate lines from generated requirements in
+  ``.dist-info/METADATA`` (thanks to Wim Glenn for the initiative)
 
 **0.31.1**
 
