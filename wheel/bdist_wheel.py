@@ -12,7 +12,9 @@ from email.generator import Generator
 from distutils.core import Command
 from distutils.sysconfig import get_python_version
 from distutils import log as logger
+from glob import iglob
 from shutil import rmtree
+from warnings import warn
 
 import pkg_resources
 
@@ -280,12 +282,29 @@ class bdist_wheel(Command):
             path = drive + path[1:]
         return path
 
-    def license_file(self):
-        """Return license filename from a license-file key in setup.cfg, or None."""
+    @property
+    def license_paths(self):
         metadata = self.distribution.get_option_dict('metadata')
-        if 'license_file' not in metadata:
-            return None
-        return metadata['license_file'][1]
+        files = set()
+        patterns = sorted({
+            option for option in metadata.get('license_files', ('', ''))[1].split()
+        })
+
+        if 'license_file' in metadata:
+            warn('The "license_file" option is deprecated. Use "license_files" instead.',
+                 DeprecationWarning)
+            files.add(metadata['license_file'][1])
+
+        if 'license_file' not in metadata and 'license_files' not in metadata:
+            patterns = 'LICEN[CS]E*', 'COPYING', 'NOTICE'
+
+        for pattern in patterns:
+            for path in iglob(pattern):
+                if path not in files and os.path.isfile(path):
+                    logger.info('adding license file "%s" (matched pattern "%s")', path, pattern)
+                    files.add(path)
+
+        return files
 
     def egg2dist(self, egginfo_path, distinfo_path):
         """Convert an .egg-info directory into a .dist-info directory"""
@@ -338,10 +357,8 @@ class bdist_wheel(Command):
 
         write_pkg_info(os.path.join(distinfo_path, 'METADATA'), pkg_info)
 
-        # XXX heuristically copy any LICENSE/LICENSE.txt?
-        license = self.license_file()
-        if license:
-            license_filename = 'LICENSE.txt'
-            shutil.copy(license, os.path.join(distinfo_path, license_filename))
+        for license_path in self.license_paths:
+            filename = os.path.basename(license_path)
+            shutil.copy(license_path, os.path.join(distinfo_path, filename))
 
         adios(egginfo_path)

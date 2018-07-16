@@ -22,6 +22,40 @@ adding this to your ``setup.cfg`` file:
 
 .. _setuptools: https://pypi.org/project/setuptools/
 
+Including license files in the generated wheel file
+---------------------------------------------------
+
+Several open source licenses require the license text to be included in every
+distributable artifact of the project. By default, ``wheel`` conveniently
+includes files matching the following glob_ patterns in the ``.dist-info``
+directory:
+
+* ``LICEN[CS]E*``
+* ``COPYING``
+* ``NOTICE``
+
+This can be overridden by setting the ``license_files`` option in the
+``[metadata]`` section of the project's ``setup.cfg``. For example:
+
+.. code-block:: cfg
+
+   [metadata]
+   license_files =
+      license.txt
+      3rdparty/*.txt
+
+No matter the path, all the matching license files are written in the wheel in
+the ``.dist-info`` directory based on their file name only.
+
+By specifying an empty ``license_files`` option, you can disable this
+functionality entirely.
+
+.. note:: There used to be an option called ``license_file`` (singular).
+    As of wheel v1.0, this option has been deprecated in favor of the more
+    versatile ``license_files`` option.
+
+.. _glob: https://docs.python.org/library/glob.html
+
 Converting Eggs to Wheels
 -------------------------
 

@@ -6,6 +6,9 @@ Release Notes
 - Removed wheel signing and verifying features
 - Removed the "wheel install" and "wheel installscripts" commands
 - Added the ``wheel pack`` command
+- Allowed multiple license files to be specified using the ``license_files``
+  option
+- Deprecated the ``license_file`` option
 
 **0.31.1**
 
