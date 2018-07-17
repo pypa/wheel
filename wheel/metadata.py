@@ -76,10 +76,13 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
     if os.path.exists(requires_path):
         with open(requires_path) as requires_file:
             requires = requires_file.read()
-        for extra, reqs in sorted(pkg_resources.split_sections(requires),
-                                  key=lambda x: x[0] or ''):
-            for item in generate_requirements({extra: reqs}):
-                pkg_info[item[0]] = item[1]
+
+        parsed_requirements = sorted(pkg_resources.split_sections(requires),
+                                     key=lambda x: x[0] or '')
+        requirements = {(header, value) for extra, reqs in parsed_requirements
+                        for header, value in generate_requirements({extra: reqs})}
+        for key, value in requirements:
+            pkg_info[key] = value
 
     description = pkg_info['Description']
     if description:
