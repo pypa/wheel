@@ -51,14 +51,17 @@ def test_generate_requirements_no_duplicate_extras():
 
 def test_pkginfo_to_metadata_no_duplicate_extras(tmpdir):
     pkg_info = tmpdir.join('PKG-INFO')
-    pkg_info.write_binary(b'Metadata-Version: 0.0\nName: name\nVersion: 0.1\nProvides-Extra: test\n')
+    pkg_info.write('Metadata-Version: 0.0\n')  # this header will get rewritten
+    pkg_info.write('Name: spam\n', mode='a')
+    pkg_info.write('Version: 0.1\n', mode='a')
+    pkg_info.write('Provides-Extra: test\n', mode='a')
     egg_info_dir = tmpdir.ensure_dir('test.egg-info')
     requires_file = egg_info_dir.join('requires.txt')
-    requires_file.write_binary(b'[test]\n')
+    requires_file.write('[test]\n')
     message = pkginfo_to_metadata(egg_info_path=str(egg_info_dir), pkginfo_path=str(pkg_info))
     assert message.items() == [
         ('Metadata-Version', '2.1'),
-        ('Name', 'name'),
+        ('Name', 'spam'),
         ('Version', '0.1'),
         ('Provides-Extra', 'test'),
     ]
