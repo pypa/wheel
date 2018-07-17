@@ -81,6 +81,8 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
                                      key=lambda x: x[0] or '')
         requirements = {(header, value) for extra, reqs in parsed_requirements
                         for header, value in generate_requirements({extra: reqs})}
+        requirements -= {(header, value) for (header, value) in pkg_info.items()
+                         if header == 'Provides-Extra'}  # don't add dupes
         for key, value in requirements:
             pkg_info[key] = value
 
