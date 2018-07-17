@@ -1,4 +1,5 @@
 from wheel.metadata import generate_requirements
+from wheel.metadata import pkginfo_to_metadata
 
 
 def test_generate_requirements():
@@ -46,3 +47,18 @@ def test_generate_requirements_no_duplicate_extras():
     ]
     generated_metadata = sorted(generate_requirements(extras_require))
     assert generated_metadata == expected_metadata
+
+
+def test_pkginfo_to_metadata_no_duplicate_extras(tmpdir):
+    pkg_info = tmpdir.join('PKG-INFO')
+    pkg_info.write_binary(b'Metadata-Version: 0.0\nName: name\nVersion: 0.1\nProvides-Extra: test\n')
+    egg_info_dir = tmpdir.ensure_dir('test.egg-info')
+    requires_file = egg_info_dir.join('requires.txt')
+    requires_file.write_binary(b'[test]\n')
+    message = pkginfo_to_metadata(egg_info_path=str(egg_info_dir), pkginfo_path=str(pkg_info))
+    assert message.items() == [
+        ('Metadata-Version', '2.1'),
+        ('Name', 'name'),
+        ('Version', '0.1'),
+        ('Provides-Extra', 'test'),
+    ]
