@@ -10,7 +10,7 @@ Release Notes
   option
 - Deprecated the ``license_file`` option
 - Eliminated duplicate lines from generated requirements in
-  ``.dist-info/METADATA`` (thanks to Wim Glenn for the initiative)
+  ``.dist-info/METADATA`` (thanks to Wim Glenn for the contribution)
 
 **0.31.1**
 
