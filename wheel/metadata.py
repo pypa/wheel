@@ -44,7 +44,6 @@ def generate_requirements(extras_require):
     extras_require is a dictionary of {extra: [requirements]} as passed to setup(),
     using the empty extra {'': [requirements]} to hold install_requires.
     """
-    requirements = set()
     for extra, depends in extras_require.items():
         condition = ''
         if extra and ':' in extra:  # setuptools extra:condition syntax
@@ -52,7 +51,7 @@ def generate_requirements(extras_require):
             extra = pkg_resources.safe_extra(extra)
 
         if extra:
-            requirements.add(('Provides-Extra', extra))
+            yield 'Provides-Extra', extra
             if condition:
                 condition = "(" + condition + ") and "
             condition += "extra == '%s'" % extra
@@ -61,9 +60,7 @@ def generate_requirements(extras_require):
             condition = '; ' + condition
 
         for new_req in convert_requirements(depends):
-            requirements.add(('Requires-Dist', new_req + condition))
-
-    return requirements
+            yield 'Requires-Dist', new_req + condition
 
 
 def pkginfo_to_metadata(egg_info_path, pkginfo_path):
@@ -79,10 +76,10 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
 
         parsed_requirements = sorted(pkg_resources.split_sections(requires),
                                      key=lambda x: x[0] or '')
-        requirements = {(header, value) for extra, reqs in parsed_requirements
-                        for header, value in generate_requirements({extra: reqs})}
-        for key, value in requirements:
-            pkg_info[key] = value
+        for extra, reqs in parsed_requirements:
+            for key, value in generate_requirements({extra: reqs}):
+                if (key, value) not in pkg_info.items():
+                    pkg_info[key] = value
 
     description = pkg_info['Description']
     if description:
