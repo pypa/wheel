@@ -173,7 +173,8 @@ def get_supported(versions=None, supplied_platform=None):
             supported.append(('%s%s' % (impl, versions[0][0]), 'none', 'any'))
 
     # Major Python version + platform; e.g. binaries not using the Python API
-    supported.append(('py%s' % (versions[0][0]), 'none', arch))
+    for arch in platforms:
+        supported.append(('py%s' % (versions[0][0]), 'none', arch))
 
     # No abi / arch, generic Python
     for i, version in enumerate(versions):
