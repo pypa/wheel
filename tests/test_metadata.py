@@ -9,6 +9,7 @@ def test_pkginfo_to_metadata(tmpdir):
         ('Provides-Extra', 'test'),
         ('Provides-Extra', 'signatures'),
         ('Provides-Extra', 'faster-signatures'),
+        ('Requires-Dist', "pip @ https://github.com/pypa/pip/archive/1.3.1.zip"),
         ('Requires-Dist', "ed25519ll; extra == 'faster-signatures'"),
         ('Requires-Dist', "keyring; extra == 'signatures'"),
         ('Requires-Dist', "keyrings.alt; extra == 'signatures'"),
@@ -28,6 +29,8 @@ Provides-Extra: faster-signatures""")
 
     egg_info_dir = tmpdir.ensure_dir('test.egg-info')
     egg_info_dir.join('requires.txt').write("""\
+pip@https://github.com/pypa/pip/archive/1.3.1.zip
+
 [faster-signatures]
 ed25519ll
 
