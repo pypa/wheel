@@ -30,9 +30,10 @@ distributable artifact of the project. By default, ``wheel`` conveniently
 includes files matching the following glob_ patterns in the ``.dist-info``
 directory:
 
+* ``AUTHORS*``
+* ``COPYING*``
 * ``LICEN[CS]E*``
-* ``COPYING``
-* ``NOTICE``
+* ``NOTICE*``
 
 This can be overridden by setting the ``license_files`` option in the
 ``[metadata]`` section of the project's ``setup.cfg``. For example:

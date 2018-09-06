@@ -296,7 +296,7 @@ class bdist_wheel(Command):
             files.add(metadata['license_file'][1])
 
         if 'license_file' not in metadata and 'license_files' not in metadata:
-            patterns = 'LICEN[CS]E*', 'COPYING', 'NOTICE'
+            patterns = ('LICEN[CS]E*', 'COPYING*', 'NOTICE*', 'AUTHORS*')
 
         for pattern in patterns:
             for path in iglob(pattern):

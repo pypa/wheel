@@ -14,7 +14,8 @@ DEFAULT_FILES = {
     'dummy_dist-1.0.dist-info/RECORD'
 }
 DEFAULT_LICENSE_FILES = {
-    'LICENSE', 'LICENSE.txt', 'LICENCE', 'LICENSE.txt', 'COPYING', 'NOTICE'
+    'LICENSE', 'LICENSE.txt', 'LICENCE', 'LICENSE.txt', 'COPYING',
+    'COPYING.md', 'NOTICE', 'NOTICE.rst', 'AUTHORS', 'AUTHORS.txt'
 }
 
 
