@@ -4,7 +4,7 @@ cache: pip
 
 stages:
   - name: test
-  - name: deploy to pypi
+  - name: deploy to PyPI
     if: type = push AND tag =~ ^\d+\.\d+\.\d+
 
 jobs:
