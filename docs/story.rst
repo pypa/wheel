@@ -36,7 +36,7 @@ is still complicated, but installation is simple.
 With the binary package strategy people who want to install use a simple,
 compatible installer, and people who want to package use whatever is
 convenient for them for as long as it meets their needs. No one has
-to rewrite `setup.py` for their own or the 20k+ other packages on PyPi
+to rewrite `setup.py` for their own or the 20k+ other packages on PyPI
 unless a different build system does a better job.
 
 Wheel is my attempt to benefit from the excellent distutils-sig work
