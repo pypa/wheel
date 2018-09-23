@@ -19,6 +19,7 @@ def requires_to_requires_dist(requirement):
     """Return the version specifier for a requirement in PEP 345/566 fashion."""
     if requirement.url:
         return " @ " + requirement.url
+
     requires_dist = []
     for op, ver in requirement.specs:
         requires_dist.append(op + ver)
