@@ -49,10 +49,11 @@ def generate_requirements(extras_require):
     """
     for extra, depends in extras_require.items():
         condition = ''
-        if extra and ':' in extra:  # setuptools extra:condition syntax
+        extra = extra or ''
+        if ':' in extra:  # setuptools extra:condition syntax
             extra, condition = extra.split(':', 1)
-            extra = pkg_resources.safe_extra(extra)
 
+        extra = pkg_resources.safe_extra(extra)
         if extra:
             yield 'Provides-Extra', extra
             if condition:
@@ -72,6 +73,9 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
     """
     pkg_info = read_pkg_info(pkginfo_path)
     pkg_info.replace_header('Metadata-Version', '2.1')
+    # Those will be regenerated from `requires.txt`.
+    del pkg_info['Provides-Extra']
+    del pkg_info['Requires-Dist']
     requires_path = os.path.join(egg_info_path, 'requires.txt')
     if os.path.exists(requires_path):
         with open(requires_path) as requires_file:
