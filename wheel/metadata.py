@@ -16,7 +16,10 @@ EXTRA_RE = re.compile("""^(?P<package>.*?)(;\s*(?P<condition>.*?)(extra == '(?P<
 
 
 def requires_to_requires_dist(requirement):
-    """Compose the version predicates for requirement in PEP 345 fashion."""
+    """Return the version specifier for a requirement in PEP 345/566 fashion."""
+    if requirement.url:
+        return " @ " + requirement.url
+
     requires_dist = []
     for op, ver in requirement.specs:
         requires_dist.append(op + ver)
