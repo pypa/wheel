@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.32.0**
 
 - Removed wheel signing and verifying features
 - Removed the "wheel install" and "wheel installscripts" commands
@@ -11,6 +11,11 @@ Release Notes
 - Deprecated the ``license_file`` option
 - Eliminated duplicate lines from generated requirements in
   ``.dist-info/METADATA`` (thanks to Wim Glenn for the contribution)
+- Fixed handling of direct URL specifiers in requirements
+  (PR by Benoit Pierre)
+- Fixed canonicalization of extras (PR by Benoit Pierre)
+- Warn when the deprecated ``[wheel]`` section is used in ``setup.cfg``
+  (PR by Jon Dufresne)
 
 **0.31.1**
 
