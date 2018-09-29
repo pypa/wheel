@@ -12,7 +12,8 @@ from .pkginfo import read_pkg_info
 
 # Wheel itself is probably the only program that uses non-extras markers
 # in METADATA/PKG-INFO. Support its syntax with the extra at the end only.
-EXTRA_RE = re.compile("""^(?P<package>.*?)(;\s*(?P<condition>.*?)(extra == '(?P<extra>.*?)')?)$""")
+EXTRA_RE = re.compile(
+    r"""^(?P<package>.*?)(;\s*(?P<condition>.*?)(extra == '(?P<extra>.*?)')?)$""")
 
 
 def requires_to_requires_dist(requirement):
