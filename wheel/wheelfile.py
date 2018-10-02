@@ -63,9 +63,12 @@ class WheelFile(ZipFile):
                     path, hash_sum, size = line.rsplit(u',', 2)
                     if hash_sum:
                         algorithm, hash_sum = hash_sum.split(u'=')
-                        if algorithm not in hashlib.algorithms_available:
+                        try:
+                            hashlib.new(algorithm)
+                        except ValueError:
                             raise WheelError('Unsupported hash algorithm: {}'.format(algorithm))
-                        elif algorithm.lower() in {'md5', 'sha1'}:
+
+                        if algorithm.lower() in {'md5', 'sha1'}:
                             raise WheelError(
                                 'Weak hash algorithm ({}) is not permitted by PEP 427'
                                 .format(algorithm))

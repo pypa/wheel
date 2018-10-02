@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fix support for Python 2.7: `hashlib.algorithms_available` was only added in 2.7.9.
+
 **0.32.0**
 
 - Removed wheel signing and verifying features
