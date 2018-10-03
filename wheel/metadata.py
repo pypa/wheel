@@ -18,7 +18,7 @@ EXTRA_RE = re.compile(
 
 def requires_to_requires_dist(requirement):
     """Return the version specifier for a requirement in PEP 345/566 fashion."""
-    if requirement.url:
+    if getattr(requirement, 'url', None):
         return " @ " + requirement.url
 
     requires_dist = []

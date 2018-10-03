@@ -3,6 +3,7 @@ Release Notes
 
 **UNRELEASED**
 
+- Fix exception with setuptools/pkg_resources versions older than 18.8.
 - Fix support for Python 2.7: `hashlib.algorithms_available` was only added in 2.7.9.
 
 **0.32.0**
