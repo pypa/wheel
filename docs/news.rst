@@ -3,8 +3,10 @@ Release Notes
 
 **UNRELEASED**
 
-- Fix exception with setuptools/pkg_resources versions older than 18.8.
-- Fix support for Python 2.7: `hashlib.algorithms_available` was only added in 2.7.9.
+- Fixed ``AttributeError: 'Requirement' object has no attribute 'url'`` on
+  setuptools/pkg_resources versions older than 18.8 (PR by Benoit Pierre)
+- Fixed ``AttributeError: 'module' object has no attribute
+  'algorithms_available'`` on Python < 2.7.9 (PR by Benoit Pierre)
 
 **0.32.0**
 
