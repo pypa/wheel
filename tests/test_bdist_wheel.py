@@ -98,4 +98,3 @@ def test_build_number(dummy_dist, monkeypatch, tmpdir):
         filenames = set(wf.namelist())
         assert 'dummy_dist-1.0.dist-info/RECORD' in filenames
         assert 'dummy_dist-1.0.dist-info/METADATA' in filenames
-
