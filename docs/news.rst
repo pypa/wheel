@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.32.1**
 
 - Fixed ``AttributeError: 'Requirement' object has no attribute 'url'`` on
   setuptools/pkg_resources versions older than 18.8 (PR by Benoit Pierre)
