@@ -3,8 +3,10 @@ Tests for the bdist_wheel tag options (--python-tag, --universal, and
 --plat-name)
 """
 
+import os
 import subprocess
 import sys
+import zipfile
 
 import pytest
 
@@ -57,6 +59,9 @@ def test_build_number(temp_pkg):
     assert len(wheels) == 1
     assert (wheels[0].basename == 'Test-1.0-1-py%s-none-any.whl' % (sys.version[0],))
     assert wheels[0].ext == '.whl'
+    with zipfile.ZipFile(str(wheels[0])) as wheel:
+        distinfo_dirs = set(filter(None, (os.path.split(x)[0] for x in wheel.namelist())))
+    assert len(distinfo_dirs) == 1
 
 
 def test_explicit_tag(temp_pkg):
