@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed build number appearing in the ``.dist-info`` directory name
+
 **0.32.1**
 
 - Fixed ``AttributeError: 'Requirement' object has no attribute 'url'`` on

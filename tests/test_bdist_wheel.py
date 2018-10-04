@@ -88,3 +88,14 @@ def test_licenses_disabled(dummy_dist, monkeypatch, tmpdir):
                            '--universal'])
     with WheelFile('dist/dummy_dist-1.0-py2.py3-none-any.whl') as wf:
         assert set(wf.namelist()) == DEFAULT_FILES
+
+
+def test_build_number(dummy_dist, monkeypatch, tmpdir):
+    monkeypatch.chdir(dummy_dist)
+    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmpdir),
+                           '--universal', '--build-number=2'])
+    with WheelFile('dist/dummy_dist-1.0-2-py2.py3-none-any.whl') as wf:
+        filenames = set(wf.namelist())
+        assert 'dummy_dist-1.0.dist-info/RECORD' in filenames
+        assert 'dummy_dist-1.0.dist-info/METADATA' in filenames
+

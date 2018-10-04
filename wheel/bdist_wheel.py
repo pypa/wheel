@@ -233,7 +233,10 @@ class bdist_wheel(Command):
                 self._ensure_relative(install.install_base))
 
         self.set_undefined_options('install_egg_info', ('target', 'egginfo_dir'))
-        distinfo_dir = os.path.join(self.bdist_dir, '%s.dist-info' % self.wheel_dist_name)
+        distinfo_dirname = '{}-{}.dist-info'.format(
+            safer_name(self.distribution.get_name()),
+            safer_version(self.distribution.get_version()))
+        distinfo_dir = os.path.join(self.bdist_dir, distinfo_dirname)
         self.egg2dist(self.egginfo_dir, distinfo_dir)
 
         self.write_wheelfile(distinfo_dir)
