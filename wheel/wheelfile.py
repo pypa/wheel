@@ -42,7 +42,7 @@ class WheelFile(ZipFile):
         super(WheelFile, self).__init__(file, mode, compression=ZIP_DEFLATED, allowZip64=True)
 
         self.dist_info_path = '{}.dist-info'.format(
-            '-'.join(filter(bool, self.parsed_filename.group('namever', 'build')))
+            '-'.join(filter(None, self.parsed_filename.group('namever', 'build')))
         )
         self.record_path = self.dist_info_path + '/RECORD'
         self._file_hashes = OrderedDict()
