@@ -154,6 +154,7 @@ class WheelFile(ZipFile):
             content += '\n{},,\n'.format(self.record_path)
             zinfo = ZipInfo(native(self.record_path), date_time=get_zipinfo_datetime())
             zinfo.compress_type = ZIP_DEFLATED
+            zinfo.external_attr = 0o664 << 16
             self.writestr(zinfo, as_bytes(content))
 
         super(WheelFile, self).close()

@@ -7,6 +7,7 @@ Release Notes
   setuptools/pkg_resources versions older than 18.8 (PR by Benoit Pierre)
 - Fixed ``AttributeError: 'module' object has no attribute
   'algorithms_available'`` on Python < 2.7.9 (PR by Benoit Pierre)
+- Fixed permissions on the generated ``.dist-info/RECORD`` file
 
 **0.32.0**
 
