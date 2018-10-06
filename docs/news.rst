@@ -4,6 +4,7 @@ Release Notes
 **UNRELEASED**
 
 - Fixed build number appearing in the ``.dist-info`` directory name
+- Made wheel file name parsing more permissive
 
 **0.32.1**
 
