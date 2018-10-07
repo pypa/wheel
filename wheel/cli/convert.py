@@ -57,7 +57,7 @@ def egg2wheel(egg_path, dest_dir):
 
     pyver = egg_info['pyver']
     if pyver:
-        pyver = pyver.replace('.', '')
+        pyver = egg_info['pyver'] = pyver.replace('.', '')
 
     arch = (egg_info['arch'] or 'any').replace('.', '_').replace('-', '_')
 
