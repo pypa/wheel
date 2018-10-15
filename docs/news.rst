@@ -5,6 +5,8 @@ Release Notes
 
 - Fixed build number appearing in the ``.dist-info`` directory name
 - Made wheel file name parsing more permissive
+- Fixed wrong Python tag in wheels converted from eggs
+  (PR by John T. Wodder II)
 
 **0.32.1**
 

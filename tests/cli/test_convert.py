@@ -1,6 +1,8 @@
 import os.path
+import re
 
 from wheel.cli.convert import convert, egg_info_re
+from wheel.wheelfile import WHEEL_INFO_RE
 
 
 def test_egg_re():
@@ -15,4 +17,8 @@ def test_egg_re():
 
 def test_convert_egg(egg_paths, tmpdir):
     convert(egg_paths, str(tmpdir), verbose=False)
-    assert len(tmpdir.listdir()) == len(egg_paths)
+    wheel_names = [path.basename for path in tmpdir.listdir()]
+    assert len(wheel_names) == len(egg_paths)
+    assert all(WHEEL_INFO_RE.match(filename) for filename in wheel_names)
+    assert all(re.match('^[\w\d.]+-\d\.\d-\w+\d+-[\w\d]+-[\w\d]+\.whl$', fname)
+               for fname in wheel_names)
