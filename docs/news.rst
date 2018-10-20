@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.32.2**
 
 - Fixed build number appearing in the ``.dist-info`` directory name
 - Made wheel file name parsing more permissive
