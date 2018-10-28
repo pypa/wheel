@@ -7,10 +7,15 @@ from setuptools import setup, find_packages
 
 
 here = os.path.abspath(os.path.dirname(__file__))
-README = io.open(os.path.join(here, 'README.rst'), encoding='utf8').read()
 
-with io.open(os.path.join(here, 'wheel', '__init__.py'), encoding='utf8') as version_file:
-    metadata = dict(re.findall(r"""__([a-z]+)__ = "([^"]+)""", version_file.read()))
+
+def readall(*args):
+    with io.open(os.path.join(here, *args), encoding='utf8') as fp:
+        return fp.read()
+
+
+README = readall('README.rst')
+metadata = dict(re.findall(r"""__([a-z]+)__ = "([^"]+)""", readall('wheel', '__init__.py')))
 
 setup(name='wheel',
       version=metadata['version'],
