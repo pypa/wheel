@@ -20,5 +20,5 @@ def test_convert_egg(egg_paths, tmpdir):
     wheel_names = [path.basename for path in tmpdir.listdir()]
     assert len(wheel_names) == len(egg_paths)
     assert all(WHEEL_INFO_RE.match(filename) for filename in wheel_names)
-    assert all(re.match('^[\w\d.]+-\d\.\d-\w+\d+-[\w\d]+-[\w\d]+\.whl$', fname)
+    assert all(re.match(r'^[\w\d.]+-\d\.\d-\w+\d+-[\w\d]+-[\w\d]+\.whl$', fname)
                for fname in wheel_names)
