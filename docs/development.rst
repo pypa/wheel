@@ -60,6 +60,10 @@ To run the tests locally::
   $ pip install -e .[test]  # Installs the test dependencies locally
   $ pytest                  # Runs the tests with the current interpreter
 
+If using pytest, be sure to add the project root to the ``PYTHONPATH``, e.g.::
+
+  $ export PYTHONPATH="$PWD:$PYTHONPATH"
+
 .. _tox: https://pypi.org/project/tox/
 .. _pytest: https://pypi.org/project/pytest/
 
