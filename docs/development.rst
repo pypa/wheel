@@ -57,6 +57,8 @@ To run the tests via tox::
 
   $ tox                     # Runs the tests against all matching interpreters
 
+::
+
   $ tox -e py35             # Runs the tests against a specific environment
 
 To run the tests via pytest::
