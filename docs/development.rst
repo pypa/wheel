@@ -4,7 +4,7 @@ Development
 Pull Requests
 -------------
 
-- Submit Pull Requests against the `master` branch.
+- Submit Pull Requests against the ``master`` branch.
 - Provide a good description of what you're doing and why.
 - Provide tests that cover your changes and try to run the tests locally first.
 
@@ -48,20 +48,31 @@ another change to the pull branch.
 .. _.travis.yml file: https://github.com/pypa/wheel/blob/master/.travis.yml
 .. _travis pull requests page: https://travis-ci.org/pypa/wheel/pull_requests
 
-Running Tests
--------------
+Running Tests Locally
+---------------------
 
 Python requirements: tox_ or pytest_
 
-To run the tests locally::
+To run the tests via tox against all matching interpreters::
 
-  $ tox                     # Runs the tests against all matching interpreters
-  $ tox -e py35             # Runs the tests against a specific environment
-  $ pip install -e .[test]  # Installs the test dependencies locally
+  $ tox
+
+To run the tests via tox against a specific environment::
+
+  $ tox -e py35
+
+Alternatively, you can run the tests via pytest using your default interpreter::
+
+  $ pip install -e .[test]  # Installs the test dependencies
   $ pytest                  # Runs the tests with the current interpreter
+
+The above pip install command will replace the current interpreter's installed
+wheel package with the development package being tested. If you use this
+workflow, it is recommended to run it under a virtualenv_.
 
 .. _tox: https://pypi.org/project/tox/
 .. _pytest: https://pypi.org/project/pytest/
+.. _virtualenv: https://pypi.org/project/virtualenv/
 
 Getting Involved
 ----------------
