@@ -15,6 +15,7 @@ jobs:
 
     - stage: test
       env: TOXENV=pypy
+      dist: trusty
       python: pypy
 
     - stage: test
@@ -23,7 +24,8 @@ jobs:
 
     - stage: test
       env: TOXENV=py27
-      python: "2.7.0"
+      dist: trusty
+      python: "2.7.3"
 
     - stage: test
       env: TOXENV=py27
