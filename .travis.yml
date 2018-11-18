@@ -23,6 +23,10 @@ jobs:
 
     - stage: test
       env: TOXENV=py27
+      python: "2.7.0"
+
+    - stage: test
+      env: TOXENV=py27
       python: "2.7"
 
     - stage: test

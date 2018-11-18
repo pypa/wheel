@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed compatibility with Python 2.7.0 – 2.7.3
+
 **0.32.2**
 
 - Fixed build number appearing in the ``.dist-info`` directory name

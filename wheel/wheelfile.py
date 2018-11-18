@@ -39,7 +39,7 @@ class WheelFile(ZipFile):
         if not basename.endswith('.whl') or self.parsed_filename is None:
             raise WheelError("Bad wheel filename {!r}".format(basename))
 
-        super(WheelFile, self).__init__(file, mode, compression=ZIP_DEFLATED, allowZip64=True)
+        ZipFile.__init__(self, file, mode, compression=ZIP_DEFLATED, allowZip64=True)
 
         self.dist_info_path = '{}.dist-info'.format(self.parsed_filename.group('namever'))
         self.record_path = self.dist_info_path + '/RECORD'
@@ -88,7 +88,7 @@ class WheelFile(ZipFile):
             if eof and running_hash.digest() != expected_hash:
                 raise WheelError("Hash mismatch for file '{}'".format(native(ef_name)))
 
-        ef = super(WheelFile, self).open(name_or_info, mode, pwd)
+        ef = ZipFile.open(self, name_or_info, mode, pwd)
         ef_name = as_unicode(name_or_info.filename if isinstance(name_or_info, ZipInfo)
                              else name_or_info)
         if mode == 'r' and not ef_name.endswith('/'):
@@ -136,7 +136,7 @@ class WheelFile(ZipFile):
         self.writestr(zinfo, data, compress_type)
 
     def writestr(self, zinfo_or_arcname, bytes, compress_type=None):
-        super(WheelFile, self).writestr(zinfo_or_arcname, bytes, compress_type)
+        ZipFile.writestr(self, zinfo_or_arcname, bytes, compress_type)
         fname = (zinfo_or_arcname.filename if isinstance(zinfo_or_arcname, ZipInfo)
                  else zinfo_or_arcname)
         logger.info("adding '%s'", fname)
@@ -157,4 +157,4 @@ class WheelFile(ZipFile):
             zinfo.external_attr = 0o664 << 16
             self.writestr(zinfo, as_bytes(content))
 
-        super(WheelFile, self).close()
+        ZipFile.close(self)
