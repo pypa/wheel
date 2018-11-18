@@ -1,41 +1,45 @@
+dist: xenial
 language: python
-sudo: false
 cache: pip
 
 stages:
+  - name: static analysis
   - name: test
   - name: deploy to PyPI
     if: type = push AND tag =~ ^\d+\.\d+\.\d+
 
 jobs:
   include:
-    - env: TOXENV=pypy
+    - stage: static analysis
+      env: TOXENV=flake8
+
+    - stage: test
+      env: TOXENV=pypy
       python: pypy
 
-    - env: TOXENV=pypy3
-      python: pypy3
+    - stage: test
+      env: TOXENV=pypy3
+      python: pypy3.5
 
-    - env: TOXENV=py27
+    - stage: test
+      env: TOXENV=py27
       python: "2.7"
 
-    - env: TOXENV=py34
+    - stage: test
+      env: TOXENV=py34
       python: "3.4"
 
-    - env: TOXENV=py35
+    - stage: test
+      env: TOXENV=py35
       python: "3.5"
 
-    - env: TOXENV=py36
+    - stage: test
+      env: TOXENV=py36
       python: "3.6"
 
-      # https://github.com/travis-ci/travis-ci/issues/9815
-    - env: TOXENV=py37
-      dist: xenial
-      sudo: required
+    - stage: test
+      env: TOXENV=py37
       python: "3.7"
-
-    - env: TOXENV=flake8
-      python: "2.7"
-      after_success: skip
 
     - stage: deploy to PyPI
       install: pip install -U setuptools
