@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.32.3**
 
 - Fixed compatibility with Python 2.7.0 – 2.7.3
 - Fixed handling of direct URL requirements with markers (PR by Benoit Pierre)
