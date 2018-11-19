@@ -62,7 +62,7 @@ def generate_requirements(extras_require):
             condition += "extra == '%s'" % extra
 
         if condition:
-            condition = '; ' + condition
+            condition = ' ; ' + condition
 
         for new_req in convert_requirements(depends):
             yield 'Requires-Dist', new_req + condition
