@@ -47,7 +47,7 @@ jobs:
       python: "3.7"
 
     - stage: deploy to PyPI
-      install: pip install -U setuptools
+      install: true
       script: skip
       after_success: true
       deploy:
