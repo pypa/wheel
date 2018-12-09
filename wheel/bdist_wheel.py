@@ -183,6 +183,7 @@ class bdist_wheel(Command):
     def run(self):
         build_scripts = self.reinitialize_command('build_scripts')
         build_scripts.executable = 'python'
+        build_scripts.force = True
 
         if not self.skip_build:
             self.run_command('build')

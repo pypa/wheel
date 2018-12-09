@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed bad shebangs sneaking into wheels
+
 **0.32.3**
 
 - Fixed compatibility with Python 2.7.0 – 2.7.3
