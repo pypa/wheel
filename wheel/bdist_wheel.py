@@ -185,6 +185,9 @@ class bdist_wheel(Command):
         build_scripts.executable = 'python'
         build_scripts.force = True
 
+        build_ext = self.reinitialize_command('build_ext')
+        build_ext.inplace = False
+
         if not self.skip_build:
             self.run_command('build')
 
