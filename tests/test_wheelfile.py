@@ -110,17 +110,21 @@ def test_testzip_bad_hash(wheel_path):
 def test_write_str(wheel_path):
     with WheelFile(wheel_path, 'w') as wf:
         wf.writestr(native('hello/héllö.py'), as_bytes('print("Héllö, world!")\n'))
+        wf.writestr(native('hello/h,ll,.py'), as_bytes('print("Héllö, world!")\n'))
 
     with ZipFile(wheel_path, 'r') as zf:
         infolist = zf.infolist()
-        assert len(infolist) == 2
+        assert len(infolist) == 3
         assert infolist[0].filename == native('hello/héllö.py')
         assert infolist[0].file_size == 25
-        assert infolist[1].filename == 'test-1.0.dist-info/RECORD'
+        assert infolist[1].filename == native('hello/h,ll,.py')
+        assert infolist[1].file_size == 25
+        assert infolist[2].filename == 'test-1.0.dist-info/RECORD'
 
         record = zf.read('test-1.0.dist-info/RECORD')
         assert record == as_bytes(
             'hello/héllö.py,sha256=bv-QV3RciQC2v3zL8Uvhd_arp40J5A9xmyubN34OVwo,25\n'
+            '"hello/h,ll,.py",sha256=bv-QV3RciQC2v3zL8Uvhd_arp40J5A9xmyubN34OVwo,25\n'
             'test-1.0.dist-info/RECORD,,\n')
 
 

@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import csv
 import hashlib
 import os.path
 import re
@@ -9,7 +10,7 @@ from distutils import log as logger
 from zipfile import ZIP_DEFLATED, ZipInfo, ZipFile
 
 from wheel.cli import WheelError
-from wheel.util import urlsafe_b64decode, as_unicode, native, urlsafe_b64encode, as_bytes
+from wheel.util import urlsafe_b64decode, as_unicode, native, urlsafe_b64encode, as_bytes, StringIO
 
 # Non-greedy matching of an optional build number may be too clever (more
 # invalid wheel filenames will match). Separate regex for .dist-info?
@@ -148,13 +149,20 @@ class WheelFile(ZipFile):
     def close(self):
         # Write RECORD
         if self.fp is not None and self.mode == 'w' and self._file_hashes:
-            content = '\n'.join('{},{}={},{}'.format(fname, algorithm, hash_,
-                                                     self._file_sizes[fname])
-                                for fname, (algorithm, hash_) in self._file_hashes.items())
-            content += '\n{},,\n'.format(self.record_path)
+            data = StringIO()
+            writer = csv.writer(data, delimiter=',', quotechar='"', lineterminator='\n')
+            writer.writerows((
+                (
+                    fname,
+                    algorithm + "=" + hash_,
+                    self._file_sizes[fname]
+                )
+                for fname, (algorithm, hash_) in self._file_hashes.items()
+            ))
+            writer.writerow((format(self.record_path), "", ""))
             zinfo = ZipInfo(native(self.record_path), date_time=get_zipinfo_datetime())
             zinfo.compress_type = ZIP_DEFLATED
             zinfo.external_attr = 0o664 << 16
-            self.writestr(zinfo, as_bytes(content))
+            self.writestr(zinfo, as_bytes(data.getvalue()))
 
         ZipFile.close(self)
