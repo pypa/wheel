@@ -1,12 +1,12 @@
-wheel repack
-============
+wheel pack
+==========
 
 Usage
 -----
 
 ::
 
-    wheel repack <wheel_directory>
+    wheel pack <wheel_directory>
 
 
 Description
@@ -35,5 +35,5 @@ Examples
     $ wheel unpack someproject-1.5.0-py2-py3-none.whl
     Unpacking to: ./someproject-1.5.0
     $ touch someproject-1.5.0/somepackage/module.py
-    $ wheel repack someproject-1.5.0
+    $ wheel pack someproject-1.5.0
     Repacking wheel as ./someproject-1.5.0-py2-py3-none.whl...OK

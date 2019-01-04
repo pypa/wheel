@@ -4,6 +4,8 @@ Release Notes
 **UNRELEASED**
 
 - Fixed bad shebangs sneaking into wheels
+- Fixed documentation issue with ``wheel pack`` erroneously being called
+  ``wheel repack``
 
 **0.32.3**
 
