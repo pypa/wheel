@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.33.0**
 
 - Added the ``--build-number`` option to the ``wheel pack`` command
 - Fixed bad shebangs sneaking into wheels
