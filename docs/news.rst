@@ -9,6 +9,8 @@ Release Notes
   ``wheel repack``
 - Fixed filenames with "bad" characters (like commas) not being quoted in
   ``RECORD`` (PR by Paul Moore)
+- Sort requirements extras to ensure deterministic builds
+  (PR by PoncinMatthieu)
 
 **0.32.3**
 
