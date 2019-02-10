@@ -6,6 +6,8 @@ Release Notes
 - Fixed bad shebangs sneaking into wheels
 - Fixed documentation issue with ``wheel pack`` erroneously being called
   ``wheel repack``
+- Fixed filenames with "bad" characters (like commas) not being quoted in
+  ``RECORD`` (PR by Paul Moore)
 
 **0.32.3**
 
