@@ -34,7 +34,7 @@ def convert_requirements(requirements):
     for req in requirements:
         parsed_requirement = pkg_resources.Requirement.parse(req)
         spec = requires_to_requires_dist(parsed_requirement)
-        extras = ",".join(parsed_requirement.extras)
+        extras = ",".join(sorted(parsed_requirement.extras))
         if extras:
             extras = "[%s]" % extras
         yield (parsed_requirement.project_name + extras + spec)
