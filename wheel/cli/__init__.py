@@ -54,6 +54,7 @@ def parser():
     repack_parser.add_argument('directory', help='Root directory of the unpacked wheel')
     repack_parser.add_argument('--dest-dir', '-d', default=os.path.curdir,
                                help="Directory to store the wheel (default %(default)s)")
+    repack_parser.add_argument('--build-number', help="Build tag to use in the wheel name")
     repack_parser.set_defaults(func=pack_f)
 
     convert_parser = s.add_parser('convert', help='Convert egg or wininst to wheel')

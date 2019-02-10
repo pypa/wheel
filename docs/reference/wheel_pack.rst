@@ -26,14 +26,17 @@ Options
 
     Directory to put the new wheel file into.
 
+.. option:: --build-number <tag>
+
+    Override the build tag in the new wheel file name
 
 Examples
 --------
 
-* Unpack a wheel, add a dummy module and then repack it::
+* Unpack a wheel, add a dummy module and then repack it (with a new build number)::
 
     $ wheel unpack someproject-1.5.0-py2-py3-none.whl
     Unpacking to: ./someproject-1.5.0
     $ touch someproject-1.5.0/somepackage/module.py
-    $ wheel pack someproject-1.5.0
-    Repacking wheel as ./someproject-1.5.0-py2-py3-none.whl...OK
+    $ wheel pack --build-number 2 someproject-1.5.0
+    Repacking wheel as ./someproject-1.5.0-2-py2-py3-none.whl...OK

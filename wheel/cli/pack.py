@@ -10,7 +10,7 @@ from wheel.wheelfile import WheelFile
 DIST_INFO_RE = re.compile(r"^(?P<namever>(?P<name>.+?)-(?P<ver>\d.*?))\.dist-info$")
 
 
-def pack(directory, dest_dir):
+def pack(directory, dest_dir, build_number=None):
     """Repack a previously unpacked wheel directory into a new wheel file.
 
     The .dist-info/WHEEL file must contain one or more tags so that the target
@@ -30,6 +30,10 @@ def pack(directory, dest_dir):
     # Determine the target wheel filename
     dist_info_dir = dist_info_dirs[0]
     name_version = DIST_INFO_RE.match(dist_info_dir).group('namever')
+
+    # Add the build number if specific
+    if build_number:
+        name_version += '-' + build_number
 
     # Read the tags from .dist-info/WHEEL
     with open(os.path.join(directory, dist_info_dir, 'WHEEL')) as f:

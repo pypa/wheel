@@ -3,6 +3,7 @@ Release Notes
 
 **UNRELEASED**
 
+- Added the ``--build-number`` option to the ``wheel pack`` command
 - Fixed bad shebangs sneaking into wheels
 - Fixed documentation issue with ``wheel pack`` erroneously being called
   ``wheel repack``
