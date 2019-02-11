@@ -136,7 +136,7 @@ def test_timestamp(tmpdir_factory, wheel_path, monkeypatch):
         build_dir.join(filename).write(filename + '\n')
 
     # The earliest date representable in TarInfos, 1980-01-01
-    monkeypatch.setenv('SOURCE_DATE_EPOCH', '315576060')
+    monkeypatch.setenv(native('SOURCE_DATE_EPOCH'), native('315576060'))
 
     with WheelFile(wheel_path, 'w') as wf:
         wf.write_files(str(build_dir))
