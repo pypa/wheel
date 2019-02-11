@@ -1,6 +1,7 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import sys
 from zipfile import ZipFile, ZIP_DEFLATED
 
 import pytest
@@ -147,6 +148,8 @@ def test_timestamp(tmpdir_factory, wheel_path, monkeypatch):
             assert info.compress_type == ZIP_DEFLATED
 
 
+@pytest.mark.skipif(sys.platform == 'win32',
+                    reason='Windows does not support UNIX-like permissions')
 def test_attributes(tmpdir_factory, wheel_path):
     # With the change from ZipFile.write() to .writestr(), we need to manually
     # set member attributes.
