@@ -15,6 +15,7 @@ Release Notes
   ``RECORD`` (PR by Paul Moore)
 - Sort requirements extras to ensure deterministic builds
   (PR by PoncinMatthieu)
+- Forced ``inplace = False`` when building a C extension for the wheel
 
 **0.32.3**
 
