@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed the ``--build-number`` option for ``wheel pack`` not being applied
+
 **0.33.0**
 
 - Added the ``--build-number`` option to the ``wheel pack`` command

@@ -10,7 +10,7 @@ from wheel.wheelfile import WheelFile
 DIST_INFO_RE = re.compile(r"^(?P<namever>(?P<name>.+?)-(?P<ver>\d.*?))\.dist-info$")
 
 
-def pack(directory, dest_dir, build_number=None):
+def pack(directory, dest_dir, build_number):
     """Repack a previously unpacked wheel directory into a new wheel file.
 
     The .dist-info/WHEEL file must contain one or more tags so that the target

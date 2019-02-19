@@ -27,7 +27,7 @@ def unpack_f(args):
 
 def pack_f(args):
     from .pack import pack
-    pack(args.directory, args.dest_dir)
+    pack(args.directory, args.dest_dir, args.build_number)
 
 
 def convert_f(args):
