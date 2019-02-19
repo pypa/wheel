@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.33.1**
 
 - Fixed the ``--build-number`` option for ``wheel pack`` not being applied
 
