@@ -57,7 +57,7 @@ class bdist_wheel(Command):
                     ('skip-build', None,
                      "skip rebuilding everything (for testing/debugging)"),
                     ('relative', None,
-                     "build the archive using relative paths"
+                     "build the archive using relative paths "
                      "(default: false)"),
                     ('owner=', 'u',
                      "Owner name used when creating a tar file"
