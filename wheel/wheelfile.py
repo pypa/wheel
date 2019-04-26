@@ -111,6 +111,10 @@ class WheelFile(ZipFile):
             # Sort the directory names so that `os.walk` will walk them in a
             # defined order on the next iteration.
             dirnames.sort()
+            for name in dirnames:
+                path = os.path.normpath(os.path.join(root, name))
+                arcname = os.path.relpath(path, base_dir)
+                self.mkdir(path, arcname)
             for name in sorted(filenames):
                 path = os.path.normpath(os.path.join(root, name))
                 if os.path.isfile(path):
@@ -135,6 +139,13 @@ class WheelFile(ZipFile):
         zinfo.external_attr = st.st_mode << 16
         zinfo.compress_type = ZIP_DEFLATED
         self.writestr(zinfo, data, compress_type)
+
+    def mkdir(self, filename, arcname):
+        st = os.stat(filename)
+        zinfo = ZipInfo(arcname + '/', date_time=get_zipinfo_datetime(st.st_mtime))
+        zinfo.external_attr = st.st_mode << 16
+        zinfo.compress_type = ZIP_DEFLATED
+        self.writestr(zinfo, b'')
 
     def writestr(self, zinfo_or_arcname, bytes, compress_type=None):
         ZipFile.writestr(self, zinfo_or_arcname, bytes, compress_type)
