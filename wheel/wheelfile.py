@@ -152,7 +152,7 @@ class WheelFile(ZipFile):
         fname = (zinfo_or_arcname.filename if isinstance(zinfo_or_arcname, ZipInfo)
                  else zinfo_or_arcname)
         logger.info("adding '%s'", fname)
-        if fname != self.record_path:
+        if fname != self.record_path and not fname.endswith('/'):
             hash_ = self._default_algorithm(bytes)
             self._file_hashes[fname] = hash_.name, native(urlsafe_b64encode(hash_.digest()))
             self._file_sizes[fname] = len(bytes)

@@ -8,6 +8,7 @@ import pytest
 from wheel.wheelfile import WheelFile
 
 DEFAULT_FILES = {
+    'dummy_dist-1.0.dist-info/',
     'dummy_dist-1.0.dist-info/top_level.txt',
     'dummy_dist-1.0.dist-info/METADATA',
     'dummy_dist-1.0.dist-info/WHEEL',
