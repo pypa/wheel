@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import sys
+import operator
 from zipfile import ZipFile, ZIP_DEFLATED
 
 import pytest
@@ -172,3 +173,19 @@ def test_attributes(tmpdir_factory, wheel_path):
         info = zf.getinfo('test-1.0.dist-info/RECORD')
         permissions = (info.external_attr >> 16) & 0o777
         assert permissions == 0o664
+
+
+def test_directories(tmpdir, wheel_path):
+    build_dir = tmpdir
+    sub_dir = build_dir / 'sub'
+    sub_dir.mkdir()
+    (sub_dir / '__init__.py').write_text('', encoding='utf-8')
+
+    with WheelFile(wheel_path, 'w') as wf:
+        wf.write_files(str(build_dir))
+
+    with ZipFile(wheel_path, 'r') as zf:
+        infos = zf.infolist()
+
+    names = set(map(operator.attrgetter('filename'), infos))
+    assert 'sub/' in names
