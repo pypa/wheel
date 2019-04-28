@@ -176,10 +176,16 @@ def test_attributes(tmpdir_factory, wheel_path):
 
 
 def test_directories(tmpdir, wheel_path):
+    """
+    The WheelFile should contain entries for directories,
+    empty and not.
+    """
     build_dir = tmpdir
     sub_dir = build_dir / 'sub'
     sub_dir.mkdir()
     (sub_dir / '__init__.py').write_text('', encoding='utf-8')
+    empty_dir = build_dir / 'empty'
+    empty_dir.mkdir()
 
     with WheelFile(wheel_path, 'w') as wf:
         wf.write_files(str(build_dir))
@@ -189,3 +195,4 @@ def test_directories(tmpdir, wheel_path):
 
     names = set(map(operator.attrgetter('filename'), infos))
     assert 'sub/' in names
+    assert 'empty/' in names
