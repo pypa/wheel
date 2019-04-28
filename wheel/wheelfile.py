@@ -111,10 +111,12 @@ class WheelFile(ZipFile):
             # Sort the directory names so that `os.walk` will walk them in a
             # defined order on the next iteration.
             dirnames.sort()
+
             for name in dirnames:
                 path = os.path.normpath(os.path.join(root, name))
                 arcname = os.path.relpath(path, base_dir)
                 self.mkdir(path, arcname)
+
             for name in sorted(filenames):
                 path = os.path.normpath(os.path.join(root, name))
                 if os.path.isfile(path):
