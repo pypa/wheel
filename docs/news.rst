@@ -1,11 +1,11 @@
 Release Notes
 =============
 
-**0.33.1**
+**0.33.1 (2019-02-19)**
 
 - Fixed the ``--build-number`` option for ``wheel pack`` not being applied
 
-**0.33.0**
+**0.33.0 (2019-02-11)**
 
 - Added the ``--build-number`` option to the ``wheel pack`` command
 - Fixed bad shebangs sneaking into wheels
@@ -17,19 +17,19 @@ Release Notes
   (PR by PoncinMatthieu)
 - Forced ``inplace = False`` when building a C extension for the wheel
 
-**0.32.3**
+**0.32.3 (2018-11-18)**
 
 - Fixed compatibility with Python 2.7.0 – 2.7.3
 - Fixed handling of direct URL requirements with markers (PR by Benoit Pierre)
 
-**0.32.2**
+**0.32.2 (2018-10-20)**
 
 - Fixed build number appearing in the ``.dist-info`` directory name
 - Made wheel file name parsing more permissive
 - Fixed wrong Python tag in wheels converted from eggs
   (PR by John T. Wodder II)
 
-**0.32.1**
+**0.32.1 (2018-10-03)**
 
 - Fixed ``AttributeError: 'Requirement' object has no attribute 'url'`` on
   setuptools/pkg_resources versions older than 18.8 (PR by Benoit Pierre)
@@ -37,7 +37,7 @@ Release Notes
   'algorithms_available'`` on Python < 2.7.9 (PR by Benoit Pierre)
 - Fixed permissions on the generated ``.dist-info/RECORD`` file
 
-**0.32.0**
+**0.32.0 (2018-09-29)**
 
 - Removed wheel signing and verifying features
 - Removed the "wheel install" and "wheel installscripts" commands
@@ -53,11 +53,11 @@ Release Notes
 - Warn when the deprecated ``[wheel]`` section is used in ``setup.cfg``
   (PR by Jon Dufresne)
 
-**0.31.1**
+**0.31.1 (2018-05-13)**
 
 - Fixed arch as ``None`` when converting eggs to wheels
 
-**0.31.0**
+**0.31.0 (2018-04-01)**
 
 - Fixed displaying of errors on Python 3
 - Fixed single digit versions in wheel files not being properly recognized
@@ -71,7 +71,7 @@ Release Notes
 - Deprecated all wheel signing and signature verification commands
 - Removed the (already defunct) ``tool`` extras from setup.py
 
-**0.30.0**
+**0.30.0 (2017-09-10)**
 
 - Added py-limited-api {cp32|cp33|cp34|...} flag to produce cpNN.abi3.{arch}
   tags on CPython 3.
@@ -88,16 +88,16 @@ Release Notes
 - Improved the error message when trying to verify an unsigned wheel file
 - Removed support for Python 2.6, 3.2 and 3.3.
 
-**0.29.0**
+**0.29.0 (2016-02-06)**
 
 - Fix compression type of files in archive (Issue #155, Pull Request #62,
   thanks Xavier Fernandez)
 
-**0.28.0**
+**0.28.0 (2016-02-05)**
 
 - Fix file modes in archive (Issue #154)
 
-**0.27.0**
+**0.27.0 (2016-02-05)**
 
 - Support forcing a platform tag using ``--plat-name`` on pure-Python wheels,
   as well as nonstandard platform tags on non-pure wheels (Pull Request #60,
@@ -116,11 +116,11 @@ Release Notes
   (invalid on all platforms, but code was only executed on Windows) (Issue #91)
 - Added the PyPA Code of Conduct (Pull Request #56)
 
-**0.26.0**
+**0.26.0 (2015-09-18)**
 
 - Fix multiple entrypoint comparison failure on Python 3 (Issue #148)
 
-**0.25.0**
+**0.25.0 (2015-09-16)**
 
 - Add Python 3.5 to tox configuration
 - Deterministic (sorted) metadata
@@ -129,7 +129,7 @@ Release Notes
 - Treat data-only wheels as pure
 - Write to temporary file and rename when using wheel install --force
 
-**0.24.0**
+**0.24.0 (2014-07-06)**
 
 - The python tag used for pure-python packages is now .pyN (major version
   only). This change actually occurred in 0.23.0 when the --python-tag
@@ -143,7 +143,7 @@ Release Notes
   should work the same whether the package is installed by wheel or
   by setup.py.
 
-**0.23.0**
+**0.23.0 (2014-03-31)**
 
 - Compatibility tag flags added to the bdist_wheel command
 - sdist should include files necessary for tests
@@ -157,14 +157,14 @@ Release Notes
   command can be used to generate the scripts in such cases.
 - Thank you contributors
 
-**0.22.0**
+**0.22.0 (2013-09-15)**
 
 - Include entry_points.txt, scripts a.k.a. commands, in experimental
   pydist.json
 - Improved test_requires parsing
 - Python 2.6 fixes, "wheel version" command courtesy pombredanne
 
-**0.21.0**
+**0.21.0 (2013-07-20)**
 
 - Pregenerated scripts are the default again.
 - "setup.py bdist_wheel --skip-scripts" turns them off.
@@ -181,19 +181,19 @@ Release Notes
   [distribution ...]]" to install the console_scripts (setuptools-style
   scripts using pkg_resources) for a distribution.
 
-**0.19.0**
+**0.19.0 (2013-07-19)**
 
 - pymeta.json becomes pydist.json
 
-**0.18.0**
+**0.18.0 (2013-07-04)**
 
 - Python 3 Unicode improvements
 
-**0.17.0**
+**0.17.0 (2013-06-23)**
 
 - Support latest PEP-426 "pymeta.json" (json-format metadata)
 
-**0.16.0**
+**0.16.0 (2013-04-29)**
 
 - Python 2.6 compatibility bugfix (thanks John McFarlane)
 - Bugfix for C-extension tags for CPython 3.3 (using SOABI)
@@ -202,11 +202,11 @@ Release Notes
 - Python 3 fix for moving Unicode Description to metadata body
 - Include rudimentary API documentation in Sphinx (thanks Kevin Horn)
 
-**0.15.0**
+**0.15.0 (2013-01-14)**
 
 - Various improvements
 
-**0.14.0**
+**0.14.0 (2012-10-27)**
 
 - Changed the signature format to better comply with the current JWS spec.
   Breaks all existing signatures.
@@ -214,34 +214,34 @@ Release Notes
 - Put the description in the newly allowed payload section of PKG-INFO
   (METADATA) files.
 
-**0.13.0**
+**0.13.0 (2012-10-17)**
 
 - Use distutils instead of sysconfig to get installation paths; can install
   headers.
 - Improve WheelFile() sort.
 - Allow bootstrap installs without any pkg_resources.
 
-**0.12.0**
+**0.12.0 (2012-10-06)**
 
 - Unit test for wheel.tool.install
 
-**0.11.0**
+**0.11.0 (2012-10-17)**
 
 - API cleanup
 
-**0.10.3**
+**0.10.3 (2012-10-03)**
 
 - Scripts fixer fix
 
-**0.10.2**
+**0.10.2 (2012-10-02)**
 
 - Fix keygen
 
-**0.10.1**
+**0.10.1 (2012-09-30)**
 
 - Preserve attributes on install.
 
-**0.10.0**
+**0.10.0 (2012-09-30)**
 
 - Include a copy of pkg_resources. Wheel can now install into a virtualenv
   that does not have distribute (though most packages still require
@@ -249,12 +249,12 @@ Release Notes
 - Define a new setup.cfg section [wheel]. universal=1 will
   apply the py2.py3-none-any tag for pure python wheels.
 
-**0.9.7**
+**0.9.7 (2012-09-20)**
 
 - Only import dirspec when needed. dirspec is only needed to find the
   configuration for keygen/signing operations.
 
-**0.9.6**
+**0.9.6 (2012-09-19)**
 
 - requires-dist from setup.cfg overwrites any requirements from setup.py
   Care must be taken that the requirements are the same in both cases,
@@ -263,7 +263,7 @@ Release Notes
 - improved command line utility, adds 'wheel convert [egg or wininst]' to
   convert legacy binary formats to wheel
 
-**0.9.5**
+**0.9.5 (2012-09-15)**
 
 - Wheel's own wheel file can be executed by Python, and can install itself:
   ``python wheel-0.9.5-py27-none-any/wheel install ...``
@@ -273,11 +273,11 @@ Release Notes
   dependencies in setup.py, but will only be interpreted when installing
   from wheel, not from sdist. Can be qualified with environment markers.
 
-**0.9.4**
+**0.9.4 (2012-09-11)**
 
 - Fix wheel.signatures in sdist
 
-**0.9.3**
+**0.9.3 (2012-09-10)**
 
 - Integrated digital signatures support without C extensions.
 - Integrated "wheel install" command (single package, no dependency
@@ -285,66 +285,66 @@ Release Notes
 - Support Python 3.3
 - Use Metadata 1.3 (PEP 426)
 
-**0.9.2**
+**0.9.2 (2012-08-29)**
 
 - Automatic signing if WHEEL_TOOL points to the wheel binary
 - Even more Python 3 fixes
 
-**0.9.1**
+**0.9.1 (2012-08-28)**
 
 - 'wheel sign' uses the keys generated by 'wheel keygen' (instead of generating
   a new key at random each time)
 - Python 2/3 encoding/decoding fixes
 - Run tests on Python 2.6 (without signature verification)
 
-**0.9**
+**0.9 (2012-08-22)**
 
 - Updated digital signatures scheme
 - Python 3 support for digital signatures
 - Always verify RECORD hashes on extract
 - "wheel" command line tool to sign, verify, unpack wheel files
 
-**0.8**
+**0.8 (2012-08-17)**
 
 - none/any draft pep tags update
 - improved wininst2wheel script
 - doc changes and other improvements
 
-**0.7**
+**0.7 (2012-07-28)**
 
 - sort .dist-info at end of wheel archive
 - Windows & Python 3 fixes from Paul Moore
 - pep8
 - scripts to convert wininst & egg to wheel
 
-**0.6**
+**0.6 (2012-07-23)**
 
 - require distribute >= 0.6.28
 - stop using verlib
 
-**0.5**
+**0.5 (2012-07-17)**
 
 - working pretty well
 
-**0.4.2**
+**0.4.2 (2012-07-12)**
 
 - hyphenated name fix
 
-**0.4**
+**0.4 (2012-07-11)**
 
 - improve test coverage
 - improve Windows compatibility
 - include tox.ini courtesy of Marc Abramowitz
 - draft hmac sha-256 signing function
 
-**0.3**
+**0.3 (2012-07-04)**
 
 - prototype egg2wheel conversion script
 
-**0.2**
+**0.2 (2012-07-03)**
 
 - Python 3 compatibility
 
-**0.1**
+**0.1 (2012-06-30)**
 
 - Initial version
