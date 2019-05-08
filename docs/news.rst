@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed empty directories missing from the wheel (PR by Jason R. Coombs)
+
 **0.33.1 (2019-02-19)**
 
 - Fixed the ``--build-number`` option for ``wheel pack`` not being applied
