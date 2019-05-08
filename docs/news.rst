@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.33.2 (2019-05-08)**
 
 - Fixed empty directories missing from the wheel (PR by Jason R. Coombs)
 
