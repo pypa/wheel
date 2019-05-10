@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed wheel build failures on some systems due to all attributes being
+  preserved (PR by Matt Wozniski)
+
 **0.33.2 (2019-05-08)**
 
 - Fixed empty directories missing from the wheel (PR by Jason R. Coombs)
