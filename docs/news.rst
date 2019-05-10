@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.33.3 (2019-05-10)**
 
 - Fixed wheel build failures on some systems due to all attributes being
   preserved (PR by Matt Wozniski)
