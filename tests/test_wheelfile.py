@@ -194,5 +194,4 @@ def test_directories(tmpdir, wheel_path):
         infos = zf.infolist()
 
     names = set(map(operator.attrgetter('filename'), infos))
-    assert 'sub/' in names
     assert 'empty/' in names

@@ -109,14 +109,16 @@ class WheelFile(ZipFile):
         logger.info("creating '%s' and adding '%s' to it", self.filename, base_dir)
         deferred = []
         for root, dirnames, filenames in os.walk(base_dir):
+            if not dirnames and not filenames:
+                # For an empty directory, just add the directory entry
+                path = os.path.normpath(root)
+                arcname = os.path.relpath(path, base_dir)
+                self.mkdir(path, arcname)
+                continue
+
             # Sort the directory names so that `os.walk` will walk them in a
             # defined order on the next iteration.
             dirnames.sort()
-
-            for name in dirnames:
-                path = os.path.normpath(os.path.join(root, name))
-                arcname = os.path.relpath(path, base_dir)
-                self.mkdir(path, arcname)
 
             for name in sorted(filenames):
                 path = os.path.normpath(os.path.join(root, name))
