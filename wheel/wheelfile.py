@@ -112,12 +112,6 @@ class WheelFile(ZipFile):
             # Sort the directory names so that `os.walk` will walk them in a
             # defined order on the next iteration.
             dirnames.sort()
-
-            for name in dirnames:
-                path = os.path.normpath(os.path.join(root, name))
-                arcname = os.path.relpath(path, base_dir)
-                self.mkdir(path, arcname)
-
             for name in sorted(filenames):
                 path = os.path.normpath(os.path.join(root, name))
                 if os.path.isfile(path):
@@ -143,19 +137,12 @@ class WheelFile(ZipFile):
         zinfo.compress_type = ZIP_DEFLATED
         self.writestr(zinfo, data, compress_type)
 
-    def mkdir(self, filename, arcname):
-        st = os.stat(filename)
-        zinfo = ZipInfo(arcname + '/', date_time=get_zipinfo_datetime(st.st_mtime))
-        zinfo.external_attr = (stat.S_IMODE(st.st_mode) | stat.S_IFMT(st.st_mode)) << 16
-        zinfo.compress_type = ZIP_DEFLATED
-        self.writestr(zinfo, b'')
-
     def writestr(self, zinfo_or_arcname, bytes, compress_type=None):
         ZipFile.writestr(self, zinfo_or_arcname, bytes, compress_type)
         fname = (zinfo_or_arcname.filename if isinstance(zinfo_or_arcname, ZipInfo)
                  else zinfo_or_arcname)
         logger.info("adding '%s'", fname)
-        if fname != self.record_path and not fname.endswith('/'):
+        if fname != self.record_path:
             hash_ = self._default_algorithm(bytes)
             self._file_hashes[fname] = hash_.name, native(urlsafe_b64encode(hash_.digest()))
             self._file_sizes[fname] = len(bytes)
