@@ -1,12 +1,17 @@
 Release Notes
 =============
 
-**0.33.3 (2019-05-10)**
+**0.33.4 (2019-05-12)**
+
+- Reverted PR #289 (adding directory entries to the wheel file) due to
+  incompatibility with ``distlib.wheel``
+
+**0.33.3 (2019-05-10)** (redacted release)
 
 - Fixed wheel build failures on some systems due to all attributes being
   preserved (PR by Matt Wozniski)
 
-**0.33.2 (2019-05-08)**
+**0.33.2 (2019-05-08)** (redacted release)
 
 - Fixed empty directories missing from the wheel (PR by Jason R. Coombs)
 
