@@ -10,8 +10,7 @@ import pkg_resources
 
 from .pkginfo import read_pkg_info
 
-# Wheel itself is probably the only program that uses non-extras markers
-# in METADATA/PKG-INFO. Support its syntax with the extra at the end only.
+# Support markers syntax with the extra at the end only.
 EXTRA_RE = re.compile(
     r"""^(?P<package>.*?)(;\s*(?P<condition>.*?)(extra == '(?P<extra>.*?)')?)$""")
 
