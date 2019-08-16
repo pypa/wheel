@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Don't add the ``m`` ABI flag to wheel names on Python 3.8 (PR by rdb)
+
 **0.33.4 (2019-05-12)**
 
 - Reverted PR #289 (adding directory entries to the wheel file) due to
