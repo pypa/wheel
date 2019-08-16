@@ -7,9 +7,12 @@ import sysconfig
 import warnings
 
 try:
-    from importlib.machinery import get_all_suffixes
+    from importlib.machinery import all_suffixes as get_all_suffixes
 except ImportError:
-    from imp import get_suffixes as get_all_suffixes
+    from imp import get_suffixes
+
+    def get_all_suffixes():
+        return [suffix[0] for suffix in get_suffixes()]
 
 
 def get_config_var(var):
@@ -140,7 +143,7 @@ def get_supported(versions=None, supplied_platform=None):
 
     abi3s = set()
     for suffix in get_all_suffixes():
-        if suffix[0].startswith('.abi'):
+        if suffix.startswith('.abi'):
             abi3s.add(suffix[0].split('.', 2)[1])
 
     abis.extend(sorted(list(abi3s)))
