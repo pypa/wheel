@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.33.5 (2019-08-17)**
 
 - Don't add the ``m`` ABI flag to wheel names on Python 3.8 (PR by rdb)
 - Updated ``MANIFEST.in`` to include many previously omitted files in the sdist
