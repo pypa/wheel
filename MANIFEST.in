@@ -1,7 +1,9 @@
-include wheel/*.txt *.txt *.sh
-recursive-include wheel/test *.py
-include wheel/test/test-1.0-py2.py3-none-win32.whl
-include wheel/test/headers.dist/header.h
-include wheel/test/pydist-schema.json
-prune wheel/test/*/dist
-prune wheel/test/*/build
+recursive-include wheel *.py
+recursive-include tests *.py *.h *.txt
+recursive-include docs *.py *.rst make.bat Makefile
+include tests/testdata/test-1.0-py2.py3-none-any.whl
+include tox.ini
+include manpages/*.rst
+prune tests/testdata/*/build
+prune tests/testdata/*/dist
+prune tests/testdata/*/*.egg-info
