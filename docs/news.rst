@@ -5,6 +5,8 @@ Release Notes
 
 - Fixed regression from 0.33.5 that broke building binary wheels against the
   limited ABI
+- Fixed egg2wheel compatibility with the future release of Python 3.10
+  (PR by Anthony Sottile)
 
 **0.33.5 (2019-08-17)**
 
