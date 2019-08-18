@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.33.6 (2019-08-18)**
 
 - Fixed regression from 0.33.5 that broke building binary wheels against the
   limited ABI
