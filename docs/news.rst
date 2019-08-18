@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed regression from 0.33.5 that broke building binary wheels against the
+  limited ABI
+
 **0.33.5 (2019-08-17)**
 
 - Don't add the ``m`` ABI flag to wheel names on Python 3.8 (PR by rdb)

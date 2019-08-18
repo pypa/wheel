@@ -1,4 +1,5 @@
 # coding: utf-8
+import os
 import subprocess
 import sys
 from zipfile import ZipFile
@@ -98,3 +99,14 @@ def test_build_number(dummy_dist, monkeypatch, tmpdir):
         filenames = set(wf.namelist())
         assert 'dummy_dist-1.0.dist-info/RECORD' in filenames
         assert 'dummy_dist-1.0.dist-info/METADATA' in filenames
+
+
+def test_limited_abi(monkeypatch, tmpdir):
+    """Test that building a binary wheel with the limited ABI works."""
+    this_dir = os.path.dirname(__file__)
+    source_dir = os.path.join(this_dir, 'testdata', 'extension.dist')
+    build_dir = tmpdir.join('build')
+    dist_dir = tmpdir.join('dist')
+    monkeypatch.chdir(source_dir)
+    subprocess.check_call([sys.executable, 'setup.py',  'bdist_wheel', '-b', str(build_dir),
+                           '-d', str(dist_dir)])

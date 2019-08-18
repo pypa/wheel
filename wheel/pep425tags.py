@@ -144,7 +144,7 @@ def get_supported(versions=None, supplied_platform=None):
     abi3s = set()
     for suffix in get_all_suffixes():
         if suffix.startswith('.abi'):
-            abi3s.add(suffix[0].split('.', 2)[1])
+            abi3s.add(suffix.split('.', 2)[1])
 
     abis.extend(sorted(list(abi3s)))
 
