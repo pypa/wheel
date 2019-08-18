@@ -13,7 +13,7 @@ from . import WheelError, require_pkgresources
 
 egg_info_re = re.compile(r'''
     (?P<name>.+?)-(?P<ver>.+?)
-    (-(?P<pyver>py\d\.\d)
+    (-(?P<pyver>py\d\.\d+)
      (-(?P<arch>.+?))?
     )?.egg$''', re.VERBOSE)
 
