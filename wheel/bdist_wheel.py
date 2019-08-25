@@ -31,6 +31,8 @@ safe_version = pkg_resources.safe_version
 
 PY_LIMITED_API_PATTERN = r'cp3\d'
 
+_is_running_32bit = sys.maxsize == 2147483647
+
 
 def safer_name(name):
     return safe_name(name).replace('-', '_')
@@ -150,8 +152,13 @@ class bdist_wheel(Command):
         elif self.root_is_pure:
             plat_name = 'any'
         else:
-            plat_name = self.plat_name or get_platform()
-            if plat_name in ('linux-x86_64', 'linux_x86_64') and sys.maxsize == 2147483647:
+            # recall self.plat_name_supplied is false
+            # any value in self.plat_name needs to be ignored (on AIX)
+            if sys.platform.startswith("aix"):
+                plat_name = self.plat_name = get_platform()
+            else:
+                plat_name = self.plat_name or get_platform()
+            if plat_name in ('linux-x86_64', 'linux_x86_64') and _is_running_32bit:
                 plat_name = 'linux_i686'
         plat_name = plat_name.replace('-', '_').replace('.', '_')
 

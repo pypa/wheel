@@ -6,6 +6,8 @@ import sys
 import sysconfig
 import warnings
 
+_is_running_32bit = sys.maxsize == 2147483647
+
 try:
     from importlib.machinery import all_suffixes as get_all_suffixes
 except ImportError:
@@ -105,11 +107,46 @@ def get_abi_tag():
     return abi
 
 
+def _get_aix_pep425():
+    '''
+    AIX filesets are identified by four decimal values aka VRMF.
+    V (version) is the value returned by "uname -v"
+    R (release) is the value returned by "uname -r"
+    M and F values are not available via uname
+    There is a fifth, lessor known value: builddate that
+    is expressed as YYWW (Year WeekofYear)
+
+    The fileset bos.mp64 contains the AIX kernel and it's
+    VRMF and builddate are equivalent to latest installed
+    levels of the runtime environment.
+    The program lslpp is used to gather these values.
+    The pep425 platform tag for AIX becomes:
+    AIX_V_R_M_YYWW_bitness
+    '''
+
+    from subprocess import Popen, PIPE, DEVNULL
+    p = Popen(["/usr/bin/lslpp", "-Lqc", "bos.mp64"],
+              universal_newlines=True, stdout=PIPE, stderr=DEVNULL)
+
+    _lslppLqc = p.stdout.read().strip().split(":")
+    p.wait()
+    (lpp, vrmf, bd) = list(_lslppLqc[index] for index in [0, 2, -1])
+    assert lpp == "bos.mp64", "%s != %s" % (lpp, "bos.mp64")
+    tag = "AIX.%s.%s" % (".".join(vrmf.split(".")[:3]), bd)
+    if _is_running_32bit:
+        return("%s_b%s" % (tag, 32))
+    else:
+        return("%s_b%s" % (tag, 64))
+
+
 def get_platform():
     """Return our platform name 'win32', 'linux_x86_64'"""
     # XXX remove distutils dependency
-    result = distutils.util.get_platform().replace('.', '_').replace('-', '_')
-    if result == "linux_x86_64" and sys.maxsize == 2147483647:
+    if sys.platform[:3] == 'aix':
+        result = _get_aix_pep425().replace('.', '_').replace('-', '_')
+    else:
+        result = distutils.util.get_platform().replace('.', '_').replace('-', '_')
+    if result == "linux_x86_64" and _is_running_32bit:
         # pip pull request #3497
         result = "linux_i686"
     return result
