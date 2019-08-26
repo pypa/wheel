@@ -34,6 +34,8 @@ def get_abbr_impl():
         return 'ip'
     elif impl == 'CPython':
         return 'cp'
+    elif impl == 'Tauthon':
+        return 'ta'
 
     raise LookupError('Unknown Python implementation: ' + impl)
 
