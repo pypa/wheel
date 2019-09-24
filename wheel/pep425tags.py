@@ -3,6 +3,7 @@
 import distutils.util
 import platform
 import sys
+import os
 import sysconfig
 import warnings
 
@@ -108,7 +109,19 @@ def get_abi_tag():
 def get_platform():
     """Return our platform name 'win32', 'linux_x86_64'"""
     # XXX remove distutils dependency
-    result = distutils.util.get_platform().replace('.', '_').replace('-', '_')
+    result = distutils.util.get_platform()
+    # check if build is not created against newer api than python is
+    # compiled (on macosx)
+    if result.startswith("macosx-") and \
+            "MACOSX_DEPLOYMENT_TARGET" in os.environ:
+        result.rfind()
+        tag = result[7:result.rfind("-")]
+        parsed_tag = tuple(map(int, tag.split(".")))
+        parsed_target = tuple(map(int, os.environ["MACOSX_DEPLOYMENT_TARGET"].split(".")))
+        if parsed_tag < parsed_target:
+            result = "macosx-" + os.environ["MACOSX_DEPLOYMENT_TARGET"] +\
+                result[result.rfind('-'):]
+    result = result.replace('.', '_').replace('-', '_')
     if result == "linux_x86_64" and sys.maxsize == 2147483647:
         # pip pull request #3497
         result = "linux_i686"
