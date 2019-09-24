@@ -22,6 +22,7 @@ from .pep425tags import get_abbr_impl, get_impl_ver, get_abi_tag, get_platform
 from .pkginfo import write_pkg_info
 from .metadata import pkginfo_to_metadata
 from .wheelfile import WheelFile
+
 from . import pep425tags
 from . import __version__ as wheel_version
 
@@ -48,7 +49,7 @@ class bdist_wheel(Command):
                      "temporary directory for creating the distribution"),
                     ('plat-name=', 'p',
                      "platform name to embed in generated filenames "
-                     "(default: %s)" % get_platform()),
+                     "(default: %s)" % get_platform(None)),
                     ('keep-temp', 'k',
                      "keep the pseudo-installation tree around after " +
                      "creating the distribution archive"),
@@ -150,7 +151,11 @@ class bdist_wheel(Command):
         elif self.root_is_pure:
             plat_name = 'any'
         else:
-            plat_name = self.plat_name or get_platform()
+            # macosx contains system version in platform name so need special handle
+            if self.plat_name and not self.plat_name.startswith("macosx"):
+                plat_name = self.plat_name
+            else:
+                plat_name = get_platform(self.bdist_dir)
             if plat_name in ('linux-x86_64', 'linux_x86_64') and sys.maxsize == 2147483647:
                 plat_name = 'linux_i686'
         plat_name = plat_name.replace('-', '_').replace('.', '_')
@@ -173,6 +178,7 @@ class bdist_wheel(Command):
                 abi_tag = str(get_abi_tag()).lower()
             tag = (impl, abi_tag, plat_name)
             supported_tags = pep425tags.get_supported(
+                self.bdist_dir,
                 supplied_platform=plat_name if self.plat_name_supplied else None)
             # XXX switch to this alternate implementation for non-pure:
             if not self.py_limited_api:

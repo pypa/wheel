@@ -6,6 +6,8 @@ import sys
 import os
 import sysconfig
 import warnings
+from .lib_file_analyse import extract_macosx_min_system_version
+
 
 try:
     from importlib.machinery import all_suffixes as get_all_suffixes
@@ -106,21 +108,27 @@ def get_abi_tag():
     return abi
 
 
-def get_platform():
+def get_platform(archive_root):
     """Return our platform name 'win32', 'linux_x86_64'"""
     # XXX remove distutils dependency
     result = distutils.util.get_platform()
-    # check if build is not created against newer api than python is
-    # compiled (on macosx)
-    if result.startswith("macosx-") and \
-            "MACOSX_DEPLOYMENT_TARGET" in os.environ:
-        result.rfind()
-        tag = result[7:result.rfind("-")]
-        parsed_tag = tuple(map(int, tag.split(".")))
-        parsed_target = tuple(map(int, os.environ["MACOSX_DEPLOYMENT_TARGET"].split(".")))
-        if parsed_tag < parsed_target:
-            result = "macosx-" + os.environ["MACOSX_DEPLOYMENT_TARGET"] +\
-                result[result.rfind('-'):]
+    if result.startswith("macosx") and archive_root is not None:
+        prefix, base_version, suffix = result.split('-')
+        base_version = tuple([int(x) for x in base_version.split(".")])
+        if len(base_version) == 2:
+            base_version = base_version + (0,)
+        for (dirpath, dirnames, filenames) in os.walk(archive_root):
+            for filename in filenames:
+                if filename.endswith('.dynlib') or filename.endswith('.so'):
+                    version = extract_macosx_min_system_version(
+                        os.path.join(dirpath, filename)
+                    )
+                    if version is not None:
+                        base_version = max(base_version, version)
+        if base_version[-1] == 0:
+            base_version = base_version[:-1]
+        base_version = "_".join([str(x) for x in base_version])
+        result = prefix + "_" + base_version + "_" + suffix
     result = result.replace('.', '_').replace('-', '_')
     if result == "linux_x86_64" and sys.maxsize == 2147483647:
         # pip pull request #3497
@@ -128,7 +136,7 @@ def get_platform():
     return result
 
 
-def get_supported(versions=None, supplied_platform=None):
+def get_supported(archive_root, versions=None, supplied_platform=None):
     """Return a list of supported tags for each version specified in
     `versions`.
 
@@ -166,7 +174,7 @@ def get_supported(versions=None, supplied_platform=None):
     platforms = []
     if supplied_platform:
         platforms.append(supplied_platform)
-    platforms.append(get_platform())
+    platforms.append(get_platform(archive_root))
 
     # Current version, current API (built specifically for our Python):
     for abi in abis:

@@ -302,8 +302,3 @@ def parse_version(version):
     yy = version & 2**9-1
     version >>= 8
     return version, yy, zz
-
-
-def test_extract():
-    print("path", sys.argv[1])
-    print(extract_macosx_min_system_version(sys.argv[1]))

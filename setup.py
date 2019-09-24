@@ -58,7 +58,6 @@ setup(name='wheel',
       entry_points={
           'console_scripts': [
               'wheel=wheel.cli:main',
-              'lib_test=wheel.lib_file_analyse:test_extract'
               ],
           'distutils.commands': [
               'bdist_wheel=wheel.bdist_wheel:bdist_wheel'
