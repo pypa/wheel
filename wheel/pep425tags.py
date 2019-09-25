@@ -117,6 +117,21 @@ def get_platform(archive_root):
         base_version = tuple([int(x) for x in base_version.split(".")])
         if len(base_version) == 2:
             base_version = base_version + (0,)
+        assert len(base_version) == 3
+        if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
+            deploy_target = tuple([int(x) for x in os.environ[
+                "MACOSX_DEPLOYMENT_TARGET"].split(".")])
+            if len(deploy_target) == 2:
+                deploy_target = deploy_target + (0,)
+            if deploy_target < base_version:
+                sys.stderr.write(
+                    "[WARNING] MACOSX_DEPLOYMENT_TARGET is set "
+                    "to lower value than your python is compiled\n"
+                    )
+            else:
+                base_version = deploy_target
+        assert len(base_version) == 3
+        start_version = base_version
         for (dirpath, dirnames, filenames) in os.walk(archive_root):
             for filename in filenames:
                 if filename.endswith('.dynlib') or filename.endswith('.so'):
@@ -126,8 +141,23 @@ def get_platform(archive_root):
                     if version is not None:
                         base_version = max(base_version, version)
         if base_version[-1] == 0:
-            base_version = base_version[:-1]
-        base_version = "_".join([str(x) for x in base_version])
+            fin_base_version = base_version[:-1]
+        if start_version < base_version:
+            if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
+                sys.stderr.write(
+                    "[WARNING] This wheel needs higher macosx version than "
+                    "is set in MACOSX_DEPLOYMENT_TARGET variable. "
+                    "To silence this warning set MACOSX_DEPLOYMENT_TARGET to " +
+                    ".".join([str(x) for x in fin_base_version]) + "\n"
+                )
+            else:
+                sys.stderr.write(
+                    "[WARNING] This wheel needs higher macosx version than "
+                    "your python is compiled against "
+                    "To silence this warning set MACOSX_DEPLOYMENT_TARGET to " +
+                    ".".join([str(x) for x in fin_base_version]) + "\n"
+                )
+        base_version = "_".join([str(x) for x in fin_base_version])
         result = prefix + "_" + base_version + "_" + suffix
     result = result.replace('.', '_').replace('-', '_')
     if result == "linux_x86_64" and sys.maxsize == 2147483647:

@@ -2,7 +2,37 @@
 This module contains function to analyse dynamic library
 headers to extract system information
 
-Currently only for MacOs
+Currently only for MacOSX
+
+Library file on macosx system starts with Mach-O or Fat field.
+This can be distinguish by first 32 bites and it is called magic number.
+Proper value of magic number is with suffix _MAGIC. Suffix _CIGAM means
+reversed bytes order.
+Both fields can occur in two types: 32 and 64 bytes.
+
+FAT field inform that this library contains few version of library
+(typically for different types version). It contains
+information where Mach-O headers starts.
+
+Each section started with Mach-O header contains one library
+(So if file starts with this field it contains only one version).
+
+After filed Mach-O there are section fields.
+Each of them starts with two fields:
+cmd - magic number for this command
+cmdsize - total size occupied by this section information.
+
+In this case only sections LC_VERSION_MIN_MACOSX (for macosx 10.13 and earlier)
+and LC_BUILD_VERSION (for macosx 10.14 and newer) are interesting,
+because them contains information about minimal system version.
+
+Important remarks:
+- For fat files this implementation looks for maximum number version.
+  It not check if it is 32 or 64 and do not compare it with currently builded package.
+  So it is possible to false report higher version that needed.
+- All structures signatures are taken form macosx header files.
+- I think that binary format will be more stable than `otool` output.
+  and if apple introduce some changes both implementation will need to be updated.
 """
 
 import ctypes
