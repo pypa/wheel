@@ -1,4 +1,6 @@
 import os
+import sys
+import distutils.util
 
 from wheel.macosx_libfile import extract_macosx_min_system_version
 from wheel.pep425tags import get_platform
@@ -31,52 +33,60 @@ def test_read_from_dynlib():
         ) is None
 
 
-def test_get_platform_macos(mocker, capsys):
-    print(mocker, mocker.patch, mocker.patch.mock_module)
+def return_factory(return_val):
+    def fun(*args, **kwargs):
+        return return_val
+
+    return fun
+
+
+def test_get_platform_macos(monkeypatch, capsys):
     dirname = os.path.dirname(__file__)
     dylib_dir = os.path.join(dirname, "testdata",
                              "macos_minimal_system_version")
-    with mocker.patch("distutils.util.get_platform", return_value="macosx-10.14-x86_64"):
-        assert get_platform(dylib_dir) == "macosx_10_14_x86_64"
-    with mocker.patch("distutils.util.get_platform", return_value="macosx-10.9-x86_64"):
-        assert get_platform(dylib_dir) == "macosx_10_14_x86_64"
-        captured = capsys.readouterr()
-        assert "[WARNING] This wheel needs higher macosx version than" in captured.err
-    with mocker.patch("distutils.util.get_platform", return_value="macosx-10.9-x86_64"):
-        with mocker.patch("os.walk", return_value=[
-                (dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_10_fat.dynlib"])]):
-            assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
-            captured = capsys.readouterr()
-            assert "[WARNING] This wheel needs higher macosx version than" in captured.err
-            assert "test_lib_10_10_fat.dynlib" in captured.err
+    monkeypatch.setattr(distutils.util, "get_platform", return_factory("macosx-10.14-x86_64"))
+    assert get_platform(dylib_dir) == "macosx_10_14_x86_64"
+    monkeypatch.setattr(distutils.util, "get_platform", return_factory("macosx-10.9-x86_64"))
+    assert get_platform(dylib_dir) == "macosx_10_14_x86_64"
+    captured = capsys.readouterr()
+    assert "[WARNING] This wheel needs higher macosx version than" in captured.err
 
-        with mocker.patch("os.walk", return_value=[
-                (dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_6_fat.dynlib"])]):
-            assert get_platform(dylib_dir) == "macosx_10_9_x86_64"
-            mocker.patch.dict('os.environ', {"MACOSX_DEPLOYMENT_TARGET": "10.10"})
-            assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
-            captured = capsys.readouterr()
-            assert captured.err == ""
+    monkeypatch.setattr(os, "walk", return_factory(
+        [(dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_10_fat.dynlib"])]
+    ))
+    assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
+    captured = capsys.readouterr()
+    assert "[WARNING] This wheel needs higher macosx version than" in captured.err
+    assert "test_lib_10_10_fat.dynlib" in captured.err
 
-    mocker.stopall()
-    with mocker.patch("distutils.util.get_platform", return_value="macosx-10.9-x86_64"):
-        mocker.patch.dict('os.environ', {"MACOSX_DEPLOYMENT_TARGET": "10.8"})
-        with mocker.patch("os.walk", return_value=[
-                (dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_6_fat.dynlib"])]):
-            assert get_platform(dylib_dir) == "macosx_10_9_x86_64"
-            captured = capsys.readouterr()
-            print("aa", captured.err)
-            assert "[WARNING] MACOSX_DEPLOYMENT_TARGET is set to lower value" in captured.err
-        with mocker.patch("os.walk", return_value=[
-                (dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_10_fat.dynlib"])]):
-            assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
-            captured = capsys.readouterr()
-            print("aa", captured.err)
-            assert "[WARNING] MACOSX_DEPLOYMENT_TARGET is set to lower value" in captured.err
-    mocker.stopall()
+    monkeypatch.setattr(os, "walk", return_factory(
+        [(dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_6_fat.dynlib"])]
+    ))
+    assert get_platform(dylib_dir) == "macosx_10_9_x86_64"
+    monkeypatch.setenv("MACOSX_DEPLOYMENT_TARGET", "10.10")
+    assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
+    captured = capsys.readouterr()
+    assert captured.err == ""
+
+    monkeypatch.setenv("MACOSX_DEPLOYMENT_TARGET", "10.8")
+    monkeypatch.setattr(os, "walk", return_factory(
+        [(dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_6_fat.dynlib"])]
+    ))
+    assert get_platform(dylib_dir) == "macosx_10_9_x86_64"
+    captured = capsys.readouterr()
+    print("aa", captured.err)
+    assert "[WARNING] MACOSX_DEPLOYMENT_TARGET is set to lower value" in captured.err
+
+    monkeypatch.setattr(os, "walk", return_factory(
+        [(dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_10_fat.dynlib"])]
+    ))
+    assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
+    captured = capsys.readouterr()
+    print("aa", captured.err)
+    assert "[WARNING] MACOSX_DEPLOYMENT_TARGET is set to lower value" in captured.err
 
 
-def test_get_platform_linux(mocker):
-    with mocker.patch("distutils.util.get_platform", return_value="linux_x86_64"):
-        mocker.patch("sys.maxsize", new=2147483647)
-        assert get_platform(None) == "linux_i686"
+def test_get_platform_linux(monkeypatch):
+    monkeypatch.setattr(distutils.util, "get_platform", return_factory("linux_x86_64"))
+    monkeypatch.setattr(sys, "maxsize", 2147483647)
+    assert get_platform(None) == "linux_i686"
