@@ -142,6 +142,8 @@ def get_platform(archive_root):
                         base_version = max(base_version, version)
         if base_version[-1] == 0:
             fin_base_version = base_version[:-1]
+        else:
+            fin_base_version = base_version
         if start_version < base_version:
             if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
                 sys.stderr.write(
