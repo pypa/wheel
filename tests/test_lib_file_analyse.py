@@ -47,12 +47,15 @@ def test_get_platform_macos(mocker, capsys):
             assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
             captured = capsys.readouterr()
             assert "[WARNING] This wheel needs higher macosx version than" in captured.err
+            assert "test_lib_10_10_fat.dynlib" in captured.err
 
         with mocker.patch("os.walk", return_value=[
                 (dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_6_fat.dynlib"])]):
             assert get_platform(dylib_dir) == "macosx_10_9_x86_64"
             mocker.patch.dict('os.environ', {"MACOSX_DEPLOYMENT_TARGET": "10.10"})
             assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
+            captured = capsys.readouterr()
+            assert captured.err == ""
 
     mocker.stopall()
     with mocker.patch("distutils.util.get_platform", return_value="macosx-10.9-x86_64"):

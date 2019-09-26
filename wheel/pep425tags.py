@@ -132,35 +132,37 @@ def get_platform(archive_root):
                 base_version = deploy_target
         assert len(base_version) == 3
         start_version = base_version
+        versions_dict = {}
         for (dirpath, dirnames, filenames) in os.walk(archive_root):
             for filename in filenames:
                 if filename.endswith('.dynlib') or filename.endswith('.so'):
-                    version = extract_macosx_min_system_version(
-                        os.path.join(dirpath, filename)
-                    )
-                    if version is not None:
-                        base_version = max(base_version, version)
+                    lib_path = os.path.join(dirpath, filename)
+                    versions_dict[lib_path] = extract_macosx_min_system_version(lib_path)
+        if len(versions_dict) > 0:
+            base_version = max(base_version, max(versions_dict.values()))
         if base_version[-1] == 0:
             fin_base_version = base_version[:-1]
         else:
             fin_base_version = base_version
+        fin_base_version = "_".join([str(x) for x in fin_base_version])
         if start_version < base_version:
+            problematic_files = [k for k, v in versions_dict.items() if v > start_version]
+            problematic_files = "\n".join(problematic_files)
+            error_message = \
+                "[WARNING] This wheel needs higher macosx version than {} " \
+                "is set in MACOSX_DEPLOYMENT_TARGET variable. " \
+                "To silence this warning set MACOSX_DEPLOYMENT_TARGET to " +\
+                fin_base_version + " or recreate this files with lower " \
+                "MACOSX_DEPLOYMENT_TARGET  \n" + problematic_files
             if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
                 sys.stderr.write(
-                    "[WARNING] This wheel needs higher macosx version than "
-                    "is set in MACOSX_DEPLOYMENT_TARGET variable. "
-                    "To silence this warning set MACOSX_DEPLOYMENT_TARGET to " +
-                    ".".join([str(x) for x in fin_base_version]) + "\n"
+                    error_message.format("is set in MACOSX_DEPLOYMENT_TARGET variable.")
                 )
             else:
                 sys.stderr.write(
-                    "[WARNING] This wheel needs higher macosx version than "
-                    "your python is compiled against "
-                    "To silence this warning set MACOSX_DEPLOYMENT_TARGET to " +
-                    ".".join([str(x) for x in fin_base_version]) + "\n"
+                    error_message.format("your python is compiled against.")
                 )
-        base_version = "_".join([str(x) for x in fin_base_version])
-        result = prefix + "_" + base_version + "_" + suffix
+        result = prefix + "_" + fin_base_version + "_" + suffix
     result = result.replace('.', '_').replace('-', '_')
     if result == "linux_x86_64" and sys.maxsize == 2147483647:
         # pip pull request #3497
