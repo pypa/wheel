@@ -25,6 +25,7 @@ jobs:
       env: TOXENV=py27
       dist: trusty
       python: "2.7.3"
+      before_install: pip install -U pip
 
     - stage: test
       env: TOXENV=py27
