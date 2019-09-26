@@ -6,7 +6,8 @@ import sys
 import os
 import sysconfig
 import warnings
-from .lib_file_analyse import extract_macosx_min_system_version
+
+from .macosx_libfile import extract_macosx_min_system_version
 
 
 try:
@@ -117,6 +118,7 @@ def get_platform(archive_root):
         base_version = tuple([int(x) for x in base_version.split(".")])
         if len(base_version) == 2:
             base_version = base_version + (0,)
+
         assert len(base_version) == 3
         if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
             deploy_target = tuple([int(x) for x in os.environ[
@@ -130,6 +132,7 @@ def get_platform(archive_root):
                     )
             else:
                 base_version = deploy_target
+
         assert len(base_version) == 3
         start_version = base_version
         versions_dict = {}
@@ -138,12 +141,15 @@ def get_platform(archive_root):
                 if filename.endswith('.dynlib') or filename.endswith('.so'):
                     lib_path = os.path.join(dirpath, filename)
                     versions_dict[lib_path] = extract_macosx_min_system_version(lib_path)
+
         if len(versions_dict) > 0:
             base_version = max(base_version, max(versions_dict.values()))
+
         if base_version[-1] == 0:
             fin_base_version = base_version[:-1]
         else:
             fin_base_version = base_version
+
         fin_base_version = "_".join([str(x) for x in fin_base_version])
         if start_version < base_version:
             problematic_files = [k for k, v in versions_dict.items() if v > start_version]
@@ -154,6 +160,7 @@ def get_platform(archive_root):
                 "To silence this warning set MACOSX_DEPLOYMENT_TARGET to " +\
                 fin_base_version + " or recreate this files with lower " \
                 "MACOSX_DEPLOYMENT_TARGET  \n" + problematic_files
+
             if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
                 sys.stderr.write(
                     error_message.format("is set in MACOSX_DEPLOYMENT_TARGET variable.")
@@ -162,11 +169,14 @@ def get_platform(archive_root):
                 sys.stderr.write(
                     error_message.format("your python is compiled against.")
                 )
+
         result = prefix + "_" + fin_base_version + "_" + suffix
+
     result = result.replace('.', '_').replace('-', '_')
     if result == "linux_x86_64" and sys.maxsize == 2147483647:
         # pip pull request #3497
         result = "linux_i686"
+
     return result
 
 

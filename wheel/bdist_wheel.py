@@ -22,7 +22,6 @@ from .pep425tags import get_abbr_impl, get_impl_ver, get_abi_tag, get_platform
 from .pkginfo import write_pkg_info
 from .metadata import pkginfo_to_metadata
 from .wheelfile import WheelFile
-
 from . import pep425tags
 from . import __version__ as wheel_version
 
@@ -156,8 +155,10 @@ class bdist_wheel(Command):
                 plat_name = self.plat_name
             else:
                 plat_name = get_platform(self.bdist_dir)
+
             if plat_name in ('linux-x86_64', 'linux_x86_64') and sys.maxsize == 2147483647:
                 plat_name = 'linux_i686'
+
         plat_name = plat_name.replace('-', '_').replace('.', '_')
 
         if self.root_is_pure:

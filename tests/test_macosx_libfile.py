@@ -1,5 +1,6 @@
 import os
-from wheel.lib_file_analyse import extract_macosx_min_system_version
+
+from wheel.macosx_libfile import extract_macosx_min_system_version
 from wheel.pep425tags import get_platform
 
 
