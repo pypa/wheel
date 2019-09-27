@@ -9,7 +9,7 @@ from wheel.pep425tags import get_platform
 def test_read_from_dynlib():
     dirname = os.path.dirname(__file__)
     dylib_dir = os.path.join(dirname, "testdata",
-                             "macos_minimal_system_version")
+                             "macosx_minimal_system_version")
     versions = [
         ("test_lib_10_6_fat.dynlib", "10.6"),
         ("test_lib_10_10_fat.dynlib", "10.10"),
@@ -40,50 +40,72 @@ def return_factory(return_val):
     return fun
 
 
-def test_get_platform_macos(monkeypatch, capsys):
-    dirname = os.path.dirname(__file__)
-    dylib_dir = os.path.join(dirname, "testdata",
-                             "macos_minimal_system_version")
-    monkeypatch.setattr(distutils.util, "get_platform", return_factory("macosx-10.14-x86_64"))
-    assert get_platform(dylib_dir) == "macosx_10_14_x86_64"
-    monkeypatch.setattr(distutils.util, "get_platform", return_factory("macosx-10.9-x86_64"))
-    assert get_platform(dylib_dir) == "macosx_10_14_x86_64"
-    captured = capsys.readouterr()
-    assert "[WARNING] This wheel needs higher macosx version than" in captured.err
+class TestGetPlatformMacosx:
+    def test_simple(self, monkeypatch):
+        dirname = os.path.dirname(__file__)
+        dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
+        monkeypatch.setattr(distutils.util, "get_platform", return_factory("macosx-10.14-x86_64"))
+        assert get_platform(dylib_dir) == "macosx_10_14_x86_64"
 
-    monkeypatch.setattr(os, "walk", return_factory(
-        [(dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_10_fat.dynlib"])]
-    ))
-    assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
-    captured = capsys.readouterr()
-    assert "[WARNING] This wheel needs higher macosx version than" in captured.err
-    assert "test_lib_10_10_fat.dynlib" in captured.err
+    def test_version_bump(self, monkeypatch, capsys):
+        dirname = os.path.dirname(__file__)
+        dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
+        monkeypatch.setattr(distutils.util, "get_platform", return_factory("macosx-10.9-x86_64"))
+        assert get_platform(dylib_dir) == "macosx_10_14_x86_64"
+        captured = capsys.readouterr()
+        assert "[WARNING] This wheel needs higher macosx version than" in captured.err
 
-    monkeypatch.setattr(os, "walk", return_factory(
-        [(dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_6_fat.dynlib"])]
-    ))
-    assert get_platform(dylib_dir) == "macosx_10_9_x86_64"
-    monkeypatch.setenv("MACOSX_DEPLOYMENT_TARGET", "10.10")
-    assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
-    captured = capsys.readouterr()
-    assert captured.err == ""
+    def test_information_about_problematic_files_python_version(self, monkeypatch, capsys):
+        dirname = os.path.dirname(__file__)
+        dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
+        monkeypatch.setattr(distutils.util, "get_platform", return_factory("macosx-10.9-x86_64"))
+        monkeypatch.setattr(os, "walk", return_factory(
+            [(dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_10_fat.dynlib"])]
+        ))
+        assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
+        captured = capsys.readouterr()
+        assert "[WARNING] This wheel needs higher macosx version than" in captured.err
+        assert "your python is compiled against." in captured.err
+        assert "test_lib_10_10_fat.dynlib" in captured.err
 
-    monkeypatch.setenv("MACOSX_DEPLOYMENT_TARGET", "10.8")
-    monkeypatch.setattr(os, "walk", return_factory(
-        [(dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_6_fat.dynlib"])]
-    ))
-    assert get_platform(dylib_dir) == "macosx_10_9_x86_64"
-    captured = capsys.readouterr()
-    print("aa", captured.err)
-    assert "[WARNING] MACOSX_DEPLOYMENT_TARGET is set to lower value" in captured.err
+    def test_information_about_problematic_files_env_variable(self, monkeypatch, capsys):
+        dirname = os.path.dirname(__file__)
+        dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
+        monkeypatch.setattr(distutils.util, "get_platform", return_factory("macosx-10.9-x86_64"))
+        monkeypatch.setenv("MACOSX_DEPLOYMENT_TARGET", "10.8")
+        monkeypatch.setattr(os, "walk", return_factory(
+            [(dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_10_fat.dynlib"])]
+        ))
+        assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
+        captured = capsys.readouterr()
+        assert "[WARNING] This wheel needs higher macosx version than" in captured.err
+        assert "is set in MACOSX_DEPLOYMENT_TARGET variable." in captured.err
+        assert "test_lib_10_10_fat.dynlib" in captured.err
 
-    monkeypatch.setattr(os, "walk", return_factory(
-        [(dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_10_fat.dynlib"])]
-    ))
-    assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
-    captured = capsys.readouterr()
-    print("aa", captured.err)
-    assert "[WARNING] MACOSX_DEPLOYMENT_TARGET is set to lower value" in captured.err
+    def test_bump_platform_tag_by_env_variable(self, monkeypatch, capsys):
+        dirname = os.path.dirname(__file__)
+        dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
+        monkeypatch.setattr(distutils.util, "get_platform", return_factory("macosx-10.9-x86_64"))
+        monkeypatch.setattr(os, "walk", return_factory(
+            [(dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_6_fat.dynlib"])]
+        ))
+        assert get_platform(dylib_dir) == "macosx_10_9_x86_64"
+        monkeypatch.setenv("MACOSX_DEPLOYMENT_TARGET", "10.10")
+        assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
+        captured = capsys.readouterr()
+        assert captured.err == ""
+
+    def test_warning_on_to_low_env_variable(self, monkeypatch, capsys):
+        dirname = os.path.dirname(__file__)
+        dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
+        monkeypatch.setattr(distutils.util, "get_platform", return_factory("macosx-10.9-x86_64"))
+        monkeypatch.setenv("MACOSX_DEPLOYMENT_TARGET", "10.8")
+        monkeypatch.setattr(os, "walk", return_factory(
+            [(dylib_dir, [], ["test_lib_10_6.dynlib", "test_lib_10_6_fat.dynlib"])]
+        ))
+        assert get_platform(dylib_dir) == "macosx_10_9_x86_64"
+        captured = capsys.readouterr()
+        assert "MACOSX_DEPLOYMENT_TARGET is set to lower value than your python" in captured.err
 
 
 def test_get_platform_linux(monkeypatch):
