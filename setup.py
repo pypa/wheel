@@ -52,15 +52,15 @@ setup(name='wheel',
       python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
       extras_require={
           'test': ['pytest >= 3.0.0', 'pytest-cov']
-          },
+      },
       include_package_data=True,
       zip_safe=False,
       entry_points={
           'console_scripts': [
               'wheel=wheel.cli:main'
-              ],
+          ],
           'distutils.commands': [
               'bdist_wheel=wheel.bdist_wheel:bdist_wheel'
-              ]
-          }
-      )
+          ]
+      }
+  )
