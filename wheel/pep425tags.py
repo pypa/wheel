@@ -3,8 +3,12 @@
 import distutils.util
 import platform
 import sys
+import os
 import sysconfig
 import warnings
+
+from .macosx_libfile import extract_macosx_min_system_version
+
 
 try:
     from importlib.machinery import all_suffixes as get_all_suffixes
@@ -105,17 +109,85 @@ def get_abi_tag():
     return abi
 
 
-def get_platform():
+def calculate_macosx_platform_tag(archive_root, platform_tag):
+    """
+    Calculate proper macosx platform tag basing on files which are included to wheel
+    """
+    prefix, base_version, suffix = platform_tag.split('-')
+    base_version = tuple([int(x) for x in base_version.split(".")])
+    if len(base_version) == 2:
+        base_version = base_version + (0,)
+
+    assert len(base_version) == 3
+    if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
+        deploy_target = tuple([int(x) for x in os.environ[
+            "MACOSX_DEPLOYMENT_TARGET"].split(".")])
+        if len(deploy_target) == 2:
+            deploy_target = deploy_target + (0,)
+        if deploy_target < base_version:
+            sys.stderr.write(
+                "[WARNING] MACOSX_DEPLOYMENT_TARGET is set "
+                "to lower value than your python is compiled\n"
+                )
+        else:
+            base_version = deploy_target
+
+    assert len(base_version) == 3
+    start_version = base_version
+    versions_dict = {}
+    for (dirpath, dirnames, filenames) in os.walk(archive_root):
+        for filename in filenames:
+            if filename.endswith('.dynlib') or filename.endswith('.so'):
+                lib_path = os.path.join(dirpath, filename)
+                versions_dict[lib_path] = extract_macosx_min_system_version(lib_path)
+
+    if len(versions_dict) > 0:
+        base_version = max(base_version, max(versions_dict.values()))
+
+    if base_version[-1] == 0:
+        fin_base_version = base_version[:-1]
+    else:
+        fin_base_version = base_version
+
+    fin_base_version = "_".join([str(x) for x in fin_base_version])
+    if start_version < base_version:
+        problematic_files = [k for k, v in versions_dict.items() if v > start_version]
+        problematic_files = "\n".join(problematic_files)
+        error_message = \
+            "[WARNING] This wheel needs higher macosx version than {} " \
+            "is set in MACOSX_DEPLOYMENT_TARGET variable. " \
+            "To silence this warning set MACOSX_DEPLOYMENT_TARGET to " +\
+            fin_base_version + " or recreate this files with lower " \
+            "MACOSX_DEPLOYMENT_TARGET  \n" + problematic_files
+
+        if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
+            sys.stderr.write(
+                error_message.format("is set in MACOSX_DEPLOYMENT_TARGET variable.")
+            )
+        else:
+            sys.stderr.write(
+                error_message.format("your python is compiled against.")
+            )
+
+    platform_tag = prefix + "_" + fin_base_version + "_" + suffix
+    return platform_tag
+
+
+def get_platform(archive_root):
     """Return our platform name 'win32', 'linux_x86_64'"""
     # XXX remove distutils dependency
-    result = distutils.util.get_platform().replace('.', '_').replace('-', '_')
+    result = distutils.util.get_platform()
+    if result.startswith("macosx") and archive_root is not None:
+        result = calculate_macosx_platform_tag(archive_root, result)
+    result = result.replace('.', '_').replace('-', '_')
     if result == "linux_x86_64" and sys.maxsize == 2147483647:
         # pip pull request #3497
         result = "linux_i686"
+
     return result
 
 
-def get_supported(versions=None, supplied_platform=None):
+def get_supported(archive_root, versions=None, supplied_platform=None):
     """Return a list of supported tags for each version specified in
     `versions`.
 
@@ -153,7 +225,7 @@ def get_supported(versions=None, supplied_platform=None):
     platforms = []
     if supplied_platform:
         platforms.append(supplied_platform)
-    platforms.append(get_platform())
+    platforms.append(get_platform(archive_root))
 
     # Current version, current API (built specifically for our Python):
     for abi in abis:
