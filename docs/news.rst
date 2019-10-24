@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Added automatic platform tag detection for macOS binary wheels
+  (PR by Grzegorz Bokota)
+
 **0.33.6 (2019-08-18)**
 
 - Fixed regression from 0.33.5 that broke building binary wheels against the
