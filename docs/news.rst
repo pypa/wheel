@@ -5,6 +5,7 @@ Release Notes
 
 - Added automatic platform tag detection for macOS binary wheels
   (PR by Grzegorz Bokota)
+- Updated project packaging and testing configuration for :pep:`517`
 
 **0.33.6 (2019-08-18)**
 
