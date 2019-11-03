@@ -144,12 +144,8 @@ def calculate_macosx_platform_tag(archive_root, platform_tag):
     if len(versions_dict) > 0:
         base_version = max(base_version, max(versions_dict.values()))
 
-    if base_version[-1] == 0:
-        fin_base_version = base_version[:-1]
-    else:
-        fin_base_version = base_version
-
-    fin_base_version = "_".join([str(x) for x in fin_base_version])
+    # macosx platform tag do not support minor bugfix release
+    fin_base_version = "_".join([str(x) for x in base_version[:-1]])
     if start_version < base_version:
         problematic_files = [k for k, v in versions_dict.items() if v > start_version]
         problematic_files = "\n".join(problematic_files)
