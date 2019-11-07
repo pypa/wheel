@@ -16,10 +16,6 @@ def require_pkgresources(name):
         raise RuntimeError("'{0}' needs pkg_resources (part of setuptools).".format(name))
 
 
-class WheelError(Exception):
-    pass
-
-
 def unpack_f(args):
     from .unpack import unpack
     unpack(args.wheelfile, args.dest)

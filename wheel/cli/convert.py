@@ -8,8 +8,8 @@ from distutils import dist
 from glob import iglob
 
 from ..bdist_wheel import bdist_wheel
-from ..wheelfile import WheelFile
-from . import WheelError, require_pkgresources
+from ..wheelfile import WheelError, WheelFile
+from . import require_pkgresources
 
 egg_info_re = re.compile(r'''
     (?P<name>.+?)-(?P<ver>.+?)

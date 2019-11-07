@@ -4,8 +4,7 @@ import os.path
 import re
 import sys
 
-from wheel.cli import WheelError
-from wheel.wheelfile import WheelFile
+from ..wheelfile import WheelError, WheelFile
 
 DIST_INFO_RE = re.compile(r"^(?P<namever>(?P<name>.+?)-(?P<ver>\d.*?))\.dist-info$")
 
