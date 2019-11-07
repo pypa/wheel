@@ -6,8 +6,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 import pytest
 
-from wheel.util import native, as_bytes
-from wheel.wheelfile import WheelError, WheelFile
+from wheel.wheelfile import WheelError, WheelFile, native, as_bytes
 
 
 @pytest.fixture

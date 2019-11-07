@@ -8,6 +8,8 @@ import argparse
 import os
 import sys
 
+from ..wheelfile import WheelError
+
 
 def require_pkgresources(name):
     try:
