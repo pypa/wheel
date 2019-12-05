@@ -28,6 +28,13 @@ def get_zipinfo_datetime(timestamp=None):
     return time.gmtime(timestamp)[0:6]
 
 
+def append_build_tag(data, build_id):
+    records = [line.rstrip() for line in data.decode('ascii').split('\r\n')
+               if line and not line.startswith('Build:')]
+    records.append("Build: {}\n\n".format(build_id))
+    return "\r\n".join(records).encode('ascii')
+
+
 class WheelFile(ZipFile):
     """A ZipFile derivative class that also reads SHA-256 hashes from
     .dist-info/RECORD and checks any read files against those.
@@ -131,6 +138,10 @@ class WheelFile(ZipFile):
         with open(filename, 'rb') as f:
             st = os.fstat(f.fileno())
             data = f.read()
+
+        build_number = self.parsed_filename.group("build")
+        if build_number and filename.endswith("WHEEL"):
+            data = append_build_tag(data, build_number)
 
         zinfo = ZipInfo(arcname or filename, date_time=get_zipinfo_datetime(st.st_mtime))
         zinfo.external_attr = (stat.S_IMODE(st.st_mode) | stat.S_IFMT(st.st_mode)) << 16
