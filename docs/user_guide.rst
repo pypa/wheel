@@ -52,7 +52,7 @@ By specifying an empty ``license_files`` option, you can disable this
 functionality entirely.
 
 .. note:: There used to be an option called ``license_file`` (singular).
-    As of wheel v1.0, this option has been deprecated in favor of the more
+    As of wheel v0.32, this option has been deprecated in favor of the more
     versatile ``license_files`` option.
 
 .. _glob: https://docs.python.org/library/glob.html
