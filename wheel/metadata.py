@@ -102,8 +102,6 @@ def pkginfo_unicode(pkg_info, field):
     text = pkg_info[field]
     field = field.lower()
     if not isinstance(text, str):
-        if not hasattr(pkg_info, 'raw_items'):  # Python 3.2
-            return str(text)
         for item in pkg_info.raw_items():
             if item[0].lower() == field:
                 text = item[1].encode('ascii', 'surrogateescape') \
