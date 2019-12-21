@@ -139,7 +139,9 @@ def calculate_macosx_platform_tag(archive_root, platform_tag):
         for filename in filenames:
             if filename.endswith('.dylib') or filename.endswith('.so'):
                 lib_path = os.path.join(dirpath, filename)
-                versions_dict[lib_path] = extract_macosx_min_system_version(lib_path)
+                min_ver = extract_macosx_min_system_version(lib_path)
+                if min_ver is not None:
+                    versions_dict[lib_path] = min_ver
 
     if len(versions_dict) > 0:
         base_version = max(base_version, max(versions_dict.values()))

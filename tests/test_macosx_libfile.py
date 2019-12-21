@@ -31,9 +31,12 @@ def test_read_from_dylib():
             extracted = extracted[:-1]
         str_ver = ".".join([str(x) for x in extracted])
         assert str_ver == ver
-        assert extract_macosx_min_system_version(
-            os.path.join(dylib_dir, "test_lib.c")
-        ) is None
+    assert extract_macosx_min_system_version(
+        os.path.join(dylib_dir, "test_lib.c")
+    ) is None
+    assert extract_macosx_min_system_version(
+        os.path.join(dylib_dir, "libb.dylib")
+    ) is None
 
 
 def return_factory(return_val):
