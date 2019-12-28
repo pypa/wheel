@@ -115,15 +115,15 @@ def calculate_macosx_platform_tag(archive_root, platform_tag):
     """
     prefix, base_version, suffix = platform_tag.split('-')
     base_version = tuple([int(x) for x in base_version.split(".")])
-    if len(base_version) == 2:
-        base_version = base_version + (0,)
+    if len(base_version) >= 2:
+        base_version = base_version[0:2]
 
-    assert len(base_version) == 3
+    assert len(base_version) == 2
     if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
         deploy_target = tuple([int(x) for x in os.environ[
             "MACOSX_DEPLOYMENT_TARGET"].split(".")])
-        if len(deploy_target) == 2:
-            deploy_target = deploy_target + (0,)
+        if len(deploy_target) >= 2:
+            deploy_target = deploy_target[0:2]
         if deploy_target < base_version:
             sys.stderr.write(
                 "[WARNING] MACOSX_DEPLOYMENT_TARGET is set "
@@ -132,7 +132,7 @@ def calculate_macosx_platform_tag(archive_root, platform_tag):
         else:
             base_version = deploy_target
 
-    assert len(base_version) == 3
+    assert len(base_version) == 2
     start_version = base_version
     versions_dict = {}
     for (dirpath, dirnames, filenames) in os.walk(archive_root):
@@ -141,13 +141,13 @@ def calculate_macosx_platform_tag(archive_root, platform_tag):
                 lib_path = os.path.join(dirpath, filename)
                 min_ver = extract_macosx_min_system_version(lib_path)
                 if min_ver is not None:
-                    versions_dict[lib_path] = min_ver
+                    versions_dict[lib_path] = min_ver[0:2]
 
     if len(versions_dict) > 0:
         base_version = max(base_version, max(versions_dict.values()))
 
     # macosx platform tag do not support minor bugfix release
-    fin_base_version = "_".join([str(x) for x in base_version[:-1]])
+    fin_base_version = "_".join([str(x) for x in base_version])
     if start_version < base_version:
         problematic_files = [k for k, v in versions_dict.items() if v > start_version]
         problematic_files = "\n".join(problematic_files)
