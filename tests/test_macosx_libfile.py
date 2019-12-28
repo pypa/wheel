@@ -11,24 +11,22 @@ def test_read_from_dylib():
     dylib_dir = os.path.join(dirname, "testdata",
                              "macosx_minimal_system_version")
     versions = [
-        ("test_lib_10_6_fat.dylib", "10.6"),
-        ("test_lib_10_10_fat.dylib", "10.10"),
-        ("test_lib_10_14_fat.dylib", "10.14"),
-        ("test_lib_10_6.dylib", "10.6"),
-        ("test_lib_10_10.dylib", "10.10"),
-        ("test_lib_10_14.dylib", "10.14"),
-        ("test_lib_10_6_386.dylib", "10.6"),
-        ("test_lib_10_10_386.dylib", "10.10"),
-        ("test_lib_10_14_386.dylib", "10.14"),
-        ("test_lib_multiple_fat.dylib", "10.14"),
+        ("test_lib_10_6_fat.dylib", "10.6.0"),
+        ("test_lib_10_10_fat.dylib", "10.10.0"),
+        ("test_lib_10_14_fat.dylib", "10.14.0"),
+        ("test_lib_10_6.dylib", "10.6.0"),
+        ("test_lib_10_10.dylib", "10.10.0"),
+        ("test_lib_10_14.dylib", "10.14.0"),
+        ("test_lib_10_6_386.dylib", "10.6.0"),
+        ("test_lib_10_10_386.dylib", "10.10.0"),
+        ("test_lib_10_14_386.dylib", "10.14.0"),
+        ("test_lib_multiple_fat.dylib", "10.14.0"),
         ("test_lib_10_10_10.dylib", "10.10.10")
     ]
     for file_name, ver in versions:
         extracted = extract_macosx_min_system_version(
             os.path.join(dylib_dir, file_name)
         )
-        if extracted[-1] == 0:
-            extracted = extracted[:-1]
         str_ver = ".".join([str(x) for x in extracted])
         assert str_ver == ver
     assert extract_macosx_min_system_version(
