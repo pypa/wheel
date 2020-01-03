@@ -125,7 +125,7 @@ class TestGetPlatformMacosx:
         ))
         assert get_platform(dylib_dir) == "macosx_10_9_x86_64"
         captured = capsys.readouterr()
-        assert "MACOSX_DEPLOYMENT_TARGET is set to lower value than your python" in captured.err
+        assert "MACOSX_DEPLOYMENT_TARGET is set to a lower value (10.8) than the" in captured.err
 
 
 def test_get_platform_linux(monkeypatch):

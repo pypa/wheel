@@ -128,8 +128,10 @@ def calculate_macosx_platform_tag(archive_root, platform_tag):
             deploy_target = deploy_target[0:2]
         if deploy_target < base_version:
             sys.stderr.write(
-                "[WARNING] MACOSX_DEPLOYMENT_TARGET is set "
-                "to lower value than your python is compiled\n"
+                 "[WARNING] MACOSX_DEPLOYMENT_TARGET is set to a lower value ({}) than the "
+                 "version on which the Python interpreter was compiled ({}), and will be "
+                 "ignored.\n".format('.'.join(str(x) for x in deploy_target),
+                                     '.'.join(str(x) for x in base_version))
                 )
         else:
             base_version = deploy_target
