@@ -335,8 +335,7 @@ def read_mach_header(lib_file, seek=None):
 
 
 def parse_version(version):
-    zz = version & 2**9-1
-    version >>= 8
-    yy = version & 2**9-1
-    version >>= 8
-    return version, yy, zz
+    x = (version & 0xffff0000) >> 16
+    y = (version & 0x0000ff00) >> 8
+    z = (version & 0x000000ff)
+    return x, y, z
