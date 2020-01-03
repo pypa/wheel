@@ -57,7 +57,7 @@ class TestGetPlatformMacosx:
         monkeypatch.setattr(distutils.util, "get_platform", return_factory("macosx-10.9-x86_64"))
         assert get_platform(dylib_dir) == "macosx_10_14_x86_64"
         captured = capsys.readouterr()
-        assert "[WARNING] This wheel needs higher macosx version than" in captured.err
+        assert "[WARNING] This wheel needs a higher macOS version than" in captured.err
 
     def test_information_about_problematic_files_python_version(self, monkeypatch, capsys):
         dirname = os.path.dirname(__file__)
@@ -68,8 +68,8 @@ class TestGetPlatformMacosx:
         ))
         assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
         captured = capsys.readouterr()
-        assert "[WARNING] This wheel needs higher macosx version than" in captured.err
-        assert "your python is compiled against." in captured.err
+        assert "[WARNING] This wheel needs a higher macOS version than" in captured.err
+        assert "the version your Python interpreter is compiled against." in captured.err
         assert "test_lib_10_10_fat.dylib" in captured.err
 
     def test_information_about_problematic_files_env_variable(self, monkeypatch, capsys):
@@ -82,7 +82,7 @@ class TestGetPlatformMacosx:
         ))
         assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
         captured = capsys.readouterr()
-        assert "[WARNING] This wheel needs higher macosx version than" in captured.err
+        assert "[WARNING] This wheel needs a higher macOS version than" in captured.err
         assert "is set in MACOSX_DEPLOYMENT_TARGET variable." in captured.err
         assert "test_lib_10_10_fat.dylib" in captured.err
 
@@ -109,11 +109,11 @@ class TestGetPlatformMacosx:
         ))
         assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
         captured = capsys.readouterr()
-        assert "This wheel needs higher macosx version" in captured.err
+        assert "This wheel needs a higher macOS version than" in captured.err
         monkeypatch.setenv("MACOSX_DEPLOYMENT_TARGET", "10.9")
         assert get_platform(dylib_dir) == "macosx_10_10_x86_64"
         captured = capsys.readouterr()
-        assert "This wheel needs higher macosx version" in captured.err
+        assert "This wheel needs a higher macOS version than" in captured.err
 
     def test_warning_on_to_low_env_variable(self, monkeypatch, capsys):
         dirname = os.path.dirname(__file__)

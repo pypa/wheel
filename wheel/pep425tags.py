@@ -112,6 +112,8 @@ def get_abi_tag():
 def calculate_macosx_platform_tag(archive_root, platform_tag):
     """
     Calculate proper macosx platform tag basing on files which are included to wheel
+
+    Example platform tag `macosx-10.14-x86_64`
     """
     prefix, base_version, suffix = platform_tag.split('-')
     base_version = tuple([int(x) for x in base_version.split(".")])
@@ -151,21 +153,23 @@ def calculate_macosx_platform_tag(archive_root, platform_tag):
     if start_version < base_version:
         problematic_files = [k for k, v in versions_dict.items() if v > start_version]
         problematic_files = "\n".join(problematic_files)
+        if len(problematic_files) == 1:
+            files_form = "this file"
+        else:
+            files_form = "these files"
         error_message = \
-            "[WARNING] This wheel needs higher macosx version than {} " \
-            "is set in MACOSX_DEPLOYMENT_TARGET variable. " \
-            "To silence this warning set MACOSX_DEPLOYMENT_TARGET to " +\
-            fin_base_version + " or recreate this files with lower " \
-            "MACOSX_DEPLOYMENT_TARGET  \n" + problematic_files
+            "[WARNING] This wheel needs a higher macOS version than {}  " \
+            "To silence this warning, set MACOSX_DEPLOYMENT_TARGET to at least " +\
+            fin_base_version + " or recreate " + files_form + " with lower " \
+            "MACOSX_DEPLOYMENT_TARGET:  \n" + problematic_files
 
         if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
-            sys.stderr.write(
-                error_message.format("is set in MACOSX_DEPLOYMENT_TARGET variable.")
-            )
+            error_message = error_message.format("is set in MACOSX_DEPLOYMENT_TARGET variable.")
         else:
-            sys.stderr.write(
-                error_message.format("your python is compiled against.")
-            )
+            error_message = error_message.format(
+                "the version your Python interpreter is compiled against.")
+
+        sys.stderr.write(error_message)
 
     platform_tag = prefix + "_" + fin_base_version + "_" + suffix
     return platform_tag
