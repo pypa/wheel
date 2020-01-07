@@ -45,6 +45,8 @@ def test_no_scripts(wheel_paths):
         assert '.data/scripts/' not in entry.filename
 
 
+@pytest.mark.skipif(sys.version_info < (3, 6),
+                    reason='Packaging unicode file names only works reliably on Python 3.6+')
 def test_unicode_record(wheel_paths):
     path = next(path for path in wheel_paths if 'unicode.dist' in path)
     with ZipFile(path) as zf:
