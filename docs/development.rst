@@ -35,18 +35,13 @@ click "New pull request". That's it.
 Automated Testing
 -----------------
 
-All pull requests and merges to 'master' branch are tested in Travis_ based on
-our `.travis.yml file`_.
+All pull requests and merges to 'master' branch are tested in `Github Actions`_
+based on the workflows in the ``.github`` directory.
 
-Usually, a link to your specific travis build appears in pull requests, but if
-not, you can find it on our `travis pull requests page`_.
+The only way to trigger the test suite to run again for a pull request is to
+submit another change to the pull branch.
 
-The only way to trigger Travis to run again for a pull request is to submit
-another change to the pull branch.
-
-.. _Travis: https://travis-ci.org/
-.. _.travis.yml file: https://github.com/pypa/wheel/blob/master/.travis.yml
-.. _travis pull requests page: https://travis-ci.org/pypa/wheel/pull_requests
+.. _Github Actions: https://github.com/actions
 
 Running Tests Locally
 ---------------------
