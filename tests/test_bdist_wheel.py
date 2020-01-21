@@ -103,6 +103,7 @@ def test_build_number(dummy_dist, monkeypatch, tmpdir):
         assert 'dummy_dist-1.0.dist-info/METADATA' in filenames
 
 
+@pytest.mark.skipif(sys.version_info[0] < 3, reason='The limited ABI only works on Python 3+')
 def test_limited_abi(monkeypatch, tmpdir):
     """Test that building a binary wheel with the limited ABI works."""
     this_dir = os.path.dirname(__file__)
