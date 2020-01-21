@@ -9,6 +9,7 @@ Release Notes
 - Updated project packaging and testing configuration for :pep:`517`
 - Moved the contents of setup.py to setup.cfg
 - Fixed duplicate RECORD file when using "wheel pack" on Windows
+- Switched the project to use the "src" layout
 
 **0.33.6 (2019-08-18)**
 
