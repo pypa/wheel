@@ -6,6 +6,8 @@ dist
 docs/_build
 __pycache__
 .coverage
-.pytest_cache/
+.pytest_cache
 .tox
 .idea
+.cache
+.eggs
