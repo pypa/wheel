@@ -10,6 +10,7 @@ TESTWHEEL_NAME = 'test-1.0-py2.py3-none-any.whl'
 TESTWHEEL_PATH = os.path.join(THISDIR, '..', 'testdata', TESTWHEEL_NAME)
 
 
+@pytest.mark.filterwarnings('error:Duplicate name')
 @pytest.mark.parametrize('build_number, filename', [
     (None, 'test-1.0-py2.py3-none-any.whl'),
     ('2b', 'test-1.0-2b-py2.py3-none-any.whl')

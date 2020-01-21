@@ -115,7 +115,7 @@ class WheelFile(ZipFile):
             for name in sorted(filenames):
                 path = os.path.normpath(os.path.join(root, name))
                 if os.path.isfile(path):
-                    arcname = os.path.relpath(path, base_dir)
+                    arcname = os.path.relpath(path, base_dir).replace(os.path.sep, '/')
                     if arcname == self.record_path:
                         pass
                     elif root.endswith('.dist-info'):
