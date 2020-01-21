@@ -5,6 +5,7 @@ setup(name='extension.dist',
       description=u'A testing distribution \N{SNOWMAN}',
       ext_modules=[
           Extension(name='extension',
-                    sources=['extension.c'])
+                    sources=['extension.c'],
+                    py_limited_api=True)
           ],
       )

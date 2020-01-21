@@ -18,6 +18,10 @@ def wheels_and_eggs(tmpdir_factory):
         # across different platforms
         test_distributions += ("unicode.dist",)
 
+    if sys.platform != 'win32':
+        # ABI3 extensions don't really work on Windows
+        test_distributions += ("abi3extension.dist",)
+
     pwd = os.path.abspath(os.curdir)
     this_dir = os.path.dirname(__file__)
     build_dir = tmpdir_factory.mktemp('build')
