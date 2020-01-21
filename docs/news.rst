@@ -3,6 +3,7 @@ Release Notes
 
 **UNRELEASED**
 
+- Dropped Python 3.4 support
 - Added automatic platform tag detection for macOS binary wheels
   (PR by Grzegorz Bokota)
 - Updated project packaging and testing configuration for :pep:`517`
