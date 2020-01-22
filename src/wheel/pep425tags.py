@@ -53,12 +53,7 @@ def get_impl_ver():
 def get_impl_version_info():
     """Return sys.version_info-like tuple for use in decrementing the minor
     version."""
-    if get_abbr_impl() == 'pp':
-        # as per https://github.com/pypa/pip/issues/2882
-        return (sys.version_info[0], sys.pypy_version_info.major,
-                sys.pypy_version_info.minor)
-    else:
-        return sys.version_info[0], sys.version_info[1]
+    return sys.version_info[0], sys.version_info[1]
 
 
 def get_flag(var, fallback, expected=True, warn=True):
