@@ -1,5 +1,7 @@
 # coding: utf-8
-import os
+import os.path
+import shutil
+import stat
 import subprocess
 import sys
 from zipfile import ZipFile
@@ -20,7 +22,7 @@ DEFAULT_LICENSE_FILES = {
 }
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def dummy_dist(tmpdir_factory):
     basedir = tmpdir_factory.mktemp('dummy_dist')
     basedir.join('setup.py').write("""\
@@ -113,3 +115,16 @@ def test_limited_abi(monkeypatch, tmpdir):
     monkeypatch.chdir(source_dir)
     subprocess.check_call([sys.executable, 'setup.py',  'bdist_wheel', '-b', str(build_dir),
                            '-d', str(dist_dir)])
+
+
+def test_build_from_readonly_tree(dummy_dist, monkeypatch, tmpdir):
+    basedir = str(tmpdir.join('dummy'))
+    shutil.copytree(str(dummy_dist), basedir)
+    monkeypatch.chdir(basedir)
+
+    # Make the tree read-only
+    for root, dirs, files in os.walk(basedir):
+        for fname in files:
+            os.chmod(os.path.join(root, fname), stat.S_IREAD)
+
+    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel'])

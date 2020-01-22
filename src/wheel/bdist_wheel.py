@@ -6,6 +6,7 @@ A wheel is a built archive format.
 
 import os
 import shutil
+import stat
 import sys
 import re
 from email.generator import Generator
@@ -38,6 +39,12 @@ def safer_name(name):
 
 def safer_version(version):
     return safe_version(version).replace('-', '_')
+
+
+def remove_readonly(func, path, excinfo):
+    print(str(excinfo[1]))
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
 
 
 class bdist_wheel(Command):
@@ -267,7 +274,7 @@ class bdist_wheel(Command):
         if not self.keep_temp:
             logger.info('removing %s', self.bdist_dir)
             if not self.dry_run:
-                rmtree(self.bdist_dir)
+                rmtree(self.bdist_dir, onerror=remove_readonly)
 
     def write_wheelfile(self, wheelfile_base, generator='bdist_wheel (' + wheel_version + ')'):
         from email.message import Message
