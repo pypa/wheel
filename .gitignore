@@ -4,6 +4,7 @@
 build
 dist
 docs/_build
+src/wheel/_version.py
 __pycache__
 .coverage
 .pytest_cache
