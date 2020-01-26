@@ -30,8 +30,8 @@ def test_pack(tmpdir_factory, tmpdir, build_tag_arg, existing_build_tag, filenam
         wheel_file_path = unpack_dir.join('test-1.0.dist-info').join('WHEEL')
         wheel_file_content = wheel_file_path.read_binary()
         assert b'Build' not in wheel_file_content
-        wheel_file_content += b'Build: 3\n'
-        wheel_file_path.write(wheel_file_content)
+        wheel_file_content += b'Build: 3\r\n'
+        wheel_file_path.write_binary(wheel_file_content)
 
     pack(str(unpack_dir), str(tmpdir), build_tag_arg)
     new_wheel_path = tmpdir.join(filename)
@@ -48,6 +48,6 @@ def test_pack(tmpdir_factory, tmpdir, build_tag_arg, existing_build_tag, filenam
 
     expected_build_num = build_tag_arg or existing_build_tag
     if expected_build_num:
-        assert ('Build: %s\n' % expected_build_num).encode() in new_wheel_file_content
+        assert ('Build: %s\r\n' % expected_build_num).encode() in new_wheel_file_content
     else:
         assert b'Build: ' not in new_wheel_file_content

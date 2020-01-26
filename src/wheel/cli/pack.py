@@ -8,7 +8,7 @@ from wheel.cli import WheelError
 from wheel.wheelfile import WheelFile
 
 DIST_INFO_RE = re.compile(r"^(?P<namever>(?P<name>.+?)-(?P<ver>\d.*?))\.dist-info$")
-BUILD_NUM_RE = re.compile(r'Build: (\d\w*)$')
+BUILD_NUM_RE = re.compile(br'Build: (\d\w*)$')
 
 
 def pack(directory, dest_dir, build_number):
@@ -54,8 +54,8 @@ def pack(directory, dest_dir, build_number):
             name_version += '-' + build_number
 
         if build_number != existing_build_number:
-            replacement = ('Build: %s\n' % build_number) if build_number else ''
-            with open(wheel_file_path, 'r+') as f:
+            replacement = ('Build: %s\r\n' % build_number).encode('ascii') if build_number else b''
+            with open(wheel_file_path, 'rb+') as f:
                 wheel_file_content = f.read()
                 if not BUILD_NUM_RE.subn(replacement, wheel_file_content)[1]:
                     wheel_file_content += replacement
