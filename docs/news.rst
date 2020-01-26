@@ -9,8 +9,9 @@ Release Notes
 - Fixed PyPy tag generation to work with the updated semantics (#328)
 - Updated project packaging and testing configuration for :pep:`517`
 - Moved the contents of setup.py to setup.cfg
-- Fixed duplicate RECORD file when using "wheel pack" on Windows
+- Fixed duplicate RECORD file when using ``wheel pack`` on Windows
 - Fixed bdist_wheel failing at cleanup on Windows with a read-only source tree
+- Fixed ``wheel pack`` not respecting the existing build tag in ``WHEEL``
 - Switched the project to use the "src" layout
 - Switched to setuptools_scm_ for versioning
 
