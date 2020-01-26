@@ -16,6 +16,12 @@ as such there is no stable, public API.
 .. _PEP 427: https://www.python.org/dev/peps/pep-0427/
 .. _setuptools: https://pypi.org/project/setuptools/
 
+Documentation
+-------------
+
+The documentation_ can be found on Read The Docs.
+
+.. _documentation: https://wheel.readthedocs.io/
 
 Code of Conduct
 ---------------
