@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.34.1 (2020-01-27)**
 
 - Fixed installation of ``wheel`` from sdist which was broken due to a chicken
   and egg problem with PEP 517 and setuptools_scm
