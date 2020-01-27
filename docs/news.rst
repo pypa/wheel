@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.34.0 (2020-01-27)**
 
 - Dropped Python 3.4 support
 - Added automatic platform tag detection for macOS binary wheels
