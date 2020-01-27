@@ -83,8 +83,13 @@ The wheel project welcomes help in the following ways:
 Release Process
 ---------------
 
-To make a new release, edit ``docs/news.rst`` and add a new version and replace
-``**UNRELEASED**`` with a release version and date, like
-``**X.Y.Z (20XX-YY-ZZ)**``. The github workflow will pick up the new version
-and create a new tag, which will then trigger the release workflow which will
-package the project and publish the resulting artifacts to PyPI.
+To make a new release:
+
+#. Edit ``docs/news.rst`` and replace ``**UNRELEASED**`` with a release version
+   and date, like ``**X.Y.Z (20XX-YY-ZZ)**``.
+#. Replace the ``__version__`` attribute in ``src/wheel/__init__.py`` with the
+   same version number as above (without the date of course).
+
+The github workflow will pick up the new version from ``news.rst`` and create a
+new tag, which will then trigger the release workflow which will package the
+project and publish the resulting artifacts to PyPI.

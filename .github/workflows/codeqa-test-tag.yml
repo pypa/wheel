@@ -40,7 +40,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
-      run: pip install .[test]
+      run: "pip install --no-binary=:all: .[test]"
     - name: Test with pytest
       run: pytest
 
