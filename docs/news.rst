@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed installation of ``wheel`` from sdist which was broken due to a chicken
+  and egg problem with PEP 517 and setuptools_scm
+
 **0.34.0 (2020-01-27)**
 
 - Dropped Python 3.4 support
