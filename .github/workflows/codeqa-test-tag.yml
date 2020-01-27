@@ -41,6 +41,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
+        pip install setuptools >= 40.9
         pip install --no-binary=:all: .
         pip install .[test]
     - name: Test with pytest
