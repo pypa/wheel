@@ -45,7 +45,7 @@ def get_abbr_impl():
 def get_impl_ver():
     """Return implementation version."""
     impl_ver = get_config_var("py_version_nodot")
-    if not impl_ver or get_abbr_impl() == 'pp':
+    if not impl_ver:
         impl_ver = ''.join(map(str, get_impl_version_info()))
     return impl_ver
 
