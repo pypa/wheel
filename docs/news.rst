@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.34.2 (2020-01-30)**
 
 - Fixed installation of ``wheel`` from sdist on environments without Unicode
   file name support
