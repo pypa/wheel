@@ -50,4 +50,4 @@ jobs:
     - name: Install test dependencies
       run: pip install .[test]
     - name: Test with pytest
-      run: pytest
+      run: python -b -m pytest -W always
