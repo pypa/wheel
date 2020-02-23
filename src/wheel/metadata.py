@@ -3,6 +3,7 @@ Tools for converting old- to new-style metadata.
 """
 
 import os.path
+import sys
 import textwrap
 
 import pkg_resources
@@ -91,31 +92,11 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
     return pkg_info
 
 
-def pkginfo_unicode(pkg_info, field):
-    """Hack to coax Unicode out of an email Message() - Python 3.3+"""
-    text = pkg_info[field]
-    field = field.lower()
-    if not isinstance(text, str):
-        for item in pkg_info.raw_items():
-            if item[0].lower() == field:
-                text = item[1].encode('ascii', 'surrogateescape') \
-                    .decode('utf-8')
-                break
-
-    return text
-
-
 def dedent_description(pkg_info):
     """
     Dedent and convert pkg_info['Description'] to Unicode.
     """
-    description = pkg_info['Description']
-
-    # Python 3 Unicode handling, sorta.
-    surrogates = False
-    if not isinstance(description, str):
-        surrogates = True
-        description = pkginfo_unicode(pkg_info, 'Description')
+    description = str(pkg_info['Description'])
 
     description_lines = description.splitlines()
     description_dedent = '\n'.join(
@@ -125,7 +106,7 @@ def dedent_description(pkg_info):
          textwrap.dedent('\n'.join(description_lines[1:])),
          '\n'))
 
-    if surrogates:
+    if sys.version_info.major >= 3:
         description_dedent = description_dedent \
             .encode("utf8") \
             .decode("ascii", "surrogateescape")
