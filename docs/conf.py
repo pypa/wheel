@@ -49,9 +49,9 @@ copyright = u'2012, Daniel Holth'
 # built documents.
 #
 here = os.path.abspath(os.path.dirname(__file__))
-with io.open(os.path.join(here, '..', 'wheel', '__init__.py'),
+with io.open(os.path.join(here, '..', 'src', 'wheel', '__init__.py'),
              encoding='utf8') as version_file:
-    match = re.search(r'__version__ = "((\d+\.\d+\.\d+).*)"',
+    match = re.search(r"__version__ = '((\d+\.\d+\.\d+).*)'",
                       version_file.read())
     # The short X.Y version.
     version = match.group(2)
