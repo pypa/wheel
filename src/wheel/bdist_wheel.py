@@ -11,21 +11,22 @@ import sys
 import re
 from collections import OrderedDict
 from email.generator import Generator
+import distutils
 from distutils.core import Command
-from distutils.sysconfig import get_python_version
+from distutils.sysconfig import get_python_version, get_config_var
 from distutils import log as logger
 from glob import iglob
 from shutil import rmtree
-from warnings import warn
+import warnings
 from zipfile import ZIP_DEFLATED, ZIP_STORED
 
+import packaging.tags
 import pkg_resources
+import platform
 
-from .pep425tags import get_abbr_impl, get_impl_ver, get_abi_tag, get_platform
 from .pkginfo import write_pkg_info
 from .metadata import pkginfo_to_metadata
 from .wheelfile import WheelFile
-from . import pep425tags
 from . import __version__ as wheel_version
 
 
@@ -33,6 +34,84 @@ safe_name = pkg_resources.safe_name
 safe_version = pkg_resources.safe_version
 
 PY_LIMITED_API_PATTERN = r'cp3\d'
+
+
+def python_tag():
+    return 'py{}'.format(sys.version_info[0])
+
+
+# copied from pep425tags.py, is there a better way?
+def get_platform():
+    """Return our platform name 'win32', 'linux_x86_64'"""
+    # XXX remove distutils dependency
+    result = distutils.util.get_platform().replace('.', '_').replace('-', '_')
+    if result == "linux_x86_64" and sys.maxsize == 2147483647:
+        # pip pull request #3497
+        result = "linux_i686"
+    return result
+
+
+def get_abbr_impl():
+    """ Return 'cp' for CPython and 'pp' for PyPy"""
+    name = platform.python_implementation().lower()
+    return packaging.tags.INTERPRETER_SHORT_NAMES.get(name) or name
+
+
+# copied from pep425tags.py, maybe should be part of packaging.tags
+def get_impl_ver():
+    """Return implementation version."""
+    impl_ver = get_config_var("py_version_nodot")
+    if not impl_ver:
+        impl_ver = '{}{}'.format(*sys.version_info[:2])
+    return impl_ver
+
+
+def get_flag(var, fallback, expected=True, warn=True):
+    """Use a fallback method for determining SOABI flags if the needed config
+    var is unset or unavailable."""
+    val = get_config_var(var)
+    if val is None:
+        if warn:
+            warnings.warn("Config variable '{0}' is unset, Python ABI tag may "
+                          "be incorrect".format(var), RuntimeWarning, 2)
+        return fallback()
+    return val == expected
+
+
+def get_abi_tag():
+    """Return the ABI tag based on SOABI (if available) or emulate SOABI
+    (CPython 2, PyPy)."""
+    soabi = get_config_var('SOABI')
+    impl = get_abbr_impl()
+    if not soabi and impl in ('cp', 'pp') and hasattr(sys, 'maxunicode'):
+        d = ''
+        m = ''
+        u = ''
+        if get_flag('Py_DEBUG',
+                    lambda: hasattr(sys, 'gettotalrefcount'),
+                    warn=(impl == 'cp')):
+            d = 'd'
+        if get_flag('WITH_PYMALLOC',
+                    lambda: impl == 'cp',
+                    warn=(impl == 'cp' and
+                          sys.version_info < (3, 8))) \
+                and sys.version_info < (3, 8):
+            m = 'm'
+        if get_flag('Py_UNICODE_SIZE',
+                    lambda: sys.maxunicode == 0x10ffff,
+                    expected=4,
+                    warn=(impl == 'cp' and
+                          sys.version_info < (3, 3))) \
+                and sys.version_info < (3, 3):
+            u = 'u'
+        abi = '%s%s%s%s%s' % (impl, get_impl_ver(), d, m, u)
+    elif soabi and soabi.startswith('cpython-'):
+        abi = 'cp' + soabi.split('-')[1]
+    elif soabi:
+        abi = soabi.replace('.', '_').replace('-', '_')
+    else:
+        abi = None
+    return abi
 
 
 def safer_name(name):
@@ -62,7 +141,7 @@ class bdist_wheel(Command):
                      "temporary directory for creating the distribution"),
                     ('plat-name=', 'p',
                      "platform name to embed in generated filenames "
-                     "(default: %s)" % get_platform(None)),
+                     "(default: %s)" % get_platform()),
                     ('keep-temp', 'k',
                      "keep the pseudo-installation tree around after " +
                      "creating the distribution archive"),
@@ -88,7 +167,7 @@ class bdist_wheel(Command):
                      .format(', '.join(supported_compressions))),
                     ('python-tag=', None,
                      "Python implementation compatibility tag"
-                     " (default: py%s)" % get_impl_ver()[0]),
+                     " (default: '%s')" % (python_tag())),
                     ('build-number=', None,
                      "Build number for this particular version. "
                      "As specified in PEP-0427, this must start with a digit. "
@@ -116,7 +195,7 @@ class bdist_wheel(Command):
         self.group = None
         self.universal = False
         self.compression = 'deflated'
-        self.python_tag = 'py' + get_impl_ver()[0]
+        self.python_tag = python_tag()
         self.build_number = None
         self.py_limited_api = False
         self.plat_name_supplied = False
@@ -178,7 +257,7 @@ class bdist_wheel(Command):
             if self.plat_name and not self.plat_name.startswith("macosx"):
                 plat_name = self.plat_name
             else:
-                plat_name = get_platform(self.bdist_dir)
+                plat_name = get_platform()
 
             if plat_name in ('linux-x86_64', 'linux_x86_64') and sys.maxsize == 2147483647:
                 plat_name = 'linux_i686'
@@ -202,12 +281,8 @@ class bdist_wheel(Command):
             else:
                 abi_tag = str(get_abi_tag()).lower()
             tag = (impl, abi_tag, plat_name)
-            supported_tags = pep425tags.get_supported(
-                self.bdist_dir,
-                supplied_platform=plat_name if self.plat_name_supplied else None)
-            # XXX switch to this alternate implementation for non-pure:
-            if not self.py_limited_api:
-                assert tag == supported_tags[0], "%s != %s" % (tag, supported_tags[0])
+            supported_tags = [(t.interpreter, t.abi, t.platform)
+                              for t in packaging.tags.sys_tags()]
             assert tag in supported_tags, "would build wheel with unsupported tag {}".format(tag)
         return tag
 
@@ -330,8 +405,8 @@ class bdist_wheel(Command):
         })
 
         if 'license_file' in metadata:
-            warn('The "license_file" option is deprecated. Use "license_files" instead.',
-                 DeprecationWarning)
+            warnings.warn('The "license_file" option is deprecated. Use '
+                          '"license_files" instead.', DeprecationWarning)
             files.add(metadata['license_file'][1])
 
         if 'license_file' not in metadata and 'license_files' not in metadata:
