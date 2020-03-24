@@ -90,13 +90,13 @@ class WheelFile(ZipFile):
             if eof and running_hash.digest() != expected_hash:
                 raise WheelError("Hash mismatch for file '{}'".format(native(ef_name)))
 
-        ef = ZipFile.open(self, name_or_info, mode, pwd)
         ef_name = as_unicode(name_or_info.filename if isinstance(name_or_info, ZipInfo)
                              else name_or_info)
-        if mode == 'r' and not ef_name.endswith('/'):
-            if ef_name not in self._file_hashes:
-                raise WheelError("No hash found for file '{}'".format(native(ef_name)))
+        if mode == 'r' and not ef_name.endswith('/') and ef_name not in self._file_hashes:
+            raise WheelError("No hash found for file '{}'".format(native(ef_name)))
 
+        ef = ZipFile.open(self, name_or_info, mode, pwd)
+        if mode == 'r' and not ef_name.endswith('/'):
             algorithm, expected_hash = self._file_hashes[ef_name]
             if expected_hash is not None:
                 # Monkey patch the _update_crc method to also check for the hash from RECORD
