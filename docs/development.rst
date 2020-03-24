@@ -89,7 +89,8 @@ To make a new release:
    and date, like ``**X.Y.Z (20XX-YY-ZZ)**``.
 #. Replace the ``__version__`` attribute in ``src/wheel/__init__.py`` with the
    same version number as above (without the date of course).
+#. Create a new git tag matching the version exactly
+#. Push the new tag to Github
 
-The github workflow will pick up the new version from ``news.rst`` and create a
-new tag, which will then trigger the release workflow which will package the
+Pushing a new tag to Github will trigger the publish workflow which package the
 project and publish the resulting artifacts to PyPI.

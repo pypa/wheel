@@ -1,6 +1,8 @@
 name: Publish packages to PyPI
 
-on: create
+on:
+  create:
+    tags: "*"
 
 jobs:
   publish:
