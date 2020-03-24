@@ -340,7 +340,7 @@ class bdist_wheel(Command):
         for pattern in patterns:
             for path in iglob(pattern):
                 if path.endswith('~'):
-                    logger.debug('ignoring license file "%s" as it looks like a backup.', path)
+                    logger.debug('ignoring license file "%s" as it looks like a backup', path)
                     continue
 
                 if path not in files and os.path.isfile(path):
