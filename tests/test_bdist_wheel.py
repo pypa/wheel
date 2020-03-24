@@ -21,6 +21,9 @@ DEFAULT_LICENSE_FILES = {
     'LICENSE', 'LICENSE.txt', 'LICENCE', 'LICENCE.txt', 'COPYING',
     'COPYING.md', 'NOTICE', 'NOTICE.rst', 'AUTHORS', 'AUTHORS.txt'
 }
+OTHER_IGNORED_FILES = {
+    'LICENSE~', 'AUTHORS~',
+}
 
 
 @pytest.fixture
@@ -34,7 +37,7 @@ setup(
     version='1.0'
 )
 """)
-    for fname in DEFAULT_LICENSE_FILES:
+    for fname in DEFAULT_LICENSE_FILES | OTHER_IGNORED_FILES:
         basedir.join(fname).write('')
 
     basedir.join('licenses').mkdir().join('DUMMYFILE').write('')
