@@ -96,7 +96,6 @@ class WheelFile(ZipFile):
             raise WheelError("No hash found for file '{}'".format(native(ef_name)))
 
         ef = ZipFile.open(self, name_or_info, mode, pwd)
-
         if mode == 'r' and not ef_name.endswith('/'):
             algorithm, expected_hash = self._file_hashes[ef_name]
             if expected_hash is not None:
