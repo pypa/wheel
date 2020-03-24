@@ -3,16 +3,11 @@ Tools for converting old- to new-style metadata.
 """
 
 import os.path
-import re
 import textwrap
 
 import pkg_resources
 
 from .pkginfo import read_pkg_info
-
-# Support markers syntax with the extra at the end only
-EXTRA_RE = re.compile(
-    r"""^(?P<package>.*?)(;\s*(?P<condition>.*?)(extra == '(?P<extra>.*?)')?)$""")
 
 
 def requires_to_requires_dist(requirement):
