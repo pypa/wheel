@@ -1,4 +1,4 @@
-name: Python codeqa/test/tag
+name: Python codeqa/test
 
 on:
   pull_request:
