@@ -13,16 +13,15 @@ from collections import OrderedDict
 from email.generator import Generator
 import distutils
 from distutils.core import Command
-from distutils.sysconfig import get_python_version, get_config_var
+from distutils.sysconfig import get_config_var
 from distutils import log as logger
 from glob import iglob
 from shutil import rmtree
 import warnings
 from zipfile import ZIP_DEFLATED, ZIP_STORED
 
-import packaging.tags
+import packaging.tags as tags
 import pkg_resources
-import platform
 
 from .pkginfo import write_pkg_info
 from .metadata import pkginfo_to_metadata
@@ -51,30 +50,15 @@ def get_platform():
     return result
 
 
-def get_abbr_impl():
-    """ Return 'cp' for CPython and 'pp' for PyPy"""
-    name = platform.python_implementation().lower()
-    return packaging.tags.INTERPRETER_SHORT_NAMES.get(name) or name
-
-
-# copied from pep425tags.py, maybe should be part of packaging.tags
-def get_impl_ver():
-    """Return implementation version."""
-    impl_ver = get_config_var("py_version_nodot")
-    if not impl_ver:
-        impl_ver = '{}{}'.format(*sys.version_info[:2])
-    return impl_ver
-
-
 def get_flag(var, fallback, expected=True, warn=True):
-    """Use a fallback method for determining SOABI flags if the needed config
+    """Use a fallback value for determining SOABI flags if the needed config
     var is unset or unavailable."""
     val = get_config_var(var)
     if val is None:
         if warn:
             warnings.warn("Config variable '{0}' is unset, Python ABI tag may "
                           "be incorrect".format(var), RuntimeWarning, 2)
-        return fallback()
+        return fallback
     return val == expected
 
 
@@ -82,29 +66,29 @@ def get_abi_tag():
     """Return the ABI tag based on SOABI (if available) or emulate SOABI
     (CPython 2, PyPy)."""
     soabi = get_config_var('SOABI')
-    impl = get_abbr_impl()
+    impl = tags.interpreter_name()
     if not soabi and impl in ('cp', 'pp') and hasattr(sys, 'maxunicode'):
         d = ''
         m = ''
         u = ''
         if get_flag('Py_DEBUG',
-                    lambda: hasattr(sys, 'gettotalrefcount'),
+                    hasattr(sys, 'gettotalrefcount'),
                     warn=(impl == 'cp')):
             d = 'd'
         if get_flag('WITH_PYMALLOC',
-                    lambda: impl == 'cp',
+                    impl == 'cp',
                     warn=(impl == 'cp' and
                           sys.version_info < (3, 8))) \
                 and sys.version_info < (3, 8):
             m = 'm'
         if get_flag('Py_UNICODE_SIZE',
-                    lambda: sys.maxunicode == 0x10ffff,
+                    sys.maxunicode == 0x10ffff,
                     expected=4,
                     warn=(impl == 'cp' and
                           sys.version_info < (3, 3))) \
                 and sys.version_info < (3, 3):
             u = 'u'
-        abi = '%s%s%s%s%s' % (impl, get_impl_ver(), d, m, u)
+        abi = '%s%s%s%s%s' % (impl, tags.interpreter_version(), d, m, u)
     elif soabi and soabi.startswith('cpython-'):
         abi = 'cp' + soabi.split('-')[1]
     elif soabi:
@@ -271,8 +255,8 @@ class bdist_wheel(Command):
                 impl = self.python_tag
             tag = (impl, 'none', plat_name)
         else:
-            impl_name = get_abbr_impl()
-            impl_ver = get_impl_ver()
+            impl_name = tags.interpreter_name()
+            impl_ver = tags.interpreter_version()
             impl = impl_name + impl_ver
             # We don't work on CPython 3.1, 3.0.
             if self.py_limited_api and (impl_name + impl_ver).startswith('cp3'):
@@ -282,7 +266,7 @@ class bdist_wheel(Command):
                 abi_tag = str(get_abi_tag()).lower()
             tag = (impl, abi_tag, plat_name)
             supported_tags = [(t.interpreter, t.abi, t.platform)
-                              for t in packaging.tags.sys_tags()]
+                              for t in tags.sys_tags()]
             assert tag in supported_tags, "would build wheel with unsupported tag {}".format(tag)
         return tag
 
@@ -361,7 +345,9 @@ class bdist_wheel(Command):
 
         # Add to 'Distribution.dist_files' so that the "upload" command works
         getattr(self.distribution, 'dist_files', []).append(
-            ('bdist_wheel', get_python_version(), wheel_path))
+            ('bdist_wheel',
+             '.'.join(list(tags.interpreter_version())),  # like 3.7
+             wheel_path))
 
         if not self.keep_temp:
             logger.info('removing %s', self.bdist_dir)
