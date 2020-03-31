@@ -13,3 +13,4 @@ __pycache__
 .cache
 .eggs
 .pre-commit-config.yaml
+.mypy_cache

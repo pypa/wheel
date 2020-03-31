@@ -64,7 +64,7 @@ def generate_requirements(extras_require):
 
 def pkginfo_to_metadata(egg_info_path, pkginfo_path):
     """
-    Convert .egg-info directory with PKG-INFO to the Metadata 2.1 format
+    Convert .egg-info directory with PKG-INFO to the Metadata 2.1 format.
     """
     pkg_info = read_pkg_info(pkginfo_path)
     pkg_info.replace_header('Metadata-Version', '2.1')
@@ -92,7 +92,7 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
 
 
 def pkginfo_unicode(pkg_info, field):
-    """Hack to coax Unicode out of an email Message() - Python 3.3+"""
+    """Hack to coax Unicode out of an email Message() - Python 3.3+."""
     text = pkg_info[field]
     field = field.lower()
     if not isinstance(text, str):

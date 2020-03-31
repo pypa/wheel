@@ -38,7 +38,7 @@ Important remarks:
 import ctypes
 import sys
 
-"""here the needed const and struct from mach-o header files"""
+# here are the needed const and struct from mach-o header files:
 
 FAT_MAGIC = 0xcafebabe
 FAT_CIGAM = 0xbebafeca

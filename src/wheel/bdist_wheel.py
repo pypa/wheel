@@ -12,7 +12,6 @@ import re
 from collections import OrderedDict
 from email.generator import Generator
 from distutils.core import Command
-from distutils.sysconfig import get_python_version
 from distutils import log as logger
 from glob import iglob
 from shutil import rmtree
@@ -36,20 +35,26 @@ PY_LIMITED_API_PATTERN = r'cp3\d'
 
 
 def safer_name(name):
+    """
+    Returns a version of the package name that can be accepted by PyPI.
+    """
     return safe_name(name).replace('-', '_')
 
 
 def safer_version(version):
+    """Returns a version identifier that can be accepted by PyPI."""
     return safe_version(version).replace('-', '_')
 
 
 def remove_readonly(func, path, excinfo):
+    """Makes the named path writable."""
     print(str(excinfo[1]))
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
 
 class bdist_wheel(Command):
+    """The bdist_wheel command for setuptools."""
 
     description = 'create a wheel distribution'
 
@@ -101,6 +106,7 @@ class bdist_wheel(Command):
     boolean_options = ['keep-temp', 'skip-build', 'relative', 'universal']
 
     def initialize_options(self):
+        """Sets all the options to their defaults."""
         self.bdist_dir = None
         self.data_dir = None
         self.plat_name = None
@@ -122,6 +128,7 @@ class bdist_wheel(Command):
         self.plat_name_supplied = False
 
     def finalize_options(self):
+        """Takes the given options and sets their variable values."""
         if self.bdist_dir is None:
             bdist_base = self.get_finalized_command('bdist').bdist_base
             self.bdist_dir = os.path.join(bdist_base, 'wheel')
@@ -149,7 +156,7 @@ class bdist_wheel(Command):
         wheel = self.distribution.get_option_dict('wheel')
         if 'universal' in wheel:
             # please don't define this in your global configs
-            logger.warn('The [wheel] section is deprecated. Use [bdist_wheel] instead.')
+            logger.warning('The [wheel] section is deprecated. Use [bdist_wheel] instead.')
             val = wheel['universal'][1].strip()
             if val.lower() in ('1', 'true', 'yes'):
                 self.universal = True
@@ -167,6 +174,7 @@ class bdist_wheel(Command):
         return '-'.join(components)
 
     def get_tag(self):
+        """Gets the tag that will be used for the wheel file."""
         # bdist sets self.plat_name if unset, we should only use it for purepy
         # wheels if the user supplied it.
         if self.plat_name_supplied:
@@ -212,6 +220,7 @@ class bdist_wheel(Command):
         return tag
 
     def run(self):
+        """The runtime entrypoint."""
         build_scripts = self.reinitialize_command('build_scripts')
         build_scripts.executable = 'python'
         build_scripts.force = True
@@ -286,7 +295,7 @@ class bdist_wheel(Command):
 
         # Add to 'Distribution.dist_files' so that the "upload" command works
         getattr(self.distribution, 'dist_files', []).append(
-            ('bdist_wheel', get_python_version(), wheel_path))
+            ('bdist_wheel', '%d.%d' % sys.version_info[:2], wheel_path))
 
         if not self.keep_temp:
             logger.info('removing %s', self.bdist_dir)
@@ -294,6 +303,7 @@ class bdist_wheel(Command):
                 rmtree(self.bdist_dir, onerror=remove_readonly)
 
     def write_wheelfile(self, wheelfile_base, generator='bdist_wheel (' + wheel_version + ')'):
+        """Writes a wheel file based on the provided options."""
         from email.message import Message
         msg = Message()
         msg['Wheel-Version'] = '1.0'  # of the spec
@@ -323,6 +333,7 @@ class bdist_wheel(Command):
 
     @property
     def license_paths(self):
+        """Gets the paths for any license files present."""
         metadata = self.distribution.get_option_dict('metadata')
         files = set()
         patterns = sorted({
@@ -350,7 +361,7 @@ class bdist_wheel(Command):
         return files
 
     def egg2dist(self, egginfo_path, distinfo_path):
-        """Convert an .egg-info directory into a .dist-info directory"""
+        """Convert an .egg-info directory into a .dist-info directory."""
         def adios(p):
             """Appropriately delete directory, file or link."""
             if os.path.exists(p) and not os.path.islink(p) and os.path.isdir(p):
