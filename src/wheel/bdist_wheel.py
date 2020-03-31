@@ -24,6 +24,7 @@ import packaging.tags as tags
 import pkg_resources
 
 from .pkginfo import write_pkg_info
+from .macosx_libfile import extract_macosx_min_system_version
 from .metadata import pkginfo_to_metadata
 from .wheelfile import WheelFile
 from . import __version__ as wheel_version
@@ -39,15 +40,81 @@ def python_tag():
     return 'py{}'.format(sys.version_info[0])
 
 
-# copied from pep425tags.py, is there a better way?
-def get_platform():
+def get_platform(archive_root):
     """Return our platform name 'win32', 'linux_x86_64'"""
     # XXX remove distutils dependency
-    result = distutils.util.get_platform().replace('.', '_').replace('-', '_')
-    if result == "linux_x86_64" and sys.maxsize == 2147483647:
-        # pip pull request #3497
-        result = "linux_i686"
-    return result
+    result = distutils.util.get_platform()
+    if result.startswith("macosx") and archive_root is not None:
+        result = calculate_macosx_platform_tag(archive_root, result)
+    return result.replace('.', '_').replace('-', '_')
+
+
+def calculate_macosx_platform_tag(archive_root, platform_tag):
+    """
+    Calculate proper macosx platform tag basing on files which are included to wheel
+
+    Example platform tag `macosx-10.14-x86_64`
+    """
+    prefix, base_version, suffix = platform_tag.split('-')
+    base_version = tuple([int(x) for x in base_version.split(".")])
+    if len(base_version) >= 2:
+        base_version = base_version[0:2]
+
+    assert len(base_version) == 2
+    if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
+        deploy_target = tuple([int(x) for x in os.environ[
+            "MACOSX_DEPLOYMENT_TARGET"].split(".")])
+        if len(deploy_target) >= 2:
+            deploy_target = deploy_target[0:2]
+        if deploy_target < base_version:
+            sys.stderr.write(
+                 "[WARNING] MACOSX_DEPLOYMENT_TARGET is set to a lower value ({}) than the "
+                 "version on which the Python interpreter was compiled ({}), and will be "
+                 "ignored.\n".format('.'.join(str(x) for x in deploy_target),
+                                     '.'.join(str(x) for x in base_version))
+                )
+        else:
+            base_version = deploy_target
+
+    assert len(base_version) == 2
+    start_version = base_version
+    versions_dict = {}
+    for (dirpath, dirnames, filenames) in os.walk(archive_root):
+        for filename in filenames:
+            if filename.endswith('.dylib') or filename.endswith('.so'):
+                lib_path = os.path.join(dirpath, filename)
+                min_ver = extract_macosx_min_system_version(lib_path)
+                if min_ver is not None:
+                    versions_dict[lib_path] = min_ver[0:2]
+
+    if len(versions_dict) > 0:
+        base_version = max(base_version, max(versions_dict.values()))
+
+    # macosx platform tag do not support minor bugfix release
+    fin_base_version = "_".join([str(x) for x in base_version])
+    if start_version < base_version:
+        problematic_files = [k for k, v in versions_dict.items() if v > start_version]
+        problematic_files = "\n".join(problematic_files)
+        if len(problematic_files) == 1:
+            files_form = "this file"
+        else:
+            files_form = "these files"
+        error_message = \
+            "[WARNING] This wheel needs a higher macOS version than {}  " \
+            "To silence this warning, set MACOSX_DEPLOYMENT_TARGET to at least " +\
+            fin_base_version + " or recreate " + files_form + " with lower " \
+            "MACOSX_DEPLOYMENT_TARGET:  \n" + problematic_files
+
+        if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
+            error_message = error_message.format("is set in MACOSX_DEPLOYMENT_TARGET variable.")
+        else:
+            error_message = error_message.format(
+                "the version your Python interpreter is compiled against.")
+
+        sys.stderr.write(error_message)
+
+    platform_tag = prefix + "_" + fin_base_version + "_" + suffix
+    return platform_tag
 
 
 def get_flag(var, fallback, expected=True, warn=True):
@@ -125,7 +192,7 @@ class bdist_wheel(Command):
                      "temporary directory for creating the distribution"),
                     ('plat-name=', 'p',
                      "platform name to embed in generated filenames "
-                     "(default: %s)" % get_platform()),
+                     "(default: %s)" % get_platform(None)),
                     ('keep-temp', 'k',
                      "keep the pseudo-installation tree around after " +
                      "creating the distribution archive"),
@@ -241,7 +308,13 @@ class bdist_wheel(Command):
             if self.plat_name and not self.plat_name.startswith("macosx"):
                 plat_name = self.plat_name
             else:
-                plat_name = get_platform()
+                # on macosx always limit the platform name to comply with any
+                # c-extension modules in bdist_dir, since the user can specify
+                # a higher MACOSX_DEPLOYMENT_TARGET via tools like CMake
+
+                # on other platforms, and on macosx if there are no c-extension
+                # modules, use the default platform name.
+                plat_name = get_platform(self.bdist_dir)
 
             if plat_name in ('linux-x86_64', 'linux_x86_64') and sys.maxsize == 2147483647:
                 plat_name = 'linux_i686'
