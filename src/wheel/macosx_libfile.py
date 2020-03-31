@@ -40,25 +40,28 @@ import sys
 
 """here the needed const and struct from mach-o header files"""
 
-FAT_MAGIC = 0xcafebabe
-FAT_CIGAM = 0xbebafeca
-FAT_MAGIC_64 = 0xcafebabf
-FAT_CIGAM_64 = 0xbfbafeca
-MH_MAGIC = 0xfeedface
-MH_CIGAM = 0xcefaedfe
-MH_MAGIC_64 = 0xfeedfacf
-MH_CIGAM_64 = 0xcffaedfe
+FAT_MAGIC = 0xCAFEBABE
+FAT_CIGAM = 0xBEBAFECA
+FAT_MAGIC_64 = 0xCAFEBABF
+FAT_CIGAM_64 = 0xBFBAFECA
+MH_MAGIC = 0xFEEDFACE
+MH_CIGAM = 0xCEFAEDFE
+MH_MAGIC_64 = 0xFEEDFACF
+MH_CIGAM_64 = 0xCFFAEDFE
 
 LC_VERSION_MIN_MACOSX = 0x24
 LC_BUILD_VERSION = 0x32
 
 
 mach_header_fields = [
-        ("magic", ctypes.c_uint32), ("cputype", ctypes.c_int),
-        ("cpusubtype", ctypes.c_int), ("filetype", ctypes.c_uint32),
-        ("ncmds", ctypes.c_uint32), ("sizeofcmds", ctypes.c_uint32),
-        ("flags", ctypes.c_uint32)
-    ]
+    ("magic", ctypes.c_uint32),
+    ("cputype", ctypes.c_int),
+    ("cpusubtype", ctypes.c_int),
+    ("filetype", ctypes.c_uint32),
+    ("ncmds", ctypes.c_uint32),
+    ("sizeofcmds", ctypes.c_uint32),
+    ("flags", ctypes.c_uint32),
+]
 """
 struct mach_header {
     uint32_t	magic;		/* mach magic number identifier */
@@ -87,7 +90,10 @@ struct mach_header_64 {
 };
 """
 
-fat_header_fields = [("magic", ctypes.c_uint32), ("nfat_arch", ctypes.c_uint32)]
+fat_header_fields = [
+    ("magic", ctypes.c_uint32),
+    ("nfat_arch", ctypes.c_uint32),
+]
 """
 struct fat_header {
     uint32_t	magic;		/* FAT_MAGIC or FAT_MAGIC_64 */
@@ -96,9 +102,11 @@ struct fat_header {
 """
 
 fat_arch_fields = [
-    ("cputype", ctypes.c_int), ("cpusubtype", ctypes.c_int),
-    ("offset", ctypes.c_uint32), ("size", ctypes.c_uint32),
-    ("align", ctypes.c_uint32)
+    ("cputype", ctypes.c_int),
+    ("cpusubtype", ctypes.c_int),
+    ("offset", ctypes.c_uint32),
+    ("size", ctypes.c_uint32),
+    ("align", ctypes.c_uint32),
 ]
 """
 struct fat_arch {
@@ -111,9 +119,12 @@ struct fat_arch {
 """
 
 fat_arch_64_fields = [
-    ("cputype", ctypes.c_int), ("cpusubtype", ctypes.c_int),
-    ("offset", ctypes.c_uint64), ("size", ctypes.c_uint64),
-    ("align", ctypes.c_uint32), ("reserved", ctypes.c_uint32)
+    ("cputype", ctypes.c_int),
+    ("cpusubtype", ctypes.c_int),
+    ("offset", ctypes.c_uint64),
+    ("size", ctypes.c_uint64),
+    ("align", ctypes.c_uint32),
+    ("reserved", ctypes.c_uint32),
 ]
 """
 struct fat_arch_64 {
@@ -130,13 +141,18 @@ segment_base_fields = [("cmd", ctypes.c_uint32), ("cmdsize", ctypes.c_uint32)]
 """base for reading segment info"""
 
 segment_command_fields = [
-    ("cmd", ctypes.c_uint32), ("cmdsize", ctypes.c_uint32),
-    ("segname", ctypes.c_char * 16), ("vmaddr", ctypes.c_uint32),
-    ("vmsize", ctypes.c_uint32), ("fileoff", ctypes.c_uint32),
-    ("filesize", ctypes.c_uint32), ("maxprot", ctypes.c_int),
-    ("initprot", ctypes.c_int), ("nsects", ctypes.c_uint32),
+    ("cmd", ctypes.c_uint32),
+    ("cmdsize", ctypes.c_uint32),
+    ("segname", ctypes.c_char * 16),
+    ("vmaddr", ctypes.c_uint32),
+    ("vmsize", ctypes.c_uint32),
+    ("fileoff", ctypes.c_uint32),
+    ("filesize", ctypes.c_uint32),
+    ("maxprot", ctypes.c_int),
+    ("initprot", ctypes.c_int),
+    ("nsects", ctypes.c_uint32),
     ("flags", ctypes.c_uint32),
-    ]
+]
 """
 struct segment_command { /* for 32-bit architectures */
     uint32_t	cmd;		/* LC_SEGMENT */
@@ -155,13 +171,18 @@ typedef int vm_prot_t;
 """
 
 segment_command_fields_64 = [
-    ("cmd", ctypes.c_uint32), ("cmdsize", ctypes.c_uint32),
-    ("segname", ctypes.c_char * 16), ("vmaddr", ctypes.c_uint64),
-    ("vmsize", ctypes.c_uint64), ("fileoff", ctypes.c_uint64),
-    ("filesize", ctypes.c_uint64), ("maxprot", ctypes.c_int),
-    ("initprot", ctypes.c_int), ("nsects", ctypes.c_uint32),
+    ("cmd", ctypes.c_uint32),
+    ("cmdsize", ctypes.c_uint32),
+    ("segname", ctypes.c_char * 16),
+    ("vmaddr", ctypes.c_uint64),
+    ("vmsize", ctypes.c_uint64),
+    ("fileoff", ctypes.c_uint64),
+    ("filesize", ctypes.c_uint64),
+    ("maxprot", ctypes.c_int),
+    ("initprot", ctypes.c_int),
+    ("nsects", ctypes.c_uint32),
     ("flags", ctypes.c_uint32),
-    ]
+]
 """
 struct segment_command_64 { /* for 64-bit architectures */
     uint32_t	cmd;		/* LC_SEGMENT_64 */
@@ -178,8 +199,10 @@ struct segment_command_64 { /* for 64-bit architectures */
 };
 """
 
-version_min_command_fields = segment_base_fields + \
-    [("version", ctypes.c_uint32), ("sdk", ctypes.c_uint32)]
+version_min_command_fields = segment_base_fields + [
+    ("version", ctypes.c_uint32),
+    ("sdk", ctypes.c_uint32),
+]
 """
 struct version_min_command {
     uint32_t	cmd;		/* LC_VERSION_MIN_MACOSX or
@@ -192,9 +215,12 @@ struct version_min_command {
 };
 """
 
-build_version_command_fields = segment_base_fields + \
-    [("platform", ctypes.c_uint32), ("minos", ctypes.c_uint32),
-     ("sdk", ctypes.c_uint32), ("ntools", ctypes.c_uint32)]
+build_version_command_fields = segment_base_fields + [
+    ("platform", ctypes.c_uint32),
+    ("minos", ctypes.c_uint32),
+    ("sdk", ctypes.c_uint32),
+    ("ntools", ctypes.c_uint32),
+]
 """
 struct build_version_command {
     uint32_t	cmd;		/* LC_BUILD_VERSION */
@@ -209,10 +235,12 @@ struct build_version_command {
 
 
 def swap32(x):
-    return (((x << 24) & 0xFF000000) |
-            ((x << 8) & 0x00FF0000) |
-            ((x >> 8) & 0x0000FF00) |
-            ((x >> 24) & 0x000000FF))
+    return (
+        ((x << 24) & 0xFF000000)
+        | ((x << 8) & 0x00FF0000)
+        | ((x >> 8) & 0x0000FF00)
+        | ((x >> 24) & 0x000000FF)
+    )
 
 
 def get_base_class_and_magic_number(lib_file, seek=None):
@@ -221,7 +249,8 @@ def get_base_class_and_magic_number(lib_file, seek=None):
     else:
         lib_file.seek(seek)
     magic_number = ctypes.c_uint32.from_buffer_copy(
-        lib_file.read(ctypes.sizeof(ctypes.c_uint32))).value
+        lib_file.read(ctypes.sizeof(ctypes.c_uint32))
+    ).value
 
     # Handle wrong byte order
     if magic_number in [FAT_CIGAM, FAT_CIGAM_64, MH_CIGAM, MH_CIGAM_64]:
@@ -239,17 +268,24 @@ def get_base_class_and_magic_number(lib_file, seek=None):
 
 
 def read_data(struct_class, lib_file):
-    return struct_class.from_buffer_copy(lib_file.read(
-                        ctypes.sizeof(struct_class)))
+    return struct_class.from_buffer_copy(
+        lib_file.read(ctypes.sizeof(struct_class))
+    )
 
 
 def extract_macosx_min_system_version(path_to_lib):
     with open(path_to_lib, "rb") as lib_file:
         BaseClass, magic_number = get_base_class_and_magic_number(lib_file, 0)
-        if magic_number not in [FAT_MAGIC, FAT_MAGIC_64, MH_MAGIC, MH_MAGIC_64]:
+        if magic_number not in [
+            FAT_MAGIC,
+            FAT_MAGIC_64,
+            MH_MAGIC,
+            MH_MAGIC_64,
+        ]:
             return
 
         if magic_number in [FAT_MAGIC, FAT_CIGAM_64]:
+
             class FatHeader(BaseClass):
                 _fields_ = fat_header_fields
 
@@ -258,12 +294,16 @@ def extract_macosx_min_system_version(path_to_lib):
 
                 class FatArch(BaseClass):
                     _fields_ = fat_arch_fields
+
             else:
 
                 class FatArch(BaseClass):
                     _fields_ = fat_arch_64_fields
 
-            fat_arch_list = [read_data(FatArch, lib_file) for _ in range(fat_header.nfat_arch)]
+            fat_arch_list = [
+                read_data(FatArch, lib_file)
+                for _ in range(fat_header.nfat_arch)
+            ]
 
             versions_list = []
             for el in fat_arch_list:
@@ -318,12 +358,14 @@ def read_mach_header(lib_file, seek=None):
         segment_base = read_data(SegmentBase, lib_file)
         lib_file.seek(pos)
         if segment_base.cmd == LC_VERSION_MIN_MACOSX:
+
             class VersionMinCommand(base_class):
                 _fields_ = version_min_command_fields
 
             version_info = read_data(VersionMinCommand, lib_file)
             return parse_version(version_info.version)
         elif segment_base.cmd == LC_BUILD_VERSION:
+
             class VersionBuild(base_class):
                 _fields_ = build_version_command_fields
 
@@ -335,7 +377,7 @@ def read_mach_header(lib_file, seek=None):
 
 
 def parse_version(version):
-    x = (version & 0xffff0000) >> 16
-    y = (version & 0x0000ff00) >> 8
-    z = (version & 0x000000ff)
+    x = (version & 0xFFFF0000) >> 16
+    y = (version & 0x0000FF00) >> 8
+    z = version & 0x000000FF
     return x, y, z

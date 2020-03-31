@@ -6,7 +6,7 @@ import sys
 from ..wheelfile import WheelFile
 
 
-def unpack(path, dest='.'):
+def unpack(path, dest="."):
     """Unpack a wheel.
 
     Wheel content will be unpacked to {dest}/{name}-{ver}, where {name}
@@ -16,10 +16,10 @@ def unpack(path, dest='.'):
     :param dest: Destination directory (default to current directory).
     """
     with WheelFile(path) as wf:
-        namever = wf.parsed_filename.group('namever')
+        namever = wf.parsed_filename.group("namever")
         destination = os.path.join(dest, namever)
-        print("Unpacking to: {}...".format(destination), end='')
+        print("Unpacking to: {}...".format(destination), end="")
         sys.stdout.flush()
         wf.extractall(destination)
 
-    print('OK')
+    print("OK")
