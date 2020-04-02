@@ -46,7 +46,10 @@ def get_platform(archive_root):
     result = distutils.util.get_platform()
     if result.startswith("macosx") and archive_root is not None:
         result = calculate_macosx_platform_tag(archive_root, result)
-    return result.replace('.', '_').replace('-', '_')
+    if result == "linux_x86_64" and sys.maxsize == 2147483647:
+        # pip pull request #3497
+        result = "linux_i686"
+    return result
 
 
 def calculate_macosx_platform_tag(archive_root, platform_tag):
