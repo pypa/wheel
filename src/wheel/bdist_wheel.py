@@ -4,6 +4,7 @@ Create a wheel (.whl) distribution.
 A wheel is a built archive format.
 """
 
+import distutils
 import os
 import shutil
 import stat
@@ -11,7 +12,6 @@ import sys
 import re
 from collections import OrderedDict
 from email.generator import Generator
-import distutils
 from distutils.core import Command
 from distutils.sysconfig import get_config_var
 from distutils import log as logger
@@ -20,7 +20,7 @@ from shutil import rmtree
 import warnings
 from zipfile import ZIP_DEFLATED, ZIP_STORED
 
-import packaging.tags as tags
+from packaging import tags
 import pkg_resources
 
 from .pkginfo import write_pkg_info
@@ -422,7 +422,7 @@ class bdist_wheel(Command):
         # Add to 'Distribution.dist_files' so that the "upload" command works
         getattr(self.distribution, 'dist_files', []).append(
             ('bdist_wheel',
-             '.'.join(list(tags.interpreter_version())),  # like 3.7
+             '{}.{}'.format(*sys.version_info[:2]),  # like 3.7
              wheel_path))
 
         if not self.keep_temp:

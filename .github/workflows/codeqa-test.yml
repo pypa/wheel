@@ -43,8 +43,8 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Upgrade setuptools, pip
-      run: pip install "pip>=20.0.2" "setuptools >= 44" "packaging"
+    - name: Upgrade setuptools
+      run: pip install "setuptools >= 40.9"
     - name: Install the project
       run: "pip install --no-binary=:all: ."
     - name: Install test dependencies
