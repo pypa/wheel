@@ -10,6 +10,7 @@ import shutil
 import stat
 import sys
 import re
+import warnings
 from collections import OrderedDict
 from email.generator import Generator
 from distutils.core import Command
@@ -17,7 +18,6 @@ from distutils.sysconfig import get_config_var
 from distutils import log as logger
 from glob import iglob
 from shutil import rmtree
-import warnings
 from zipfile import ZIP_DEFLATED, ZIP_STORED
 
 from packaging import tags
