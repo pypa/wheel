@@ -102,18 +102,18 @@ def get_abi_tag():
 
 def safer_name(name):
     """
-    Returns a version of the package name that can be accepted by PyPI.
+    Get a version of the package name that can be accepted by PyPI.
     """
     return safe_name(name).replace('-', '_')
 
 
 def safer_version(version):
-    """Returns a version identifier that can be accepted by PyPI."""
+    """Get a version identifier that can be accepted by PyPI."""
     return safe_version(version).replace('-', '_')
 
 
 def remove_readonly(func, path, excinfo):
-    """Makes the named path writable."""
+    """Make the named path writable."""
     print(str(excinfo[1]))
     os.chmod(path, stat.S_IWRITE)
     func(path)
@@ -172,7 +172,7 @@ class bdist_wheel(Command):
     boolean_options = ['keep-temp', 'skip-build', 'relative', 'universal']
 
     def initialize_options(self):
-        """Sets all the options to their defaults."""
+        """Set all the options to their defaults."""
         self.bdist_dir = None
         self.data_dir = None
         self.plat_name = None
@@ -194,7 +194,7 @@ class bdist_wheel(Command):
         self.plat_name_supplied = False
 
     def finalize_options(self):
-        """Takes the given options and sets their variable values."""
+        """Take the given options and sets their variable values."""
         if self.bdist_dir is None:
             bdist_base = self.get_finalized_command('bdist').bdist_base
             self.bdist_dir = os.path.join(bdist_base, 'wheel')
@@ -240,7 +240,7 @@ class bdist_wheel(Command):
         return '-'.join(components)
 
     def get_tag(self):
-        """Gets the tag that will be used for the wheel file."""
+        """Get the tag that will be used for the wheel file."""
         # bdist sets self.plat_name if unset, we should only use it for purepy
         # wheels if the user supplied it.
         if self.plat_name_supplied:
@@ -373,7 +373,7 @@ class bdist_wheel(Command):
                 rmtree(self.bdist_dir, onerror=remove_readonly)
 
     def write_wheelfile(self, wheelfile_base, generator='bdist_wheel (' + wheel_version + ')'):
-        """Writes a wheel file based on the provided options."""
+        """Write a wheel file based on the provided options."""
         from email.message import Message
         msg = Message()
         msg['Wheel-Version'] = '1.0'  # of the spec
@@ -403,7 +403,7 @@ class bdist_wheel(Command):
 
     @property
     def license_paths(self):
-        """Gets the paths for any license files present."""
+        """Get the paths for any license files present."""
         metadata = self.distribution.get_option_dict('metadata')
         files = set()
         patterns = sorted({

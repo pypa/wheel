@@ -6,7 +6,7 @@ import sys
 
 
 def main():
-    """Launches the console script."""
+    """Launch the console script."""
     if __package__ == '':
         # To be able to run 'python wheel-0.9.whl/wheel':
         import os.path
