@@ -7,10 +7,10 @@ from base64 import urlsafe_b64decode, urlsafe_b64encode
 from collections import OrderedDict
 from email.generator import Generator
 from email.message import Message
-from io import StringIO
+from io import StringIO, FileIO
 from os import PathLike
 from pathlib import Path
-from typing import Optional, Union, Dict, Iterable, NamedTuple, Tuple
+from typing import Optional, Union, Dict, Iterable, NamedTuple, Tuple, IO
 from zipfile import ZIP_DEFLATED, ZipInfo, ZipFile
 
 from . import __version__ as wheel_version
@@ -58,37 +58,46 @@ class WheelError(Exception):
 
 
 class WheelFile:
-    __slots__ = ('generator', 'root_is_purelib', '_metadata', '_mode', '_zip', '_data_path',
+    __slots__ = ('generator', 'root_is_purelib', '_mode', '_metadata', '_zip', '_data_path',
                  '_dist_info_path', '_record_path', '_record_entries', '_exclude_archive_names')
 
     # dist-info file names ignored for hash checking/recording
     _exclude_filenames = ('RECORD', 'RECORD.jws', 'RECORD.p7s')
     _default_hash_algorithm = 'sha256'
 
-    def __init__(self, path: Union[str, PathLike], mode: str = 'r', *,
-                 compression: int = ZIP_DEFLATED, generator: Optional[str] = None,
-                 root_is_purelib: bool = True):
-        path = str(path)
+    def __init__(self, path_or_fd: Union[str, PathLike, IO[bytes]], mode: str = 'r', *,
+                 metadata: Optional[WheelMetadata] = None, compression: int = ZIP_DEFLATED,
+                 generator: Optional[str] = None, root_is_purelib: bool = True):
+        if mode not in ('r', 'w'):
+            raise ValueError("mode must be either 'r' or 'w'")
+
+        if isinstance(path_or_fd, (str, PathLike)):
+            path_or_fd = Path(path_or_fd).open(mode + 'b')
+
+        if metadata is None:
+            if isinstance(path_or_fd, FileIO):
+                metadata = parse_filename(path_or_fd.name)
+            else:
+                raise WheelError('No file name or metadata provided')
+
         self.generator = generator or 'Wheel {}'.format(wheel_version)
         self.root_is_purelib = root_is_purelib
         self._mode = mode
-        self._metadata = parse_filename(path)
+        self._metadata = metadata
         self._data_path = '{meta.name}-{meta.version}.data'.format(meta=self._metadata)
         self._dist_info_path = '{meta.name}-{meta.version}.dist-info'.format(meta=self._metadata)
         self._record_path = self._dist_info_path + '/RECORD'
         self._exclude_archive_names = frozenset(self._dist_info_path + '/' + fname
                                                 for fname in self._exclude_filenames)
-        self._zip = ZipFile(path, mode, compression=compression)
+        self._zip = ZipFile(path_or_fd, mode, compression=compression)
         self._record_entries = OrderedDict()  # type: Dict[str, WheelRecordEntry]
 
         if mode == 'r':
             self._read_record()
-        elif mode != 'w':
-            raise ValueError("mode must be either 'r' or 'w'")
 
     @property
-    def path(self) -> Path:
-        return Path(self._zip.filename)
+    def path(self) -> Optional[Path]:
+        return Path(self._zip.filename) if self._zip.filename else None
 
     @property
     def mode(self) -> str:
@@ -105,7 +114,7 @@ class WheelFile:
                 self._write_record()
         except BaseException:
             self._zip.close()
-            if self.mode == 'w':
+            if self.mode == 'w' and self._zip.filename:
                 os.unlink(self._zip.filename)
 
             raise
