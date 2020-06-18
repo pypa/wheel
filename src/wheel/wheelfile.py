@@ -8,10 +8,11 @@ from collections import OrderedDict
 from datetime import datetime
 from email.generator import Generator
 from email.message import Message
+from email.parser import Parser
 from io import StringIO, FileIO
 from os import PathLike
 from pathlib import Path
-from typing import Optional, Union, Dict, Iterable, NamedTuple, IO
+from typing import Optional, Union, Dict, Iterable, NamedTuple, IO, Tuple, List
 from zipfile import ZIP_DEFLATED, ZipInfo, ZipFile
 
 from . import __version__ as wheel_version
@@ -111,7 +112,16 @@ class WheelFile:
     def close(self) -> None:
         try:
             if self.mode == 'w':
-                self._write_wheelfile()
+                filenames = set(self._zip.namelist())
+
+                metadata_path = self._dist_info_path + '/METADATA'
+                if metadata_path not in filenames:
+                    self.write_metadata([])
+
+                wheel_path = self._dist_info_path + '/WHEEL'
+                if wheel_path not in filenames:
+                    self._write_wheelfile()
+
                 self._write_record()
         except BaseException:
             self._zip.close()
@@ -279,6 +289,36 @@ class WheelFile:
         buffer = StringIO()
         Generator(buffer, maxheaderlen=0).flatten(msg)
         self.write_distinfo_file('WHEEL', buffer.getvalue())
+
+    def read_metadata(self) -> List[Tuple[str, str]]:
+        contents = self.read_distinfo_file('METADATA').decode('utf-8')
+        msg = Parser().parsestr(contents)
+        items = [(key, str(value)) for key, value in msg.items()]
+        payload = msg.get_payload(0, True)
+        if payload:
+            items.append(('Description', payload))
+
+        return items
+
+    def write_metadata(self, items: Iterable[Tuple[str, str]]) -> None:
+        msg = Message()
+        for key, value in items:
+            key = key.title()
+            if key == 'Description':
+                msg.set_payload(value, 'utf-8')
+            else:
+                msg.add_header(key, value)
+
+        if 'Metadata-Version' not in msg:
+            msg['Metadata-Version'] = '2.1'
+        if 'Name' not in msg:
+            msg['Name'] = self._metadata.name
+        if 'Version' not in msg:
+            msg['Version'] = self._metadata.version
+
+        buffer = StringIO()
+        Generator(buffer, maxheaderlen=0).flatten(msg)
+        self.write_distinfo_file('METADATA', buffer.getvalue())
 
     def __repr__(self):
         return '{}({!r}, {!r})'.format(self.__class__.__name__, self.path, self.mode)
