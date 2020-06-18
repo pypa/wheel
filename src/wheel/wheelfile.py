@@ -190,7 +190,7 @@ class WheelFile:
         archive_name = posixpath.join(self._data_path, filename)
         return self.read_file(archive_name)
 
-    def read_metadata_file(self, filename: str) -> bytes:
+    def read_distinfo_file(self, filename: str) -> bytes:
         archive_name = posixpath.join(self._dist_info_path, filename)
         return self.read_file(archive_name)
 
@@ -234,7 +234,7 @@ class WheelFile:
 
     def _read_record(self) -> None:
         self._record_entries.clear()
-        contents = self.read_metadata_file('RECORD').decode('utf-8')
+        contents = self.read_distinfo_file('RECORD').decode('utf-8')
         for line in contents.split('\n'):
             path, hash_digest, filesize = line.rsplit(',', 2)
             if hash_digest:
