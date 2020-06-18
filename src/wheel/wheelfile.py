@@ -1,7 +1,6 @@
 import csv
 import hashlib
 import os.path
-import posixpath
 import re
 import time
 from base64 import urlsafe_b64decode, urlsafe_b64encode
@@ -88,8 +87,8 @@ class WheelFile:
         self._metadata = metadata
         self._data_path = '{meta.name}-{meta.version}.data'.format(meta=self._metadata)
         self._dist_info_path = '{meta.name}-{meta.version}.dist-info'.format(meta=self._metadata)
-        self._record_path = posixpath.join(self._dist_info_path + 'RECORD')
-        self._exclude_archive_names = frozenset(posixpath.join(self._dist_info_path, fname)
+        self._record_path = self._dist_info_path + '/RECORD'
+        self._exclude_archive_names = frozenset(self._dist_info_path + '/' + fname
                                                 for fname in self._exclude_filenames)
         self._zip = ZipFile(path_or_fd, mode, compression=compression)
         self._record_entries = OrderedDict()  # type: Dict[str, WheelRecordEntry]
@@ -155,14 +154,14 @@ class WheelFile:
         zinfo.external_attr = 0o664 << 16
         self._zip.writestr(zinfo, contents)
 
-    def write_data_file(self, archive_name: str, contents: Union[bytes, str],
+    def write_data_file(self, filename: str, contents: Union[bytes, str],
                         timestamp: Union[datetime, int] = None) -> None:
-        archive_path = posixpath.join(self._data_path, archive_name)
+        archive_path = self._data_path + '/' + filename.strip('/')
         self.write_file(archive_path, contents, timestamp)
 
-    def write_distinfo_file(self, archive_name: str, contents: Union[bytes, str],
+    def write_distinfo_file(self, filename: str, contents: Union[bytes, str],
                             timestamp: Union[datetime, int] = None) -> None:
-        archive_path = posixpath.join(self._dist_info_path, archive_name)
+        archive_path = self._dist_info_path + '/' + filename.strip()
         self.write_file(archive_path, contents, timestamp)
 
     def read_file(self, archive_name: str) -> bytes:
@@ -187,12 +186,12 @@ class WheelFile:
         return contents
 
     def read_data_file(self, filename: str) -> bytes:
-        archive_name = posixpath.join(self._data_path, filename)
-        return self.read_file(archive_name)
+        archive_path = self._data_path + '/' + filename.strip('/')
+        return self.read_file(archive_path)
 
     def read_distinfo_file(self, filename: str) -> bytes:
-        archive_name = posixpath.join(self._dist_info_path, filename)
-        return self.read_file(archive_name)
+        archive_path = self._dist_info_path + '/' + filename.strip('/')
+        return self.read_file(archive_path)
 
     def unpack(self, dest_dir: Union[str, PathLike],
                archive_names: Union[str, Iterable[str], None] = None) -> None:
