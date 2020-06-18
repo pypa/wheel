@@ -165,31 +165,6 @@ class WheelFile:
         archive_path = posixpath.join(self._dist_info_path, archive_name)
         self.write_file(archive_path, contents, timestamp)
 
-    def write_files_from_directory(self, base_path: Union[str, PathLike]) -> None:
-        base_path = Path(base_path)
-        if not base_path.is_dir():
-            raise WheelError('{} is not a directory'.format(base_path))
-
-        deferred = []
-        for root, dirnames, filenames in os.walk(str(base_path)):
-            # Sort the directory names so that `os.walk` will walk them in a
-            # defined order on the next iteration.
-            dirnames.sort()
-            root_path = base_path / root
-            for name in sorted(filenames):
-                path = root_path / name
-                if path.is_file():
-                    archive_name = str(path.relative_to(base_path))
-                    if archive_name in self._exclude_filenames:
-                        pass
-                    elif root.endswith('.dist-info'):
-                        deferred.append((path, archive_name))
-                    else:
-                        self.write_file(archive_name, path)
-
-        for path, archive_name in sorted(deferred):
-            self.write_file(archive_name, path)
-
     def read_file(self, archive_name: str) -> bytes:
         try:
             contents = self._zip.read(archive_name)
