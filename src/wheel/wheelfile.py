@@ -6,12 +6,13 @@ import re
 import time
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from collections import OrderedDict
+from datetime import datetime
 from email.generator import Generator
 from email.message import Message
 from io import StringIO, FileIO
 from os import PathLike
 from pathlib import Path
-from typing import Optional, Union, Dict, Iterable, NamedTuple, Tuple, IO
+from typing import Optional, Union, Dict, Iterable, NamedTuple, IO
 from zipfile import ZIP_DEFLATED, ZipInfo, ZipFile
 
 from . import __version__ as wheel_version
@@ -131,43 +132,38 @@ class WheelFile:
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self.close()
 
-    @staticmethod
-    def _get_zipinfo_datetime(timestamp: float) -> Tuple[int, int, int, int, int, int]:
-        # Some applications need reproducible .whl files, but they can't do this without forcing
-        # the timestamp of the individual ZipInfo objects. See issue #143.
-        timestamp = int(os.environ.get('SOURCE_DATE_EPOCH', timestamp))
-        return time.gmtime(timestamp)[0:6]
+    def write_file(self, archive_name: str, contents: Union[bytes, str],
+                   timestamp: Union[datetime, int] = None) -> None:
+        if isinstance(contents, str):
+            contents = contents.encode('utf-8')
+        elif not isinstance(contents, bytes):
+            raise TypeError('contents must be str or bytes')
 
-    def write_file(self, archive_name: str, contents: Union[bytes, str, PathLike]) -> None:
-        timestamp = time.time()
-        if isinstance(contents, bytes):
-            data = contents
-        elif isinstance(contents, str):
-            data = contents.encode('utf-8')
-        elif isinstance(contents, PathLike):
-            path = Path(contents)
-            timestamp = path.stat().st_mtime
-            data = path.read_bytes()
-        else:
-            raise TypeError('contents must be a str, bytes or a path-like object')
+        if timestamp is None:
+            timestamp = time.time()
+        elif isinstance(timestamp, datetime):
+            timestamp = timestamp.timestamp()
+        elif not isinstance(timestamp, int):
+            raise TypeError('timestamp must be int or datetime (or None to use current time')
 
         if archive_name not in self._exclude_archive_names:
-            hash_digest = hashlib.new(self._default_hash_algorithm, data).digest()
+            hash_digest = hashlib.new(self._default_hash_algorithm, contents).digest()
             self._record_entries[archive_name] = WheelRecordEntry(
-                self._default_hash_algorithm, hash_digest, len(data))
+                self._default_hash_algorithm, hash_digest, len(contents))
 
-        zinfo = ZipInfo(archive_name, date_time=self._get_zipinfo_datetime(timestamp))
+        zinfo = ZipInfo(archive_name, date_time=time.gmtime(timestamp)[0:6])
         zinfo.external_attr = 0o664 << 16
-        self._zip.writestr(zinfo, data)
+        self._zip.writestr(zinfo, contents)
 
-    def write_data_file(self, archive_name: str, contents: Union[bytes, str, PathLike]) -> None:
+    def write_data_file(self, archive_name: str, contents: Union[bytes, str],
+                        timestamp: Union[datetime, int] = None) -> None:
         archive_path = posixpath.join(self._data_path, archive_name)
-        self.write_file(archive_path, contents)
+        self.write_file(archive_path, contents, timestamp)
 
-    def write_metadata_file(self, archive_name: str,
-                            contents: Union[bytes, str, PathLike]) -> None:
+    def write_metadata_file(self, archive_name: str, contents: Union[bytes, str],
+                            timestamp: Union[datetime, int] = None) -> None:
         archive_path = posixpath.join(self._dist_info_path, archive_name)
-        self.write_file(archive_path, contents)
+        self.write_file(archive_path, contents, timestamp)
 
     def write_files_from_directory(self, base_path: Union[str, PathLike]) -> None:
         base_path = Path(base_path)
