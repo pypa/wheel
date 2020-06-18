@@ -160,7 +160,7 @@ class WheelFile:
         archive_path = posixpath.join(self._data_path, archive_name)
         self.write_file(archive_path, contents, timestamp)
 
-    def write_metadata_file(self, archive_name: str, contents: Union[bytes, str],
+    def write_distinfo_file(self, archive_name: str, contents: Union[bytes, str],
                             timestamp: Union[datetime, int] = None) -> None:
         archive_path = posixpath.join(self._dist_info_path, archive_name)
         self.write_file(archive_path, contents, timestamp)
@@ -262,7 +262,7 @@ class WheelFile:
             for fname, entry in self._record_entries.items()
         ])
         writer.writerow((self._record_path, "", ""))
-        self.write_metadata_file('RECORD', data.getvalue())
+        self.write_distinfo_file('RECORD', data.getvalue())
 
     def _write_wheelfile(self) -> None:
         msg = Message()
@@ -279,7 +279,7 @@ class WheelFile:
 
         buffer = StringIO()
         Generator(buffer, maxheaderlen=0).flatten(msg)
-        self.write_metadata_file('WHEEL', buffer.getvalue())
+        self.write_distinfo_file('WHEEL', buffer.getvalue())
 
     def __repr__(self):
         return '{}({!r}, {!r})'.format(self.__class__.__name__, self.path, self.mode)
