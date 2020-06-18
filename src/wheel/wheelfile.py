@@ -1,6 +1,7 @@
 import csv
 import hashlib
 import os.path
+import posixpath
 import re
 import time
 from base64 import urlsafe_b64decode, urlsafe_b64encode
@@ -86,8 +87,8 @@ class WheelFile:
         self._metadata = metadata
         self._data_path = '{meta.name}-{meta.version}.data'.format(meta=self._metadata)
         self._dist_info_path = '{meta.name}-{meta.version}.dist-info'.format(meta=self._metadata)
-        self._record_path = self._dist_info_path + '/RECORD'
-        self._exclude_archive_names = frozenset(self._dist_info_path + '/' + fname
+        self._record_path = posixpath.join(self._dist_info_path + 'RECORD')
+        self._exclude_archive_names = frozenset(posixpath.join(self._dist_info_path, fname)
                                                 for fname in self._exclude_filenames)
         self._zip = ZipFile(path_or_fd, mode, compression=compression)
         self._record_entries = OrderedDict()  # type: Dict[str, WheelRecordEntry]
@@ -160,12 +161,12 @@ class WheelFile:
         self._zip.writestr(zinfo, data)
 
     def write_data_file(self, archive_name: str, contents: Union[bytes, str, PathLike]) -> None:
-        archive_path = self._data_path + '/' + archive_name
+        archive_path = posixpath.join(self._data_path, archive_name)
         self.write_file(archive_path, contents)
 
     def write_metadata_file(self, archive_name: str,
                             contents: Union[bytes, str, PathLike]) -> None:
-        archive_path = self._dist_info_path + '/' + archive_name
+        archive_path = posixpath.join(self._dist_info_path, archive_name)
         self.write_file(archive_path, contents)
 
     def write_files_from_directory(self, base_path: Union[str, PathLike]) -> None:
@@ -215,10 +216,12 @@ class WheelFile:
         return contents
 
     def read_data_file(self, filename: str) -> bytes:
-        return self.read_file(self._data_path + '/' + filename)
+        archive_name = posixpath.join(self._data_path, filename)
+        return self.read_file(archive_name)
 
     def read_metadata_file(self, filename: str) -> bytes:
-        return self.read_file(self._dist_info_path + '/' + filename)
+        archive_name = posixpath.join(self._dist_info_path, filename)
+        return self.read_file(archive_name)
 
     def unpack(self, dest_dir: Union[str, PathLike],
                archive_names: Union[str, Iterable[str], None] = None) -> None:
