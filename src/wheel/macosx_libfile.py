@@ -38,6 +38,7 @@ Important remarks:
 import ctypes
 import os
 import sys
+from typing import Tuple, Optional, BinaryIO, Type
 
 """here the needed const and struct from mach-o header files"""
 
@@ -209,14 +210,15 @@ struct build_version_command {
 """
 
 
-def swap32(x):
+def swap32(x: int) -> int:
     return (((x << 24) & 0xFF000000) |
             ((x << 8) & 0x00FF0000) |
             ((x >> 8) & 0x0000FF00) |
             ((x >> 24) & 0x000000FF))
 
 
-def get_base_class_and_magic_number(lib_file, seek=None):
+def get_base_class_and_magic_number(
+        lib_file: BinaryIO, seek: Optional[int] = None) -> Tuple[Type[ctypes.Structure], int]:
     if seek is None:
         seek = lib_file.tell()
     else:
@@ -239,12 +241,13 @@ def get_base_class_and_magic_number(lib_file, seek=None):
     return BaseClass, magic_number
 
 
-def read_data(struct_class, lib_file):
-    return struct_class.from_buffer_copy(lib_file.read(
-                        ctypes.sizeof(struct_class)))
+def read_data(struct_class: Type[ctypes.Structure], lib_file: BinaryIO):
+    return struct_class.from_buffer_copy(
+        lib_file.read(ctypes.sizeof(struct_class))
+    )
 
 
-def extract_macosx_min_system_version(path_to_lib):
+def extract_macosx_min_system_version(path_to_lib: str) -> Optional[Tuple[int, int, int]]:
     with open(path_to_lib, "rb") as lib_file:
         BaseClass, magic_number = get_base_class_and_magic_number(lib_file, 0)
         if magic_number not in [FAT_MAGIC, FAT_MAGIC_64, MH_MAGIC, MH_MAGIC_64]:
@@ -288,7 +291,8 @@ def extract_macosx_min_system_version(path_to_lib):
                 return None
 
 
-def read_mach_header(lib_file, seek=None):
+def read_mach_header(lib_file: BinaryIO,
+                     seek: Optional[int] = None) -> Optional[Tuple[int, int, int]]:
     """
     This funcition parse mach-O header and extract
     information about minimal system version
@@ -335,14 +339,14 @@ def read_mach_header(lib_file, seek=None):
             continue
 
 
-def parse_version(version):
+def parse_version(version: int) -> Tuple[int, int, int]:
     x = (version & 0xffff0000) >> 16
     y = (version & 0x0000ff00) >> 8
     z = (version & 0x000000ff)
     return x, y, z
 
 
-def calculate_macosx_platform_tag(archive_root, platform_tag):
+def calculate_macosx_platform_tag(archive_root: str, platform_tag: str) -> str:
     """
     Calculate proper macosx platform tag basing on files which are included to wheel
 
@@ -406,5 +410,4 @@ def calculate_macosx_platform_tag(archive_root, platform_tag):
 
         sys.stderr.write(error_message)
 
-    platform_tag = prefix + "_" + fin_base_version + "_" + suffix
-    return platform_tag
+    return prefix + "_" + fin_base_version + "_" + suffix
