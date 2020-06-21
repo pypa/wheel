@@ -3,8 +3,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 import pytest
 
-from wheel.cli import WheelError
-from wheel.wheelfile import WheelFile
+from wheel.wheelfile import WheelFile, WheelError
 
 
 @pytest.fixture
@@ -37,7 +36,7 @@ def test_missing_record(wheel_path):
         zf.writestr('hello/héllö.py', 'print("Héllö, w0rld!")\n')
 
     exc = pytest.raises(WheelError, WheelFile, wheel_path)
-    exc.match("^Missing test-1.0.dist-info/RECORD file$")
+    exc.match("^File test-1.0.dist-info/RECORD not found$")
 
 
 def test_unsupported_hash_algorithm(wheel_path):
