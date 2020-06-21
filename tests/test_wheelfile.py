@@ -8,13 +8,13 @@ from wheel.wheelfile import WheelFile
 
 
 @pytest.fixture
-def wheel_path(tmpdir):
-    return str(tmpdir.join('test-1.0-py2.py3-none-any.whl'))
+def wheel_path(tmp_path):
+    return str(tmp_path / 'test-1.0-py2.py3-none-any.whl')
 
 
-def test_wheelfile_re(tmpdir):
+def test_wheelfile_re(tmp_path):
     # Regression test for #208
-    path = tmpdir.join('foo-2-py3-none-any.whl')
+    path = tmp_path / 'foo-2-py3-none-any.whl'
     with WheelFile(str(path), 'w') as wf:
         assert wf.metadata.name == 'foo'
         assert wf.metadata.version == '2'
@@ -124,12 +124,12 @@ def test_write_str(wheel_path):
             'test-1.0.dist-info/RECORD,,\n')
 
 
-def test_timestamp(tmpdir_factory, wheel_path, monkeypatch):
+def test_timestamp(tmp_path_factory, wheel_path, monkeypatch):
     # An environment variable can be used to influence the timestamp on
     # TarInfo objects inside the zip.  See issue #143.
-    build_dir = tmpdir_factory.mktemp('build')
+    build_dir = tmp_path_factory.mktemp('build')
     for filename in ('one', 'two', 'three'):
-        build_dir.join(filename).write(filename + '\n')
+        build_dir.joinpath(filename).write_text(filename + '\n')
 
     # The earliest date representable in TarInfos, 1980-01-01
     monkeypatch.setenv('SOURCE_DATE_EPOCH', '315576060')
@@ -145,14 +145,14 @@ def test_timestamp(tmpdir_factory, wheel_path, monkeypatch):
 
 @pytest.mark.skipif(sys.platform == 'win32',
                     reason='Windows does not support UNIX-like permissions')
-def test_attributes(tmpdir_factory, wheel_path):
+def test_attributes(tmp_path_factory, wheel_path):
     # With the change from ZipFile.write() to .writestr(), we need to manually
     # set member attributes.
-    build_dir = tmpdir_factory.mktemp('build')
+    build_dir = tmp_path_factory.mktemp('build')
     files = (('foo', 0o644), ('bar', 0o755))
     for filename, mode in files:
-        path = build_dir.join(filename)
-        path.write(filename + '\n')
+        path = build_dir / filename
+        path.write_text(filename + '\n')
         path.chmod(mode)
 
     with WheelFile(wheel_path, 'w') as wf:

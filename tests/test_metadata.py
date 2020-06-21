@@ -1,7 +1,7 @@
 from wheel.metadata import pkginfo_to_metadata
 
 
-def test_pkginfo_to_metadata(tmpdir):
+def test_pkginfo_to_metadata(tmp_path):
     expected_metadata = [
         ('Metadata-Version', '2.1'),
         ('Name', 'spam'),
@@ -25,8 +25,8 @@ def test_pkginfo_to_metadata(tmpdir):
         ('Requires-Dist', "pytest-cov ; extra == 'test'"),
     ]
 
-    pkg_info = tmpdir.join('PKG-INFO')
-    pkg_info.write("""\
+    pkg_info_path = tmp_path / 'PKG-INFO'
+    pkg_info_path.write_text("""\
 Metadata-Version: 0.0
 Name: spam
 Version: 0.1
@@ -37,8 +37,8 @@ Provides-Extra: signatures
 Provides-Extra: Signatures
 Provides-Extra: faster-signatures""")
 
-    egg_info_dir = tmpdir.ensure_dir('test.egg-info')
-    egg_info_dir.join('requires.txt').write("""\
+    requires_txt_path = tmp_path / 'requires.txt'
+    requires_txt_path.write_text("""\
 pip@https://github.com/pypa/pip/archive/1.3.1.zip
 
 [extra]
@@ -67,5 +67,5 @@ pyxdg
 pytest>=3.0.0
 pytest-cov""")
 
-    message = pkginfo_to_metadata(egg_info_path=str(egg_info_dir), pkginfo_path=str(pkg_info))
-    assert message.items() == expected_metadata
+    items = pkginfo_to_metadata(pkg_info_path)
+    assert items == expected_metadata

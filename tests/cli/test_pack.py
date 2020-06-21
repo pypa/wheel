@@ -17,8 +17,8 @@ TESTWHEEL_PATH = os.path.join(THISDIR, '..', 'testdata', TESTWHEEL_NAME)
     (None, '3', 'test-1.0-3-py2.py3-none-any.whl'),
     ('', '3', 'test-1.0-py2.py3-none-any.whl'),
 ], ids=['nobuildnum', 'newbuildarg', 'oldbuildnum', 'erasebuildnum'])
-def test_pack(tmpdir_factory, tmpdir, build_tag_arg, existing_build_tag, filename):
-    unpack_dir = tmpdir_factory.mktemp('wheeldir')
+def test_pack(tmp_path_factory, tmp_path, build_tag_arg, existing_build_tag, filename):
+    unpack_dir = tmp_path_factory.mktemp('wheeldir')
     with ZipFile(TESTWHEEL_PATH) as zf:
         old_record = zf.read('test-1.0.dist-info/RECORD')
         old_record_lines = sorted(line.rstrip() for line in old_record.split(b'\n')
@@ -27,14 +27,14 @@ def test_pack(tmpdir_factory, tmpdir, build_tag_arg, existing_build_tag, filenam
 
     if existing_build_tag:
         # Add the build number to WHEEL
-        wheel_file_path = unpack_dir.join('test-1.0.dist-info').join('WHEEL')
-        wheel_file_content = wheel_file_path.read_binary()
+        wheel_file_path = unpack_dir / 'test-1.0.dist-info' / 'WHEEL'
+        wheel_file_content = wheel_file_path.read_bytes()
         assert b'Build' not in wheel_file_content
         wheel_file_content += b'Build: 3\r\n'
-        wheel_file_path.write_binary(wheel_file_content)
+        wheel_file_path.write_bytes(wheel_file_content)
 
-    pack(str(unpack_dir), str(tmpdir), build_tag_arg)
-    new_wheel_path = tmpdir.join(filename)
+    pack(str(unpack_dir), str(tmp_path), build_tag_arg)
+    new_wheel_path = tmp_path / filename
     assert new_wheel_path.isfile()
 
     with ZipFile(str(new_wheel_path)) as zf:

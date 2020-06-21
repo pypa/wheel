@@ -1,15 +1,22 @@
-import os.path
 import re
 import shutil
 import sys
 import tempfile
 import zipfile
 from distutils import dist
-from glob import iglob
+from pathlib import Path
+from typing import Union, Dict, Iterable
+
+from wheel.wheelfile import make_filename
 
 from ..bdist_wheel import bdist_wheel
 from ..wheelfile import WheelFile
 from . import WheelError, require_pkgresources
+
+if sys.version_info >= (3, 6):
+    from os import PathLike
+else:
+    PathLike = Path
 
 egg_info_re = re.compile(r'''
     (?P<name>.+?)-(?P<ver>.+?)
@@ -34,26 +41,26 @@ class _bdist_wheel_tag(bdist_wheel):
             return bdist_wheel.get_tag(self)
 
 
-def egg2wheel(egg_path, dest_dir):
-    filename = os.path.basename(egg_path)
-    match = egg_info_re.match(filename)
+def egg2wheel(egg_path: Union[str, PathLike], dest_dir: Union[str, PathLike]) -> None:
+    egg_path = Path(egg_path)
+    dest_dir = Path(dest_dir)
+    match = egg_info_re.match(egg_path.name)
     if not match:
-        raise WheelError('Invalid egg file name: {}'.format(filename))
+        raise WheelError('Invalid egg file name: {}'.format(egg_path.name))
 
     egg_info = match.groupdict()
-    dir = tempfile.mkdtemp(suffix="_e2w")
-    if os.path.isfile(egg_path):
+    tmp_path = Path(tempfile.mkdtemp(suffix="_e2w"))
+    if egg_path.is_file():
         # assume we have a bdist_egg otherwise
-        with zipfile.ZipFile(egg_path) as egg:
-            egg.extractall(dir)
+        with zipfile.ZipFile(str(egg_path)) as egg:
+            egg.extractall(str(tmp_path))
     else:
         # support buildout-style installed eggs directories
-        for pth in os.listdir(egg_path):
-            src = os.path.join(egg_path, pth)
-            if os.path.isfile(src):
-                shutil.copy2(src, dir)
+        for pth in egg_path.iterdir():
+            if pth.is_file():
+                shutil.copy2(str(pth), tmp_path)
             else:
-                shutil.copytree(src, os.path.join(dir, pth))
+                shutil.copytree(str(pth), tmp_path / pth.name)
 
     pyver = egg_info['pyver']
     if pyver:
@@ -78,17 +85,17 @@ def egg2wheel(egg_path, dest_dir):
         bw.full_tag_supplied = True
         bw.full_tag = (pyver, abi, arch)
 
-    dist_info_dir = os.path.join(dir, '{name}-{ver}.dist-info'.format(**egg_info))
-    bw.egg2dist(os.path.join(dir, 'EGG-INFO'), dist_info_dir)
-    bw.write_wheelfile(dist_info_dir, generator='egg2wheel')
-    wheel_name = '{name}-{ver}-{pyver}-{}-{}.whl'.format(abi, arch, **egg_info)
-    with WheelFile(os.path.join(dest_dir, wheel_name), 'w') as wf:
-        wf.write_files(dir)
+    dist_info_dir = tmp_path / '{name}-{ver}.dist-info'.format(**egg_info)
+    bw.egg2dist(tmp_path / 'EGG-INFO', dist_info_dir)
+    wheel_name = make_filename(egg_info['name'], egg_info['ver'], impl_tag=pyver,
+                               abi_tag=abi, plat_tag=arch)
+    with WheelFile(dest_dir / wheel_name, 'w', generator='egg2wheel') as wf:
+        wf.write_files(tmp_path)
 
-    shutil.rmtree(dir)
+    shutil.rmtree(str(tmp_path))
 
 
-def parse_wininst_info(wininfo_name, egginfo_name):
+def parse_wininst_info(wininfo_name: str, egginfo_name: str) -> Dict[str, str]:
     """Extract metadata from filenames.
 
     Extracts the 4 metadataitems needed (name, version, pyversion, arch) from
@@ -159,8 +166,8 @@ def parse_wininst_info(wininfo_name, egginfo_name):
     return {'name': w_name, 'ver': w_ver, 'arch': w_arch, 'pyver': w_pyver}
 
 
-def wininst2wheel(path, dest_dir):
-    with zipfile.ZipFile(path) as bdw:
+def wininst2wheel(path: Union[str, PathLike], dest_dir: Union[str, PathLike]) -> None:
+    with zipfile.ZipFile(str(path)) as bdw:
         # Search for egg-info in the archive
         egginfo_name = None
         for filename in bdw.namelist():
@@ -168,7 +175,7 @@ def wininst2wheel(path, dest_dir):
                 egginfo_name = filename
                 break
 
-        info = parse_wininst_info(os.path.basename(path), egginfo_name)
+        info = parse_wininst_info(path.name, egginfo_name)
 
         root_is_purelib = True
         for zipinfo in bdw.infolist():
@@ -207,8 +214,8 @@ def wininst2wheel(path, dest_dir):
                     egginfo_name = newname
                 elif '.egg-info/' in newname:
                     egginfo_name, sep, _ = newname.rpartition('/')
-        dir = tempfile.mkdtemp(suffix="_b2w")
-        bdw.extractall(dir, members)
+        tmp_path = Path(tempfile.mkdtemp(suffix="_b2w"))
+        bdw.extractall(tmp_path, members)
 
     # egg2wheel
     abi = 'none'
@@ -223,7 +230,8 @@ def wininst2wheel(path, dest_dir):
     # CPython-specific.
     if arch != 'any':
         pyver = pyver.replace('py', 'cp')
-    wheel_name = '-'.join((dist_info, pyver, abi, arch))
+
+    wheel_name = make_filename(info['name'], info['ver'], None, pyver, abi, arch)
     if root_is_purelib:
         bw = bdist_wheel(dist.Distribution())
     else:
@@ -238,32 +246,30 @@ def wininst2wheel(path, dest_dir):
         bw.full_tag_supplied = True
         bw.full_tag = (pyver, abi, arch)
 
-    dist_info_dir = os.path.join(dir, '%s.dist-info' % dist_info)
-    bw.egg2dist(os.path.join(dir, egginfo_name), dist_info_dir)
-    bw.write_wheelfile(dist_info_dir, generator='wininst2wheel')
+    dist_info_dir = tmp_path / '%s.dist-info' % dist_info
+    bw.egg2dist(tmp_path / egginfo_name, dist_info_dir)
 
-    wheel_path = os.path.join(dest_dir, wheel_name)
-    with WheelFile(wheel_path, 'w') as wf:
-        wf.write_files(dir)
+    with WheelFile(dest_dir / wheel_name, 'w', generator='wininst2wheel') as wf:
+        wf.write_files(tmp_path)
 
-    shutil.rmtree(dir)
+    shutil.rmtree(str(tmp_path))
 
 
-def convert(files, dest_dir, verbose):
+def convert(files: Iterable[str], dest_dir: Union[str, PathLike], verbose: bool) -> None:
     # Only support wheel convert if pkg_resources is present
     require_pkgresources('wheel convert')
 
-    for pat in files:
-        for installer in iglob(pat):
-            if os.path.splitext(installer)[1] == '.egg':
+    for pattern in files:
+        for installer_path in Path.cwd().glob(pattern):
+            if installer_path.suffix == '.egg':
                 conv = egg2wheel
             else:
                 conv = wininst2wheel
 
             if verbose:
-                print("{}... ".format(installer))
+                print("{}... ".format(installer_path))
                 sys.stdout.flush()
 
-            conv(installer, dest_dir)
+            conv(installer_path, dest_dir)
             if verbose:
                 print("OK")

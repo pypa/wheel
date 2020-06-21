@@ -26,9 +26,9 @@ OTHER_IGNORED_FILES = {
 
 
 @pytest.fixture
-def dummy_dist(tmpdir_factory):
-    basedir = tmpdir_factory.mktemp('dummy_dist')
-    basedir.join('setup.py').write("""\
+def dummy_dist(tmp_path_factory):
+    basedir = tmp_path_factory.mktemp('dummy_dist')
+    basedir.joinpath('setup.py').write_text("""\
 from setuptools import setup
 
 setup(
@@ -37,15 +37,17 @@ setup(
 )
 """)
     for fname in DEFAULT_LICENSE_FILES | OTHER_IGNORED_FILES:
-        basedir.join(fname).write('')
+        basedir.joinpath(fname).write_text('')
 
-    basedir.join('licenses').mkdir().join('DUMMYFILE').write('')
+    licenses_path = basedir.joinpath('licenses')
+    licenses_path.mkdir()
+    licenses_path.joinpath('DUMMYFILE').write_text('')
     return basedir
 
 
 def test_no_scripts(wheel_paths):
     """Make sure entry point scripts are not generated."""
-    path = next(path for path in wheel_paths if 'complex_dist' in path)
+    path = next(path for path in wheel_paths if 'complex_dist' in path.name)
     with WheelFile(path) as wf:
         filenames = set(wf.filenames)
 
@@ -56,54 +58,54 @@ def test_no_scripts(wheel_paths):
 @pytest.mark.skipif(sys.version_info < (3, 6),
                     reason='Packaging unicode file names only works reliably on Python 3.6+')
 def test_unicode_record(wheel_paths):
-    path = next(path for path in wheel_paths if 'unicode.dist' in path)
+    path = next(path for path in wheel_paths if 'unicode.dist' in path.name)
     with WheelFile(path) as wf:
         filenames = set(wf.record_entries)
 
     assert 'unicodedist/åäö_日本語.py' in filenames
 
 
-def test_licenses_default(dummy_dist, monkeypatch, tmpdir):
+def test_licenses_default(dummy_dist, monkeypatch, tmp_path):
     monkeypatch.chdir(dummy_dist)
-    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmpdir),
+    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmp_path),
                            '--universal'])
     with WheelFile('dist/dummy_dist-1.0-py2.py3-none-any.whl') as wf:
         license_files = {'dummy_dist-1.0.dist-info/' + fname for fname in DEFAULT_LICENSE_FILES}
         assert set(wf.filenames) == DEFAULT_FILES | license_files
 
 
-def test_licenses_deprecated(dummy_dist, monkeypatch, tmpdir):
-    dummy_dist.join('setup.cfg').write('[metadata]\nlicense_file=licenses/DUMMYFILE')
+def test_licenses_deprecated(dummy_dist, monkeypatch, tmp_path):
+    dummy_dist.joinpath('setup.cfg').write_text('[metadata]\nlicense_file=licenses/DUMMYFILE')
     monkeypatch.chdir(dummy_dist)
-    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmpdir),
+    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmp_path),
                            '--universal'])
     with WheelFile('dist/dummy_dist-1.0-py2.py3-none-any.whl') as wf:
         license_files = {'dummy_dist-1.0.dist-info/DUMMYFILE'}
         assert set(wf.filenames) == DEFAULT_FILES | license_files
 
 
-def test_licenses_override(dummy_dist, monkeypatch, tmpdir):
-    dummy_dist.join('setup.cfg').write('[metadata]\nlicense_files=licenses/*\n  LICENSE')
+def test_licenses_override(dummy_dist, monkeypatch, tmp_path):
+    dummy_dist.joinpath('setup.cfg').write_text('[metadata]\nlicense_files=licenses/*\n  LICENSE')
     monkeypatch.chdir(dummy_dist)
-    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmpdir),
+    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmp_path),
                            '--universal'])
     with WheelFile('dist/dummy_dist-1.0-py2.py3-none-any.whl') as wf:
         license_files = {'dummy_dist-1.0.dist-info/' + fname for fname in {'DUMMYFILE', 'LICENSE'}}
         assert set(wf.filenames) == DEFAULT_FILES | license_files
 
 
-def test_licenses_disabled(dummy_dist, monkeypatch, tmpdir):
-    dummy_dist.join('setup.cfg').write('[metadata]\nlicense_files=\n')
+def test_licenses_disabled(dummy_dist, monkeypatch, tmp_path):
+    dummy_dist.joinpath('setup.cfg').write_text('[metadata]\nlicense_files=\n')
     monkeypatch.chdir(dummy_dist)
-    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmpdir),
+    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmp_path),
                            '--universal'])
     with WheelFile('dist/dummy_dist-1.0-py2.py3-none-any.whl') as wf:
         assert set(wf.filenames) == DEFAULT_FILES
 
 
-def test_build_number(dummy_dist, monkeypatch, tmpdir):
+def test_build_number(dummy_dist, monkeypatch, tmp_path):
     monkeypatch.chdir(dummy_dist)
-    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmpdir),
+    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmp_path),
                            '--universal', '--build-number=2'])
     with WheelFile('dist/dummy_dist-1.0-2-py2.py3-none-any.whl') as wf:
         filenames = set(wf.filenames)
@@ -112,19 +114,19 @@ def test_build_number(dummy_dist, monkeypatch, tmpdir):
 
 
 @pytest.mark.skipif(sys.version_info[0] < 3, reason='The limited ABI only works on Python 3+')
-def test_limited_abi(monkeypatch, tmpdir):
+def test_limited_abi(monkeypatch, tmp_path):
     """Test that building a binary wheel with the limited ABI works."""
     this_dir = os.path.dirname(__file__)
     source_dir = os.path.join(this_dir, 'testdata', 'extension.dist')
-    build_dir = tmpdir.join('build')
-    dist_dir = tmpdir.join('dist')
+    build_dir = tmp_path / 'build'
+    dist_dir = tmp_path / 'dist'
     monkeypatch.chdir(source_dir)
     subprocess.check_call([sys.executable, 'setup.py',  'bdist_wheel', '-b', str(build_dir),
                            '-d', str(dist_dir)])
 
 
-def test_build_from_readonly_tree(dummy_dist, monkeypatch, tmpdir):
-    basedir = str(tmpdir.join('dummy'))
+def test_build_from_readonly_tree(dummy_dist, monkeypatch, tmp_path):
+    basedir = str(tmp_path / 'dummy')
     shutil.copytree(str(dummy_dist), basedir)
     monkeypatch.chdir(basedir)
 
@@ -138,9 +140,9 @@ def test_build_from_readonly_tree(dummy_dist, monkeypatch, tmpdir):
 
 @pytest.mark.parametrize('option, compress_type', list(bdist_wheel.supported_compressions.items()),
                          ids=list(bdist_wheel.supported_compressions))
-def test_compression(dummy_dist, monkeypatch, tmpdir, option, compress_type):
+def test_compression(dummy_dist, monkeypatch, tmp_path, option, compress_type):
     monkeypatch.chdir(dummy_dist)
-    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmpdir),
+    subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmp_path),
                            '--universal', '--compression={}'.format(option)])
     with ZipFile('dist/dummy_dist-1.0-py2.py3-none-any.whl') as zf:
         filenames = set(zf.namelist())
