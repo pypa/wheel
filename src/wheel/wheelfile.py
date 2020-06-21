@@ -2,6 +2,7 @@ import csv
 import hashlib
 import os.path
 import re
+import sys
 import time
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from collections import OrderedDict
@@ -10,12 +11,16 @@ from email.generator import Generator
 from email.message import Message
 from email.parser import Parser
 from io import StringIO
-from os import PathLike
 from pathlib import Path
 from typing import Optional, Union, Dict, Iterable, NamedTuple, IO, Tuple, List
 from zipfile import ZIP_DEFLATED, ZipInfo, ZipFile
 
 from . import __version__ as wheel_version
+
+if sys.version_info >= (3, 6):
+    from os import PathLike
+else:
+    PathLike = Path
 
 _DIST_NAME_RE = re.compile(r'[^A-Za-z0-9.]+')
 _WHEEL_INFO_RE = re.compile(
