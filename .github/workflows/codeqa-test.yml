@@ -1,8 +1,6 @@
 name: Python codeqa/test
 
 on:
-  pull_request:
-    branches: "*"
   push:
     branches: "*"
 
