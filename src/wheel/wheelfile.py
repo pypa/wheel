@@ -9,7 +9,7 @@ from datetime import datetime
 from email.generator import Generator
 from email.message import Message
 from email.parser import Parser
-from io import StringIO, FileIO
+from io import StringIO
 from os import PathLike
 from pathlib import Path
 from typing import Optional, Union, Dict, Iterable, NamedTuple, IO, Tuple, List
@@ -17,8 +17,9 @@ from zipfile import ZIP_DEFLATED, ZipInfo, ZipFile
 
 from . import __version__ as wheel_version
 
+_DIST_NAME_RE = re.compile(r'[^A-Za-z0-9.]+')
 _WHEEL_INFO_RE = re.compile(
-    r"""^(?P<namever>(?P<name>.+?)-(?P<ver>.+?))(-(?P<build>\d[^-]*))?
+    r"""^(?P<namever>(?P<name>.+?)-(?P<ver>.+?))(?:-(?P<build>\d[^-]*))?
      -(?P<pyver>.+?)-(?P<abi>.+?)-(?P<plat>.+?)\.whl$""",
     re.VERBOSE)
 
@@ -38,6 +39,15 @@ WheelRecordEntry = NamedTuple('_WheelRecordEntry', [
 ])
 
 
+def _encode_hash_value(hash_value: bytes) -> str:
+    return urlsafe_b64encode(hash_value).rstrip(b'=').decode('ascii')
+
+
+def _decode_hash_value(encoded_hash: str) -> bytes:
+    pad = b'=' * (4 - (len(encoded_hash) & 3))
+    return urlsafe_b64decode(encoded_hash.encode('ascii') + pad)
+
+
 def parse_filename(filename: str) -> WheelMetadata:
     parsed_filename = _WHEEL_INFO_RE.match(filename)
     if parsed_filename is None:
@@ -48,6 +58,8 @@ def parse_filename(filename: str) -> WheelMetadata:
 
 def make_filename(name: str, version: str, build_tag: Union[str, int, None] = None,
                   impl_tag: str = 'py3', abi_tag: str = 'none', plat_tag: str = 'any') -> str:
+    name = _DIST_NAME_RE.sub('_', name)
+    version = _DIST_NAME_RE.sub('_', version)
     filename = '{}-{}'.format(name, version)
     if build_tag is not None:
         filename = '{}-{}'.format(filename, build_tag)
@@ -60,8 +72,9 @@ class WheelError(Exception):
 
 
 class WheelFile:
-    __slots__ = ('generator', 'root_is_purelib', '_mode', '_metadata', '_zip', '_data_path',
-                 '_dist_info_path', '_record_path', '_record_entries', '_exclude_archive_names')
+    __slots__ = ('generator', 'root_is_purelib', '_mode', '_metadata', '_compression', '_zip',
+                 '_data_path', '_dist_info_path', '_record_path', '_record_entries',
+                 '_exclude_archive_names')
 
     # dist-info file names ignored for hash checking/recording
     _exclude_filenames = ('RECORD', 'RECORD.jws', 'RECORD.p7s')
@@ -77,8 +90,9 @@ class WheelFile:
             path_or_fd = Path(path_or_fd).open(mode + 'b')
 
         if metadata is None:
-            if isinstance(path_or_fd, FileIO):
-                metadata = parse_filename(path_or_fd.name)
+            filename = getattr(path_or_fd, 'name', None)
+            if filename:
+                metadata = parse_filename(os.path.basename(filename))
             else:
                 raise WheelError('No file name or metadata provided')
 
@@ -86,12 +100,13 @@ class WheelFile:
         self.root_is_purelib = root_is_purelib
         self._mode = mode
         self._metadata = metadata
+        self._compression = compression
         self._data_path = '{meta.name}-{meta.version}.data'.format(meta=self._metadata)
         self._dist_info_path = '{meta.name}-{meta.version}.dist-info'.format(meta=self._metadata)
         self._record_path = self._dist_info_path + '/RECORD'
         self._exclude_archive_names = frozenset(self._dist_info_path + '/' + fname
                                                 for fname in self._exclude_filenames)
-        self._zip = ZipFile(path_or_fd, mode, compression=compression)
+        self._zip = ZipFile(path_or_fd, mode)
         self._record_entries = OrderedDict()  # type: Dict[str, WheelRecordEntry]
 
         if mode == 'r':
@@ -108,6 +123,14 @@ class WheelFile:
     @property
     def metadata(self) -> WheelMetadata:
         return self._metadata
+
+    @property
+    def record_entries(self) -> Dict[str, WheelRecordEntry]:
+        return self._record_entries.copy()
+
+    @property
+    def filenames(self) -> List[str]:
+        return self._zip.namelist()
 
     def close(self) -> None:
         try:
@@ -161,6 +184,7 @@ class WheelFile:
                 self._default_hash_algorithm, hash_digest, len(contents))
 
         zinfo = ZipInfo(archive_name, date_time=time.gmtime(timestamp)[0:6])
+        zinfo.compress_type = self._compression
         zinfo.external_attr = 0o664 << 16
         self._zip.writestr(zinfo, contents)
 
@@ -190,8 +214,8 @@ class WheelFile:
             if computed_hash != entry.hash_value:
                 raise WheelError(
                     '{}: hash mismatch: {} in RECORD, {} computed from current file contents'
-                    .format(archive_name, urlsafe_b64encode(entry.hash_value).decode('ascii'),
-                            urlsafe_b64encode(computed_hash).decode('ascii')))
+                    .format(archive_name, _encode_hash_value(entry.hash_value),
+                            _encode_hash_value(computed_hash)))
 
         return contents
 
@@ -237,14 +261,14 @@ class WheelFile:
             if hash_ is not None and entry is not None and hash_.digest() != entry.hash_value:
                 raise WheelError(
                     '{}: hash mismatch: {} in RECORD, {} computed from current file contents'
-                    .format(zinfo.filename, urlsafe_b64encode(entry.hash_value).decode('ascii'),
-                            urlsafe_b64encode(hash_.digest()).decode('ascii'))
+                    .format(zinfo.filename, _encode_hash_value(entry.hash_value),
+                            _encode_hash_value(hash_.digest()))
                 )
 
     def _read_record(self) -> None:
         self._record_entries.clear()
         contents = self.read_distinfo_file('RECORD').decode('utf-8')
-        for line in contents.split('\n'):
+        for line in contents.strip().split('\n'):
             path, hash_digest, filesize = line.rsplit(',', 2)
             if hash_digest:
                 algorithm, hash_digest = hash_digest.split('=')
@@ -259,14 +283,14 @@ class WheelFile:
                         .format(algorithm))
 
                 self._record_entries[path] = WheelRecordEntry(
-                    algorithm, urlsafe_b64decode(hash_digest), int(filesize))
+                    algorithm, _decode_hash_value(hash_digest), int(filesize))
 
     def _write_record(self) -> None:
         data = StringIO()
         writer = csv.writer(data, delimiter=',', quotechar='"', lineterminator='\n')
         writer.writerows([
             (fname,
-             entry.hash_algorithm + "=" + urlsafe_b64encode(entry.hash_value).decode('ascii'),
+             entry.hash_algorithm + "=" + _encode_hash_value(entry.hash_value),
              entry.filesize)
             for fname, entry in self._record_entries.items()
         ])

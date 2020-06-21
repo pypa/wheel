@@ -12,21 +12,20 @@ import sys
 import re
 import warnings
 from collections import OrderedDict
-from email.generator import Generator
 from distutils.core import Command
 from distutils.sysconfig import get_config_var
 from distutils import log as logger
-from glob import iglob
+from pathlib import Path
 from shutil import rmtree
+from typing import Set
 from zipfile import ZIP_DEFLATED, ZIP_STORED
 
 from packaging import tags
 import pkg_resources
 
-from .pkginfo import write_pkg_info
 from .macosx_libfile import calculate_macosx_platform_tag
 from .metadata import pkginfo_to_metadata
-from .wheelfile import WheelFile
+from .wheelfile import WheelFile, make_filename
 from . import __version__ as wheel_version
 
 
@@ -49,6 +48,7 @@ def get_platform(archive_root):
     if result == "linux_x86_64" and sys.maxsize == 2147483647:
         # pip pull request #3497
         result = "linux_i686"
+
     return result
 
 
@@ -60,7 +60,9 @@ def get_flag(var, fallback, expected=True, warn=True):
         if warn:
             warnings.warn("Config variable '{0}' is unset, Python ABI tag may "
                           "be incorrect".format(var), RuntimeWarning, 2)
+
         return fallback
+
     return val == expected
 
 
@@ -97,6 +99,7 @@ def get_abi_tag():
         abi = soabi.replace('.', '_').replace('-', '_')
     else:
         abi = None
+
     return abi
 
 
@@ -322,68 +325,79 @@ class bdist_wheel(Command):
                 basedir_observed)
 
         logger.info("installing to %s", self.bdist_dir)
-
         self.run_command('install')
 
         impl_tag, abi_tag, plat_tag = self.get_tag()
-        archive_basename = "{}-{}-{}-{}".format(self.wheel_dist_name, impl_tag, abi_tag, plat_tag)
-        if not self.relative:
-            archive_root = self.bdist_dir
-        else:
-            archive_root = os.path.join(
-                self.bdist_dir,
-                self._ensure_relative(install.install_base))
-
-        self.set_undefined_options('install_egg_info', ('target', 'egginfo_dir'))
-        distinfo_dirname = '{}-{}.dist-info'.format(
-            safer_name(self.distribution.get_name()),
-            safer_version(self.distribution.get_version()))
-        distinfo_dir = os.path.join(self.bdist_dir, distinfo_dirname)
-        self.egg2dist(self.egginfo_dir, distinfo_dir)
-
-        self.write_wheelfile(distinfo_dir)
+        archive_basename = make_filename(
+            self.distribution.get_name(), self.distribution.get_version(),
+            self.build_number, impl_tag, abi_tag, plat_tag
+        )
+        print('basename:', archive_basename)
+        archive_root = Path(self.bdist_dir)
+        if self.relative:
+            archive_root /= self._ensure_relative(install.install_base)
 
         # Make the archive
         if not os.path.exists(self.dist_dir):
             os.makedirs(self.dist_dir)
 
-        wheel_path = os.path.join(self.dist_dir, archive_basename + '.whl')
-        with WheelFile(wheel_path, 'w', self.compression) as wf:
-            wf.write_files(archive_root)
+        wheel_path = Path(self.dist_dir) / archive_basename
+        logger.info("creating '%s' and adding '%s' to it", wheel_path, archive_root)
+        with WheelFile(wheel_path, 'w', compression=self.compression,
+                       generator='bdist_wheel (' + wheel_version + ')',
+                       root_is_purelib=self.root_is_pure) as wf:
+            deferred = []
+            for root, dirnames, filenames in os.walk(str(archive_root)):
+                # Sort the directory names so that `os.walk` will walk them in a
+                # defined order on the next iteration.
+                dirnames.sort()
+                root_path = archive_root / root
+                if root_path.name.endswith('.egg-info'):
+                    continue
+
+                for name in sorted(filenames):
+                    path = root_path / name
+                    if path.is_file():
+                        archive_name = str(path.relative_to(archive_root))
+                        if root.endswith('.dist-info'):
+                            deferred.append((path, archive_name))
+                        else:
+                            logger.info("adding '%s'", archive_name)
+                            wf.write_file(archive_name, path.read_bytes())
+
+            for path, archive_name in sorted(deferred):
+                logger.info("adding '%s'", archive_name)
+                wf.write_file(archive_name, path.read_bytes())
+
+            # Write the license files
+            for license_path in self.license_paths:
+                logger.info("adding '%s'", license_path)
+                wf.write_distinfo_file(os.path.basename(license_path), license_path.read_bytes())
+
+            # Write the metadata files from the .egg-info directory
+            self.set_undefined_options('install_egg_info', ('target', 'egginfo_dir'))
+            for path in Path(self.egginfo_dir).iterdir():
+                if path.name == 'PKG-INFO':
+                    items = pkginfo_to_metadata(path)
+                    wf.write_metadata(items)
+                elif path.name not in {'requires.txt', 'SOURCES.txt', 'not-zip-safe',
+                                       'dependency_links.txt'}:
+                    wf.write_distinfo_file(path.name, path.read_bytes())
+
+        shutil.rmtree(self.egginfo_dir)
 
         # Add to 'Distribution.dist_files' so that the "upload" command works
         getattr(self.distribution, 'dist_files', []).append(
             ('bdist_wheel',
              '{}.{}'.format(*sys.version_info[:2]),  # like 3.7
-             wheel_path))
+             str(wheel_path)))
 
         if not self.keep_temp:
             logger.info('removing %s', self.bdist_dir)
             if not self.dry_run:
                 rmtree(self.bdist_dir, onerror=remove_readonly)
 
-    def write_wheelfile(self, wheelfile_base, generator='bdist_wheel (' + wheel_version + ')'):
-        from email.message import Message
-        msg = Message()
-        msg['Wheel-Version'] = '1.0'  # of the spec
-        msg['Generator'] = generator
-        msg['Root-Is-Purelib'] = str(self.root_is_pure).lower()
-        if self.build_number is not None:
-            msg['Build'] = self.build_number
-
-        # Doesn't work for bdist_wininst
-        impl_tag, abi_tag, plat_tag = self.get_tag()
-        for impl in impl_tag.split('.'):
-            for abi in abi_tag.split('.'):
-                for plat in plat_tag.split('.'):
-                    msg['Tag'] = '-'.join((impl, abi, plat))
-
-        wheelfile_path = os.path.join(wheelfile_base, 'WHEEL')
-        logger.info('creating %s', wheelfile_path)
-        with open(wheelfile_path, 'w') as f:
-            Generator(f, maxheaderlen=0).flatten(msg)
-
-    def _ensure_relative(self, path):
+    def _ensure_relative(self, path: str) -> str:
         # copied from dir_util, deleted
         drive, path = os.path.splitdrive(path)
         if path[0:1] == os.sep:
@@ -391,9 +405,9 @@ class bdist_wheel(Command):
         return path
 
     @property
-    def license_paths(self):
+    def license_paths(self) -> Set[Path]:
         metadata = self.distribution.get_option_dict('metadata')
-        files = set()
+        files = set()  # type: Set[Path]
         patterns = sorted({
             option for option in metadata.get('license_files', ('', ''))[1].split()
         })
@@ -401,76 +415,76 @@ class bdist_wheel(Command):
         if 'license_file' in metadata:
             warnings.warn('The "license_file" option is deprecated. Use '
                           '"license_files" instead.', DeprecationWarning)
-            files.add(metadata['license_file'][1])
+            files.add(Path(metadata['license_file'][1]))
 
         if 'license_file' not in metadata and 'license_files' not in metadata:
             patterns = ('LICEN[CS]E*', 'COPYING*', 'NOTICE*', 'AUTHORS*')
 
         for pattern in patterns:
-            for path in iglob(pattern):
-                if path.endswith('~'):
+            for path in Path().glob(pattern):
+                if path.name.endswith('~'):
                     logger.debug('ignoring license file "%s" as it looks like a backup', path)
                     continue
 
-                if path not in files and os.path.isfile(path):
+                if path not in files and path.is_file():
                     logger.info('adding license file "%s" (matched pattern "%s")', path, pattern)
                     files.add(path)
 
         return files
 
-    def egg2dist(self, egginfo_path, distinfo_path):
-        """Convert an .egg-info directory into a .dist-info directory"""
-        def adios(p):
-            """Appropriately delete directory, file or link."""
-            if os.path.exists(p) and not os.path.islink(p) and os.path.isdir(p):
-                shutil.rmtree(p)
-            elif os.path.exists(p):
-                os.unlink(p)
-
-        adios(distinfo_path)
-
-        if not os.path.exists(egginfo_path):
-            # There is no egg-info. This is probably because the egg-info
-            # file/directory is not named matching the distribution name used
-            # to name the archive file. Check for this case and report
-            # accordingly.
-            import glob
-            pat = os.path.join(os.path.dirname(egginfo_path), '*.egg-info')
-            possible = glob.glob(pat)
-            err = "Egg metadata expected at %s but not found" % (egginfo_path,)
-            if possible:
-                alt = os.path.basename(possible[0])
-                err += " (%s found - possible misnamed archive file?)" % (alt,)
-
-            raise ValueError(err)
-
-        if os.path.isfile(egginfo_path):
-            # .egg-info is a single file
-            pkginfo_path = egginfo_path
-            pkg_info = pkginfo_to_metadata(egginfo_path, egginfo_path)
-            os.mkdir(distinfo_path)
-        else:
-            # .egg-info is a directory
-            pkginfo_path = os.path.join(egginfo_path, 'PKG-INFO')
-            pkg_info = pkginfo_to_metadata(egginfo_path, pkginfo_path)
-
-            # ignore common egg metadata that is useless to wheel
-            shutil.copytree(egginfo_path, distinfo_path,
-                            ignore=lambda x, y: {'PKG-INFO', 'requires.txt', 'SOURCES.txt',
-                                                 'not-zip-safe'}
-                            )
-
-            # delete dependency_links if it is only whitespace
-            dependency_links_path = os.path.join(distinfo_path, 'dependency_links.txt')
-            with open(dependency_links_path, 'r') as dependency_links_file:
-                dependency_links = dependency_links_file.read().strip()
-            if not dependency_links:
-                adios(dependency_links_path)
-
-        write_pkg_info(os.path.join(distinfo_path, 'METADATA'), pkg_info)
-
-        for license_path in self.license_paths:
-            filename = os.path.basename(license_path)
-            shutil.copy(license_path, os.path.join(distinfo_path, filename))
-
-        adios(egginfo_path)
+    # def egg2dist(self, egginfo_path, distinfo_path):
+    #     """Convert an .egg-info directory into a .dist-info directory"""
+    #     def adios(p):
+    #         """Appropriately delete directory, file or link."""
+    #         if os.path.exists(p) and not os.path.islink(p) and os.path.isdir(p):
+    #             shutil.rmtree(p)
+    #         elif os.path.exists(p):
+    #             os.unlink(p)
+    #
+    #     adios(distinfo_path)
+    #
+    #     if not os.path.exists(egginfo_path):
+    #         # There is no egg-info. This is probably because the egg-info
+    #         # file/directory is not named matching the distribution name used
+    #         # to name the archive file. Check for this case and report
+    #         # accordingly.
+    #         import glob
+    #         pat = os.path.join(os.path.dirname(egginfo_path), '*.egg-info')
+    #         possible = glob.glob(pat)
+    #         err = "Egg metadata expected at %s but not found" % (egginfo_path,)
+    #         if possible:
+    #             alt = os.path.basename(possible[0])
+    #             err += " (%s found - possible misnamed archive file?)" % (alt,)
+    #
+    #         raise ValueError(err)
+    #
+    #     if os.path.isfile(egginfo_path):
+    #         # .egg-info is a single file
+    #         pkginfo_path = egginfo_path
+    #         pkg_info = pkginfo_to_metadata(egginfo_path)
+    #         os.mkdir(distinfo_path)
+    #     else:
+    #         # .egg-info is a directory
+    #         pkginfo_path = os.path.join(egginfo_path, 'PKG-INFO')
+    #         pkg_info = pkginfo_to_metadata(egginfo_path)
+    #
+    #         # ignore common egg metadata that is useless to wheel
+    #         shutil.copytree(egginfo_path, distinfo_path,
+    #                         ignore=lambda x, y: {'PKG-INFO', 'requires.txt', 'SOURCES.txt',
+    #                                              'not-zip-safe'}
+    #                         )
+    #
+    #         # delete dependency_links if it is only whitespace
+    #         dependency_links_path = os.path.join(distinfo_path, 'dependency_links.txt')
+    #         with open(dependency_links_path, 'r') as dependency_links_file:
+    #             dependency_links = dependency_links_file.read().strip()
+    #         if not dependency_links:
+    #             adios(dependency_links_path)
+    #
+    #     write_pkg_info(os.path.join(distinfo_path, 'METADATA'), pkg_info)
+    #
+    #     for license_path in self.license_paths:
+    #         filename = os.path.basename(license_path)
+    #         shutil.copy(license_path, os.path.join(distinfo_path, filename))
+    #
+    #     adios(egginfo_path)

@@ -2,12 +2,12 @@
 Tools for converting old- to new-style metadata.
 """
 
-import os.path
 import textwrap
+from pathlib import Path
+from email.parser import HeaderParser
+from typing import List, Tuple
 
 import pkg_resources
-
-from .pkginfo import read_pkg_info
 
 
 def requires_to_requires_dist(requirement):
@@ -62,20 +62,20 @@ def generate_requirements(extras_require):
             yield 'Requires-Dist', new_req + condition
 
 
-def pkginfo_to_metadata(egg_info_path, pkginfo_path):
-    """
-    Convert .egg-info directory with PKG-INFO to the Metadata 2.1 format
-    """
-    pkg_info = read_pkg_info(pkginfo_path)
+def pkginfo_to_metadata(pkginfo_path: Path) -> List[Tuple[str, str]]:
+    """Convert an .egg-info/PKG-INFO file to the Metadata 2.1 format."""
+
+    with pkginfo_path.open() as fp:
+        pkg_info = HeaderParser().parse(fp)
+
     pkg_info.replace_header('Metadata-Version', '2.1')
+
     # Those will be regenerated from `requires.txt`.
     del pkg_info['Provides-Extra']
     del pkg_info['Requires-Dist']
-    requires_path = os.path.join(egg_info_path, 'requires.txt')
-    if os.path.exists(requires_path):
-        with open(requires_path) as requires_file:
-            requires = requires_file.read()
-
+    requires_path = pkginfo_path.parent / 'requires.txt'
+    if requires_path.exists():
+        requires = requires_path.read_text()
         parsed_requirements = sorted(pkg_resources.split_sections(requires),
                                      key=lambda x: x[0] or '')
         for extra, reqs in parsed_requirements:
@@ -83,12 +83,7 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
                 if (key, value) not in pkg_info.items():
                     pkg_info[key] = value
 
-    description = pkg_info['Description']
-    if description:
-        pkg_info.set_payload(dedent_description(pkg_info))
-        del pkg_info['Description']
-
-    return pkg_info
+    return list(pkg_info.items())
 
 
 def pkginfo_unicode(pkg_info, field):

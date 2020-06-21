@@ -1,4 +1,3 @@
-# coding: utf-8
 import os.path
 import shutil
 import stat
@@ -47,18 +46,21 @@ setup(
 def test_no_scripts(wheel_paths):
     """Make sure entry point scripts are not generated."""
     path = next(path for path in wheel_paths if 'complex_dist' in path)
-    for entry in ZipFile(path).infolist():
-        assert '.data/scripts/' not in entry.filename
+    with WheelFile(path) as wf:
+        filenames = set(wf.filenames)
+
+    for filename in filenames:
+        assert '.data/scripts/' not in filename
 
 
 @pytest.mark.skipif(sys.version_info < (3, 6),
                     reason='Packaging unicode file names only works reliably on Python 3.6+')
 def test_unicode_record(wheel_paths):
     path = next(path for path in wheel_paths if 'unicode.dist' in path)
-    with ZipFile(path) as zf:
-        record = zf.read('unicode.dist-0.1.dist-info/RECORD')
+    with WheelFile(path) as wf:
+        filenames = set(wf.record_entries)
 
-    assert u'åäö_日本語.py'.encode('utf-8') in record
+    assert 'unicodedist/åäö_日本語.py' in filenames
 
 
 def test_licenses_default(dummy_dist, monkeypatch, tmpdir):
@@ -67,7 +69,7 @@ def test_licenses_default(dummy_dist, monkeypatch, tmpdir):
                            '--universal'])
     with WheelFile('dist/dummy_dist-1.0-py2.py3-none-any.whl') as wf:
         license_files = {'dummy_dist-1.0.dist-info/' + fname for fname in DEFAULT_LICENSE_FILES}
-        assert set(wf.namelist()) == DEFAULT_FILES | license_files
+        assert set(wf.filenames) == DEFAULT_FILES | license_files
 
 
 def test_licenses_deprecated(dummy_dist, monkeypatch, tmpdir):
@@ -77,7 +79,7 @@ def test_licenses_deprecated(dummy_dist, monkeypatch, tmpdir):
                            '--universal'])
     with WheelFile('dist/dummy_dist-1.0-py2.py3-none-any.whl') as wf:
         license_files = {'dummy_dist-1.0.dist-info/DUMMYFILE'}
-        assert set(wf.namelist()) == DEFAULT_FILES | license_files
+        assert set(wf.filenames) == DEFAULT_FILES | license_files
 
 
 def test_licenses_override(dummy_dist, monkeypatch, tmpdir):
@@ -87,7 +89,7 @@ def test_licenses_override(dummy_dist, monkeypatch, tmpdir):
                            '--universal'])
     with WheelFile('dist/dummy_dist-1.0-py2.py3-none-any.whl') as wf:
         license_files = {'dummy_dist-1.0.dist-info/' + fname for fname in {'DUMMYFILE', 'LICENSE'}}
-        assert set(wf.namelist()) == DEFAULT_FILES | license_files
+        assert set(wf.filenames) == DEFAULT_FILES | license_files
 
 
 def test_licenses_disabled(dummy_dist, monkeypatch, tmpdir):
@@ -96,7 +98,7 @@ def test_licenses_disabled(dummy_dist, monkeypatch, tmpdir):
     subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmpdir),
                            '--universal'])
     with WheelFile('dist/dummy_dist-1.0-py2.py3-none-any.whl') as wf:
-        assert set(wf.namelist()) == DEFAULT_FILES
+        assert set(wf.filenames) == DEFAULT_FILES
 
 
 def test_build_number(dummy_dist, monkeypatch, tmpdir):
@@ -104,7 +106,7 @@ def test_build_number(dummy_dist, monkeypatch, tmpdir):
     subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmpdir),
                            '--universal', '--build-number=2'])
     with WheelFile('dist/dummy_dist-1.0-2-py2.py3-none-any.whl') as wf:
-        filenames = set(wf.namelist())
+        filenames = set(wf.filenames)
         assert 'dummy_dist-1.0.dist-info/RECORD' in filenames
         assert 'dummy_dist-1.0.dist-info/METADATA' in filenames
 
@@ -140,9 +142,9 @@ def test_compression(dummy_dist, monkeypatch, tmpdir, option, compress_type):
     monkeypatch.chdir(dummy_dist)
     subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmpdir),
                            '--universal', '--compression={}'.format(option)])
-    with WheelFile('dist/dummy_dist-1.0-py2.py3-none-any.whl') as wf:
-        filenames = set(wf.namelist())
+    with ZipFile('dist/dummy_dist-1.0-py2.py3-none-any.whl') as zf:
+        filenames = set(zf.namelist())
         assert 'dummy_dist-1.0.dist-info/RECORD' in filenames
         assert 'dummy_dist-1.0.dist-info/METADATA' in filenames
-        for zinfo in wf.filelist:
+        for zinfo in zf.infolist():
             assert zinfo.compress_type == compress_type
