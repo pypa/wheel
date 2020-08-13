@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.35.0 (2020-08-13)**
 
 - Switched to the packaging_ library for computing wheel tags
 - Fixed a resource leak in ``WheelFile.open()`` (PR by Jon Dufresne)
