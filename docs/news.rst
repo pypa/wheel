@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Switched to the packaging_ library for computing wheel tags
+- Fixed a resource leak in ``WheelFile.open()`` (PR by Jon Dufresne)
+
+.. _packaging: https://pypi.org/project/packaging/
+
 **0.34.2 (2020-01-30)**
 
 - Fixed installation of ``wheel`` from sdist on environments without Unicode
