@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed ``bdist_wheel`` not working on FreeBSD due to mismatching platform tag
+  name (it was not being converted to lowercase)
+
 **0.35.0 (2020-08-13)**
 
 - Switched to the packaging_ library for computing wheel tags
