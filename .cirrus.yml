@@ -8,6 +8,6 @@ test_task:
     folder: ~/.cache/pip
 
   install_script:
-    - pkg install -y py37-pip
+    - pkg install -y py37-pip py37-sqlite3
     - pip install .[test]
   script: pytest
