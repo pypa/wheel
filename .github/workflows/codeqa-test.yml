@@ -1,10 +1,9 @@
 name: Python codeqa/test
 
 on:
-  pull_request:
-    branches: "*"
   push:
-    branches: "*"
+    branches: [master]
+  pull_request:
 
 jobs:
   flake8:
