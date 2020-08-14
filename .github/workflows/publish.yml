@@ -9,11 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Set up Python
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.7
+        python-version: 3.8
     - name: Install dependencies
       run: |
         pip install "setuptools >= 40.9"
@@ -21,6 +21,6 @@ jobs:
     - name: Create packages
       run: python setup.py sdist bdist_wheel
     - name: Upload packages
-      uses: pypa/gh-action-pypi-publish@v1.0.0a0
+      uses: pypa/gh-action-pypi-publish@master
       with:
         password: ${{ secrets.pypi_password }}
