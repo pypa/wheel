@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Replaced install dependency on ``packaging`` with a vendored copy of its
+  ``tags`` module
+
 **0.35.0 (2020-08-13)**
 
 - Switched to the packaging_ library for computing wheel tags
