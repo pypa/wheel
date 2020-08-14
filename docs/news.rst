@@ -3,6 +3,8 @@ Release Notes
 
 **UNRELEASED**
 
+- Replaced install dependency on ``packaging`` with a vendored copy of its
+  ``tags`` module
 - Fixed ``bdist_wheel`` not working on FreeBSD due to mismatching platform tag
   name (it was not being converted to lowercase)
 

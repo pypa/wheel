@@ -20,12 +20,12 @@ from shutil import rmtree
 from sysconfig import get_config_var
 from zipfile import ZIP_DEFLATED, ZIP_STORED
 
-from packaging import tags
 import pkg_resources
 
 from .pkginfo import write_pkg_info
 from .macosx_libfile import calculate_macosx_platform_tag
 from .metadata import pkginfo_to_metadata
+from .vendored.packaging import tags
 from .wheelfile import WheelFile
 from . import __version__ as wheel_version
 
