@@ -254,7 +254,7 @@ class bdist_wheel(Command):
             if plat_name in ('linux-x86_64', 'linux_x86_64') and sys.maxsize == 2147483647:
                 plat_name = 'linux_i686'
 
-        plat_name = plat_name.replace('-', '_').replace('.', '_')
+        plat_name = plat_name.lower().replace('-', '_').replace('.', '_')
 
         if self.root_is_pure:
             if self.universal:
