@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.35.1 (2020-08-14)**
 
 - Replaced install dependency on ``packaging`` with a vendored copy of its
   ``tags`` module
