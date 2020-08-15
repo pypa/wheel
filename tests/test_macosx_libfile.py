@@ -1,5 +1,4 @@
 import os
-import sys
 import distutils.util
 
 from wheel.macosx_libfile import extract_macosx_min_system_version
@@ -126,9 +125,3 @@ class TestGetPlatformMacosx:
         assert get_platform(dylib_dir) == "macosx_10_9_x86_64"
         captured = capsys.readouterr()
         assert "MACOSX_DEPLOYMENT_TARGET is set to a lower value (10.8) than the" in captured.err
-
-
-def test_get_platform_linux(monkeypatch):
-    monkeypatch.setattr(distutils.util, "get_platform", return_factory("linux_x86_64"))
-    monkeypatch.setattr(sys, "maxsize", 2147483647)
-    assert get_platform(None) == "linux_i686"

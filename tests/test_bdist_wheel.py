@@ -1,4 +1,5 @@
 # coding: utf-8
+import distutils.util
 import os.path
 import shutil
 import stat
@@ -8,7 +9,7 @@ from zipfile import ZipFile
 
 import pytest
 
-from wheel.bdist_wheel import bdist_wheel
+from wheel.bdist_wheel import bdist_wheel, get_platform
 from wheel.wheelfile import WheelFile
 
 DEFAULT_FILES = {
@@ -146,3 +147,15 @@ def test_compression(dummy_dist, monkeypatch, tmpdir, option, compress_type):
         assert 'dummy_dist-1.0.dist-info/METADATA' in filenames
         for zinfo in wf.filelist:
             assert zinfo.compress_type == compress_type
+
+
+def test_get_platform_linux_32bit_x64(monkeypatch):
+    monkeypatch.setattr(distutils.util, "get_platform", lambda: "linux-x86_64")
+    monkeypatch.setattr(sys, "maxsize", 2147483647)
+    assert get_platform(None) == "linux-i686"
+
+
+def test_get_platform_linux_32bit_aarch64(monkeypatch):
+    monkeypatch.setattr(distutils.util, "get_platform", lambda: "linux-aarch64")
+    monkeypatch.setattr(sys, "maxsize", 2147483647)
+    assert get_platform(None) == "linux-armv7l"
