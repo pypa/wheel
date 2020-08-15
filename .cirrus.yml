@@ -2,6 +2,6 @@ freebsd_instance:
   image_family: freebsd-12-1
 
 test_task:
-#  only_if: "$CIRRUS_BRANCH == 'cirrus-ci' || $CIRRUS_BRANCH ~= 'pull/.*'"
+  only_if: "$CIRRUS_BRANCH == 'master' || $CIRRUS_PR != ''"
   skip: "!changesInclude('.cirrus.yml', '**.py', 'pyproject.toml', 'setup.*')"
   script: "env | sort"
