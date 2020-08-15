@@ -49,10 +49,10 @@ def get_platform(archive_root):
 
     # Return a different tag for a 64-bit CPU running a 32-bit OS
     if sys.maxsize == 2147483647:
-        if result == "linux_x86_64":
-            result = "linux_i686"
-        elif result == "linux_aarch64":
-            result = "linux_armv7l"
+        if result == "linux-x86_64":
+            result = "linux-i686"
+        elif result == "linux-aarch64":
+            result = "linux-armv7l"
 
     return result
 
