@@ -273,7 +273,8 @@ class bdist_wheel(Command):
             else:
                 abi_tag = str(get_abi_tag()).lower()
             tag = (impl, abi_tag, plat_name)
-            supported_tags = [(t.interpreter, t.abi, t.platform)
+            # issue gh-374: allow overriding plat_name
+            supported_tags = [(t.interpreter, t.abi, plat_name)
                               for t in tags.sys_tags()]
             assert tag in supported_tags, "would build wheel with unsupported tag {}".format(tag)
         return tag
