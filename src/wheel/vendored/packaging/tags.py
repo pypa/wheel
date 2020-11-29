@@ -597,7 +597,7 @@ def _parse_glibc_version(version_str):
     return (int(m.group("major")), int(m.group("minor")))
 
 
-_glibc_version = []  #  type: List[Tuple[int, int]]
+_glibc_version = []  # type: List[Tuple[int, int]]
 
 
 def _get_glibc_version():
