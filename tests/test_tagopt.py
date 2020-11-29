@@ -44,9 +44,6 @@ def temp_pkg(request, tmpdir):
             pytest.skip('Cannot compile C extensions')
     return tmpdir
 
-@pytest.mark.parametrize('temp_pkg', [[True, 'xxx']], indirect=['temp_pkg'])
-def test_nocompile_skips(temp_pkg):
-    assert False  # should have skipped with a "Cannot compile" message
 
 @pytest.mark.parametrize('temp_pkg', [[True, 'xxx']], indirect=['temp_pkg'])
 def test_nocompile_skips(temp_pkg):
