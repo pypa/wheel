@@ -5,6 +5,8 @@ Release Notes
 
 - Added official Python 3.9 support
 - Updated vendored ``packaging`` library to v20.7
+- Switched to always using LF as line separator when generating ``WHEEL`` files
+  (on Windows, CRLF was being used instead)
 
 **0.35.1 (2020-08-14)**
 
