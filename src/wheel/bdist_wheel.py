@@ -12,9 +12,9 @@ import sys
 import re
 import warnings
 from collections import OrderedDict
-from email.generator import Generator
 from distutils.core import Command
 from distutils import log as logger
+from io import BytesIO
 from glob import iglob
 from shutil import rmtree
 from sysconfig import get_config_var
@@ -29,6 +29,10 @@ from .vendored.packaging import tags
 from .wheelfile import WheelFile
 from . import __version__ as wheel_version
 
+if sys.version_info < (3,):
+    from email.generator import Generator as BytesGenerator
+else:
+    from email.generator import BytesGenerator
 
 safe_name = pkg_resources.safe_name
 safe_version = pkg_resources.safe_version
@@ -98,6 +102,10 @@ def get_abi_tag():
         abi = '%s%s%s%s%s' % (impl, tags.interpreter_version(), d, m, u)
     elif soabi and soabi.startswith('cpython-'):
         abi = 'cp' + soabi.split('-')[1]
+    elif soabi and soabi.startswith('pypy-'):
+        # we want something like pypy36-pp73
+        abi = '-'.join(soabi.split('-')[:2])
+        abi = abi.replace('.', '_').replace('-', '_')
     elif soabi:
         abi = soabi.replace('.', '_').replace('-', '_')
     else:
@@ -278,7 +286,8 @@ class bdist_wheel(Command):
             else:
                 abi_tag = str(get_abi_tag()).lower()
             tag = (impl, abi_tag, plat_name)
-            supported_tags = [(t.interpreter, t.abi, t.platform)
+            # issue gh-374: allow overriding plat_name
+            supported_tags = [(t.interpreter, t.abi, plat_name)
                               for t in tags.sys_tags()]
             assert tag in supported_tags, "would build wheel with unsupported tag {}".format(tag)
         return tag
@@ -385,8 +394,10 @@ class bdist_wheel(Command):
 
         wheelfile_path = os.path.join(wheelfile_base, 'WHEEL')
         logger.info('creating %s', wheelfile_path)
-        with open(wheelfile_path, 'w') as f:
-            Generator(f, maxheaderlen=0).flatten(msg)
+        buffer = BytesIO()
+        BytesGenerator(buffer, maxheaderlen=0).flatten(msg)
+        with open(wheelfile_path, 'wb') as f:
+            f.write(buffer.getvalue().replace(b'\r\n', b'\r'))
 
     def _ensure_relative(self, path):
         # copied from dir_util, deleted

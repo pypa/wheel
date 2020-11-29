@@ -159,3 +159,11 @@ def test_get_platform_linux_32bit_aarch64(monkeypatch):
     monkeypatch.setattr(distutils.util, "get_platform", lambda: "linux-aarch64")
     monkeypatch.setattr(sys, "maxsize", 2147483647)
     assert get_platform(None) == "linux-armv7l"
+
+
+def test_wheelfile_line_endings(wheel_paths):
+    for path in wheel_paths:
+        with WheelFile(path) as wf:
+            wheelfile = next(fn for fn in wf.filelist if fn.filename.endswith('WHEEL'))
+            wheelfile_contents = wf.read(wheelfile)
+            assert b'\r' not in wheelfile_contents
