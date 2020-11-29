@@ -7,6 +7,12 @@ Release Notes
 - Updated vendored ``packaging`` library to v20.7
 - Switched to always using LF as line separator when generating ``WHEEL`` files
   (on Windows, CRLF was being used instead)
+- When calculating the ABI tag from  the sysconfig SOABI value, CPython
+  takes only the second field. This is to accomocate CPython's SOABI
+  value which looks like ``'cpython-37m-x86_64-linux-gnu`` where the desired
+  ABI tag is ``cp-37m``. On PyPy the SOABI value is ``pypy37-pp73`` and the
+  desired ABI tag is ``pypy37-pp73``, so we take the first two fields
+  unchanged.
 
 **0.35.1 (2020-08-14)**
 
