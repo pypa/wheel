@@ -7,12 +7,10 @@ Release Notes
 - Updated vendored ``packaging`` library to v20.7
 - Switched to always using LF as line separator when generating ``WHEEL`` files
   (on Windows, CRLF was being used instead)
-- When calculating the ABI tag from  the sysconfig SOABI value, CPython
-  takes only the second field. This is to accomocate CPython's SOABI
-  value which looks like ``'cpython-37m-x86_64-linux-gnu`` where the desired
-  ABI tag is ``cp-37m``. On PyPy the SOABI value is ``pypy37-pp73`` and the
-  desired ABI tag is ``pypy37-pp73``, so we take the first two fields
-  unchanged.
+- The ABI tag is taken from  the sysconfig SOABI valuer. On PyPy the SOABI
+  value is ``pypy37-pp73`` which is not compliant with PEP 3149, it should have
+  both the API tag and the platform tag. Future-proof any change in PyPy's
+  SOABI tag to make sure only the ABI tag is used by wheel.
 
 **0.35.1 (2020-08-14)**
 
