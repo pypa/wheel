@@ -379,7 +379,10 @@ def calculate_macosx_platform_tag(archive_root, platform_tag):
                 lib_path = os.path.join(dirpath, filename)
                 min_ver = extract_macosx_min_system_version(lib_path)
                 if min_ver is not None:
-                    versions_dict[lib_path] = min_ver[0:2]
+                    min_ver = min_ver[0:2]
+                    if min_ver[0] > 10:
+                        min_ver = (min_ver[0], 0)
+                    versions_dict[lib_path] = min_ver
 
     if len(versions_dict) > 0:
         base_version = max(base_version, max(versions_dict.values()))
