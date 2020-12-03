@@ -127,6 +127,25 @@ class TestGetPlatformMacosx:
         captured = capsys.readouterr()
         assert "MACOSX_DEPLOYMENT_TARGET is set to a lower value (10.8) than the" in captured.err
 
+    def test_get_platform_bigsur_env(self, monkeypatch):
+        dirname = os.path.dirname(__file__)
+        dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
+        monkeypatch.setattr(distutils.util, "get_platform", return_factory("macosx-10.9-x86_64"))
+        monkeypatch.setenv("MACOSX_DEPLOYMENT_TARGET", "11")
+        monkeypatch.setattr(os, "walk", return_factory(
+            [(dylib_dir, [], ["test_lib_10_6.dylib", "test_lib_10_10_fat.dylib"])]
+        ))
+        assert get_platform(dylib_dir) == "macosx_11_0_x86_64"
+
+    def test_get_platform_bigsur_platform(self, monkeypatch):
+        dirname = os.path.dirname(__file__)
+        dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
+        monkeypatch.setattr(distutils.util, "get_platform", return_factory("macosx-11-x86_64"))
+        monkeypatch.setattr(os, "walk", return_factory(
+            [(dylib_dir, [], ["test_lib_10_6.dylib", "test_lib_10_10_fat.dylib"])]
+        ))
+        assert get_platform(dylib_dir) == "macosx_11_0_x86_64"
+
 
 def test_get_platform_linux(monkeypatch):
     monkeypatch.setattr(distutils.util, "get_platform", return_factory("linux_x86_64"))
