@@ -373,6 +373,11 @@ class bdist_wheel(Command):
 
     def write_wheelfile(self, wheelfile_base, generator='bdist_wheel (' + wheel_version + ')'):
         from email.message import Message
+
+        # Workaround for Python 2.7 for when "generator" is unicode
+        if sys.version_info < (3,) and not isinstance(generator, str):
+            generator = generator.encode('utf-8')
+
         msg = Message()
         msg['Wheel-Version'] = '1.0'  # of the spec
         msg['Generator'] = generator

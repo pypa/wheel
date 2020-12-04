@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed regression introduced in 0.36.0 on Python 2.7 when a custom generator
+  name was passed as unicode (Scikit-build)
+  (``TypeError: 'unicode' does not have the buffer interface``)
+
 **0.36.0 (2020-12-01)**
 
 - Added official Python 3.9 support
