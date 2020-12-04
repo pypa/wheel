@@ -3,6 +3,8 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed ``AssertionError`` when ``MACOSX_DEPLOYMENT_TARGET`` was set to ``11``
+  (PR by Grzegorz Bokota and François-Xavier Coudert)
 - Fixed regression introduced in 0.36.0 on Python 2.7 when a custom generator
   name was passed as unicode (Scikit-build)
   (``TypeError: 'unicode' does not have the buffer interface``)
