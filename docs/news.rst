@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Updated vendored ``packaging`` library to v20.8
+
 **0.36.1 (2020-12-04)**
 
 - Fixed ``AssertionError`` when ``MACOSX_DEPLOYMENT_TARGET`` was set to ``11``
