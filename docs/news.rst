@@ -4,6 +4,7 @@ Release Notes
 **UNRELEASED**
 
 - Updated vendored ``packaging`` library to v20.8
+- Fixed wheel sdist missing ``LICENSE.txt``
 
 **0.36.1 (2020-12-04)**
 

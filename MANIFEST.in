@@ -4,6 +4,7 @@ recursive-include docs *.py *.rst make.bat Makefile
 include tests/testdata/test-1.0-py2.py3-none-any.whl
 include tox.ini
 include manpages/*.rst
+include LICENSE.txt
 prune tests/testdata/*/build
 prune tests/testdata/*/dist
 prune tests/testdata/*/*.egg-info
