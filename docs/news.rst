@@ -5,6 +5,8 @@ Release Notes
 
 - Updated vendored ``packaging`` library to v20.8
 - Fixed wheel sdist missing ``LICENSE.txt``
+- Don't use default ``macos/arm64`` deployment target in calculating the
+  platform tag for fat binaries (PR by Ronald Oussoren)
 
 **0.36.1 (2020-12-04)**
 
