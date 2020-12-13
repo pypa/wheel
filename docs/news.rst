@@ -19,6 +19,8 @@ Release Notes
   is ``pypy37-pp73`` which is not compliant with PEP 3149, as it should have
   both the API tag and the platform tag. This change future-proofs any change
   in PyPy's SOABI tag to make sure only the ABI tag is used by wheel.
+- Fixed regression and test for ``bdist_wheel --plat-name``. It was ignored for
+  C extensions in v0.35, but the regression was not detected by tests.
 
 **0.35.1 (2020-08-14)**
 
