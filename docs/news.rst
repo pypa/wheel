@@ -3,6 +3,18 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed wrong platform tag on aarch64 running a 32-bit OS
+
+**0.36.1 (2020-12-04)**
+
+- Fixed ``AssertionError`` when ``MACOSX_DEPLOYMENT_TARGET`` was set to ``11``
+  (PR by Grzegorz Bokota and François-Xavier Coudert)
+- Fixed regression introduced in 0.36.0 on Python 2.7 when a custom generator
+  name was passed as unicode (Scikit-build)
+  (``TypeError: 'unicode' does not have the buffer interface``)
+
+**0.36.0 (2020-12-01)**
+
 - Added official Python 3.9 support
 - Updated vendored ``packaging`` library to v20.7
 - Switched to always using LF as line separator when generating ``WHEEL`` files
@@ -11,7 +23,8 @@ Release Notes
   is ``pypy37-pp73`` which is not compliant with PEP 3149, as it should have
   both the API tag and the platform tag. This change future-proofs any change
   in PyPy's SOABI tag to make sure only the ABI tag is used by wheel.
-- Fixed wrong platform tag on aarch64 running a 32-bit OS
+- Fixed regression and test for ``bdist_wheel --plat-name``. It was ignored for
+  C extensions in v0.35, but the regression was not detected by tests.
 
 **0.35.1 (2020-08-14)**
 

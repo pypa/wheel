@@ -33,6 +33,9 @@ Important remarks:
 - All structures signatures are taken form macosx header files.
 - I think that binary format will be more stable than `otool` output.
   and if apple introduce some changes both implementation will need to be updated.
+- The system compile will set the deployment target no lower than
+  11.0 for arm64 builds. For "Universal 2" builds use the x86_64 deployment
+  target when the arm64 target is 11.0.
 """
 
 import ctypes
@@ -53,6 +56,7 @@ MH_CIGAM_64 = 0xcffaedfe
 LC_VERSION_MIN_MACOSX = 0x24
 LC_BUILD_VERSION = 0x32
 
+CPU_TYPE_ARM64 = 0x0100000c
 
 mach_header_fields = [
         ("magic", ctypes.c_uint32), ("cputype", ctypes.c_int),
@@ -271,6 +275,16 @@ def extract_macosx_min_system_version(path_to_lib):
                 try:
                     version = read_mach_header(lib_file, el.offset)
                     if version is not None:
+                        if el.cputype == CPU_TYPE_ARM64 and len(fat_arch_list) != 1:
+                            # Xcode will not set the deployment target below 11.0.0
+                            # for the arm64 architecture. Ignore the arm64 deployment
+                            # in fat binaries when the target is 11.0.0, that way
+                            # the other architetures can select a lower deployment
+                            # target.
+                            # This is safe because there is no arm64 variant for
+                            # macOS 10.15 or earlier.
+                            if version == (11, 0, 0):
+                                continue
                         versions_list.append(version)
                 except ValueError:
                     pass
@@ -350,15 +364,16 @@ def calculate_macosx_platform_tag(archive_root, platform_tag):
     """
     prefix, base_version, suffix = platform_tag.split('-')
     base_version = tuple([int(x) for x in base_version.split(".")])
-    if len(base_version) >= 2:
-        base_version = base_version[0:2]
-
+    base_version = base_version[:2]
+    if base_version[0] > 10:
+        base_version = (base_version[0], 0)
     assert len(base_version) == 2
     if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
         deploy_target = tuple([int(x) for x in os.environ[
             "MACOSX_DEPLOYMENT_TARGET"].split(".")])
-        if len(deploy_target) >= 2:
-            deploy_target = deploy_target[0:2]
+        deploy_target = deploy_target[:2]
+        if deploy_target[0] > 10:
+            deploy_target = (deploy_target[0], 0)
         if deploy_target < base_version:
             sys.stderr.write(
                  "[WARNING] MACOSX_DEPLOYMENT_TARGET is set to a lower value ({}) than the "
@@ -378,7 +393,10 @@ def calculate_macosx_platform_tag(archive_root, platform_tag):
                 lib_path = os.path.join(dirpath, filename)
                 min_ver = extract_macosx_min_system_version(lib_path)
                 if min_ver is not None:
-                    versions_dict[lib_path] = min_ver[0:2]
+                    min_ver = min_ver[0:2]
+                    if min_ver[0] > 10:
+                        min_ver = (min_ver[0], 0)
+                    versions_dict[lib_path] = min_ver
 
     if len(versions_dict) > 0:
         base_version = max(base_version, max(versions_dict.values()))
