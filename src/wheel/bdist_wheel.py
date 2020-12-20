@@ -20,11 +20,11 @@ from shutil import rmtree
 from typing import Set
 from zipfile import ZIP_DEFLATED, ZIP_STORED
 
-from packaging import tags
 import pkg_resources
 
 from .macosx_libfile import calculate_macosx_platform_tag
 from .metadata import pkginfo_to_metadata
+from .vendored.packaging import tags
 from .wheelfile import WheelFile, make_filename
 from . import __version__ as wheel_version
 
@@ -95,6 +95,10 @@ def get_abi_tag():
         abi = '%s%s%s%s%s' % (impl, tags.interpreter_version(), d, m, u)
     elif soabi and soabi.startswith('cpython-'):
         abi = 'cp' + soabi.split('-')[1]
+    elif soabi and soabi.startswith('pypy-'):
+        # we want something like pypy36-pp73
+        abi = '-'.join(soabi.split('-')[:2])
+        abi = abi.replace('.', '_').replace('-', '_')
     elif soabi:
         abi = soabi.replace('.', '_').replace('-', '_')
     else:
@@ -257,7 +261,7 @@ class bdist_wheel(Command):
             if plat_name in ('linux-x86_64', 'linux_x86_64') and sys.maxsize == 2147483647:
                 plat_name = 'linux_i686'
 
-        plat_name = plat_name.replace('-', '_').replace('.', '_')
+        plat_name = plat_name.lower().replace('-', '_').replace('.', '_')
 
         if self.root_is_pure:
             if self.universal:
@@ -276,7 +280,8 @@ class bdist_wheel(Command):
             else:
                 abi_tag = str(get_abi_tag()).lower()
             tag = (impl, abi_tag, plat_name)
-            supported_tags = [(t.interpreter, t.abi, t.platform)
+            # issue gh-374: allow overriding plat_name
+            supported_tags = [(t.interpreter, t.abi, plat_name)
                               for t in tags.sys_tags()]
             assert tag in supported_tags, "would build wheel with unsupported tag {}".format(tag)
         return tag

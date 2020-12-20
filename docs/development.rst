@@ -90,7 +90,7 @@ To make a new release:
 #. Replace the ``__version__`` attribute in ``src/wheel/__init__.py`` with the
    same version number as above (without the date of course).
 #. Create a new git tag matching the version exactly
-#. Push the new tag to Github
+#. Push the new tag to GitHub
 
-Pushing a new tag to Github will trigger the publish workflow which package the
+Pushing a new tag to GitHub will trigger the publish workflow which package the
 project and publish the resulting artifacts to PyPI.

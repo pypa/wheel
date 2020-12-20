@@ -1,0 +1,15 @@
+freebsd_instance:
+  image_family: freebsd-12-1
+
+test_task:
+  only_if: "$CIRRUS_BRANCH == 'master' || $CIRRUS_PR != ''"
+  skip: "!changesInclude('.cirrus.yml', '**.py', 'pyproject.toml', 'setup.*')"
+
+  pip_cache:
+    folder: ~/.cache/pip
+
+  install_script:
+    - pkg install -y py38-sqlite3
+    - python3.8 -m ensurepip
+    - pip3 install .[test]
+  script: pytest

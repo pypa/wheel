@@ -150,3 +150,11 @@ def test_compression(dummy_dist, monkeypatch, tmp_path, option, compress_type):
         assert 'dummy_dist-1.0.dist-info/METADATA' in filenames
         for zinfo in zf.infolist():
             assert zinfo.compress_type == compress_type
+
+
+def test_wheelfile_line_endings(wheel_paths):
+    for path in wheel_paths:
+        with WheelFile(path) as wf:
+            wheelfile = next(fn for fn in wf.filelist if fn.filename.endswith('WHEEL'))
+            wheelfile_contents = wf.read(wheelfile)
+            assert b'\r' not in wheelfile_contents

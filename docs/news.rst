@@ -1,6 +1,48 @@
 Release Notes
 =============
 
+**0.36.2 (2020-12-13)**
+
+- Updated vendored ``packaging`` library to v20.8
+- Fixed wheel sdist missing ``LICENSE.txt``
+- Don't use default ``macos/arm64`` deployment target in calculating the
+  platform tag for fat binaries (PR by Ronald Oussoren)
+
+**0.36.1 (2020-12-04)**
+
+- Fixed ``AssertionError`` when ``MACOSX_DEPLOYMENT_TARGET`` was set to ``11``
+  (PR by Grzegorz Bokota and François-Xavier Coudert)
+- Fixed regression introduced in 0.36.0 on Python 2.7 when a custom generator
+  name was passed as unicode (Scikit-build)
+  (``TypeError: 'unicode' does not have the buffer interface``)
+
+**0.36.0 (2020-12-01)**
+
+- Added official Python 3.9 support
+- Updated vendored ``packaging`` library to v20.7
+- Switched to always using LF as line separator when generating ``WHEEL`` files
+  (on Windows, CRLF was being used instead)
+- The ABI tag is taken from  the sysconfig SOABI value. On PyPy the SOABI value
+  is ``pypy37-pp73`` which is not compliant with PEP 3149, as it should have
+  both the API tag and the platform tag. This change future-proofs any change
+  in PyPy's SOABI tag to make sure only the ABI tag is used by wheel.
+- Fixed regression and test for ``bdist_wheel --plat-name``. It was ignored for
+  C extensions in v0.35, but the regression was not detected by tests.
+
+**0.35.1 (2020-08-14)**
+
+- Replaced install dependency on ``packaging`` with a vendored copy of its
+  ``tags`` module
+- Fixed ``bdist_wheel`` not working on FreeBSD due to mismatching platform tag
+  name (it was not being converted to lowercase)
+
+**0.35.0 (2020-08-13)**
+
+- Switched to the packaging_ library for computing wheel tags
+- Fixed a resource leak in ``WheelFile.open()`` (PR by Jon Dufresne)
+
+.. _packaging: https://pypi.org/project/packaging/
+
 **0.34.2 (2020-01-30)**
 
 - Fixed installation of ``wheel`` from sdist on environments without Unicode
