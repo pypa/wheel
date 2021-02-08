@@ -2,8 +2,10 @@ import csv
 import hashlib
 import os.path
 import re
+import shutil
 import sys
 import time
+from abc import abstractmethod, ABCMeta
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from collections import OrderedDict
 from datetime import datetime
@@ -11,8 +13,8 @@ from email.generator import Generator
 from email.message import Message
 from email.parser import Parser
 from io import StringIO
-from pathlib import Path
-from typing import Optional, Union, Dict, Iterable, NamedTuple, IO, Tuple, List
+from pathlib import Path, PurePath
+from typing import Optional, Union, Dict, Iterable, NamedTuple, IO, Tuple, List, BinaryIO, Iterator
 from zipfile import ZIP_DEFLATED, ZipInfo, ZipFile
 
 from . import __version__ as wheel_version
@@ -74,6 +76,81 @@ def make_filename(name: str, version: str, build_tag: Union[str, int, None] = No
 
 class WheelError(Exception):
     pass
+
+
+WheelContentElement = Tuple[Tuple[PurePath, str, str], BinaryIO]
+
+
+class WheelReader:
+    def __init__(self, file: IO[bytes], distribution: str, version: str):
+        self._zip = ZipFile(file)
+        self.distribution = distribution
+        self.version = version
+        self._dist_info_dir = f'{distribution}-{version}.dist-info'
+        self._data_dir = f'{distribution}-{version}.data'
+        self._record_entries = self._read_record()
+
+    def _read_record(self) -> OrderedDict[str, WheelRecordEntry]:
+        entries = OrderedDict()
+        contents = self.read_dist_info('RECORD')
+        reader = csv.reader(contents.strip().split('\n'), delimiter=',', quotechar='"',
+                            lineterminator='\n')
+        for row in reader:
+            path, hash_digest, filesize = row
+            if hash_digest:
+                algorithm, hash_digest = hash_digest.split('=')
+                try:
+                    hashlib.new(algorithm)
+                except ValueError:
+                    raise WheelError(f'Unsupported hash algorithm: {algorithm}') from None
+
+                if algorithm.lower() in {'md5', 'sha1'}:
+                    raise WheelError(
+                        f'Weak hash algorithm ({algorithm}) is not permitted by PEP 427')
+
+                entries[path] = WheelRecordEntry(
+                    algorithm, hash_digest, int(filesize))
+
+        return entries
+
+    @property
+    def dist_info_dir(self):
+        return self._dist_info_dir
+
+    @property
+    def data_dir(self):
+        return self._data_dir
+
+    @property
+    def dist_info_filenames(self) -> List[PurePath]:
+        return [PurePath(fname) for fname in self._zip.namelist()
+                if fname.startswith(self._dist_info_dir)]
+
+    def read_dist_info(self, filename: str) -> str:
+        return self._zip.read(f'{self.dist_info_dir}/{filename}').decode('utf-8')
+
+    def get_contents(self) -> Iterator[WheelContentElement]:
+        for fname, entry in self._record_entries.items():
+            with self._zip.open(fname, 'r') as stream:
+                yield (fname, entry.hash_value, entry.filesize), stream
+
+    def __repr__(self):
+        return (f'{self.__class__.__name__}({self._zip.fp!r}, {self.distribution!r}, '
+                f'{self.version!r})')
+
+
+class WheelFileReader(WheelReader):
+    def __init__(self, path: Union[str, PathLike]):
+        self.path = Path(path)
+        parsed_filename = _WHEEL_INFO_RE.match(self.path.name)
+        if parsed_filename is None:
+            raise WheelError(f'Bad wheel filename {self.path.name!r}')
+
+        name, version = parsed_filename.groups()[1:]
+        super().__init__(open(path, 'rb'), name, version)
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.path!r})'
 
 
 class WheelFile:
@@ -168,6 +245,105 @@ class WheelFile:
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self.close()
+
+
+class SourceFile(metaclass=ABCMeta):
+    @property
+    @abstractmethod
+    def archive_name(self) -> str:
+        pass
+
+    @abstractmethod
+    def open(self) -> IO[bytes]:
+        pass
+
+
+class SourceFileReader:
+    def __init__(self, file: IO[bytes], hash_algorithm):
+        self._file = file
+        self._hash = hashlib.new(hash_algorithm)
+
+    def read(self, n):
+        data = self._file.read(n)
+        self._hash.update(data)
+        return data
+
+
+class WheelWriter:
+    def __init__(self, path_or_fd, distribution: str, version: str,
+                 build_tag: Optional[str] = None):
+        self.distribution = distribution
+        self.version = version
+        self.build_tag = build_tag
+        self._dist_info_dir = f'{distribution}-{version}.dist-info'
+        self._data_dir = f'{distribution}-{version}.data'
+        self._zip = ZipFile(path_or_fd, 'w')
+        self._record_entries: Dict[str, WheelRecordEntry] = OrderedDict()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if not exc_type:
+            self._write_record()
+
+    def write_distinfo_file(self, arcname: str, data: str) -> None:
+        self._zip.writestr(arcname, data)
+
+    def _write_record(self) -> None:
+        data = StringIO()
+        writer = csv.writer(data, delimiter=',', quotechar='"', lineterminator='\n')
+        writer.writerows([
+            (fname,
+             entry.hash_algorithm + "=" + _encode_hash_value(entry.hash_value),
+             entry.filesize)
+            for fname, entry in self._record_entries.items()
+        ])
+        writer.writerow((self._record_path, "", ""))
+        self.write_distinfo_file('RECORD', data.getvalue())
+
+    def _write_wheelfile(self) -> None:
+        msg = Message()
+        msg['Wheel-Version'] = '1.0'  # of the spec
+        msg['Generator'] = self.generator
+        msg['Root-Is-Purelib'] = str(self.root_is_purelib).lower()
+        if self.build_tag is not None:
+            msg['Build'] = self.build_tag
+
+        for impl in self.metadata.implementation.split('.'):
+            for abi in self.metadata.abi.split('.'):
+                for plat in self.metadata.platform.split('.'):
+                    msg['Tag'] = '-'.join((impl, abi, plat))
+
+        buffer = StringIO()
+        Generator(buffer, maxheaderlen=0).flatten(msg)
+        self.write_distinfo_file('WHEEL', buffer.getvalue())
+
+    def write_metadata(self, items: Iterable[Tuple[str, str]]) -> None:
+        msg = Message()
+        for key, value in items:
+            key = key.title()
+            if key == 'Description':
+                msg.set_payload(value, 'utf-8')
+            else:
+                msg.add_header(key, value)
+
+        if 'Metadata-Version' not in msg:
+            msg['Metadata-Version'] = '2.1'
+        if 'Name' not in msg:
+            msg['Name'] = self.distribution
+        if 'Version' not in msg:
+            msg['Version'] = self.version
+
+        buffer = StringIO()
+        Generator(buffer, maxheaderlen=0).flatten(msg)
+        self.write_distinfo_file('METADATA', buffer.getvalue())
+
+    def write_files(self, files: Iterator[SourceFile]) -> None:
+        for file in files:
+            with file.open() as dest, self._zip.open(file.archive_name, 'w') as src:
+                wrapper = SourceFileReader(src, 'sha256')
+                shutil.copyfileobj(wrapper, dest, 1024 * 8)
 
     def write_file(self, archive_name: str, contents: Union[bytes, str],
                    timestamp: Union[datetime, int] = None) -> None:
@@ -269,65 +445,6 @@ class WheelFile:
                     .format(zinfo.filename, _encode_hash_value(entry.hash_value),
                             _encode_hash_value(hash_.digest()))
                 )
-
-    def _read_record(self) -> None:
-        self._record_entries.clear()
-        contents = self.read_distinfo_file('RECORD').decode('utf-8')
-        for line in contents.strip().split('\n'):
-            path, hash_digest, filesize = line.rsplit(',', 2)
-            if hash_digest:
-                algorithm, hash_digest = hash_digest.split('=')
-                try:
-                    hashlib.new(algorithm)
-                except ValueError:
-                    raise WheelError('Unsupported hash algorithm: {}'.format(algorithm))
-
-                if algorithm.lower() in {'md5', 'sha1'}:
-                    raise WheelError(
-                        'Weak hash algorithm ({}) is not permitted by PEP 427'
-                        .format(algorithm))
-
-                self._record_entries[path] = WheelRecordEntry(
-                    algorithm, _decode_hash_value(hash_digest), int(filesize))
-
-    def _write_record(self) -> None:
-        data = StringIO()
-        writer = csv.writer(data, delimiter=',', quotechar='"', lineterminator='\n')
-        writer.writerows([
-            (fname,
-             entry.hash_algorithm + "=" + _encode_hash_value(entry.hash_value),
-             entry.filesize)
-            for fname, entry in self._record_entries.items()
-        ])
-        writer.writerow((self._record_path, "", ""))
-        self.write_distinfo_file('RECORD', data.getvalue())
-
-    def _write_wheelfile(self) -> None:
-        msg = Message()
-        msg['Wheel-Version'] = '1.0'  # of the spec
-        msg['Generator'] = self.generator
-        msg['Root-Is-Purelib'] = str(self.root_is_purelib).lower()
-        if self.metadata.build_tag is not None:
-            msg['Build'] = self.metadata.build_tag
-
-        for impl in self.metadata.implementation.split('.'):
-            for abi in self.metadata.abi.split('.'):
-                for plat in self.metadata.platform.split('.'):
-                    msg['Tag'] = '-'.join((impl, abi, plat))
-
-        buffer = StringIO()
-        Generator(buffer, maxheaderlen=0).flatten(msg)
-        self.write_distinfo_file('WHEEL', buffer.getvalue())
-
-    def read_metadata(self) -> List[Tuple[str, str]]:
-        contents = self.read_distinfo_file('METADATA').decode('utf-8')
-        msg = Parser().parsestr(contents)
-        items = [(key, str(value)) for key, value in msg.items()]
-        payload = msg.get_payload(0, True)
-        if payload:
-            items.append(('Description', payload))
-
-        return items
 
     def write_metadata(self, items: Iterable[Tuple[str, str]]) -> None:
         msg = Message()
