@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Updated vendored ``packaging`` library to v20.9
+
 **0.36.2 (2020-12-13)**
 
 - Updated vendored ``packaging`` library to v20.8
