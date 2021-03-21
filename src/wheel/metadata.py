@@ -23,15 +23,31 @@ def requires_to_requires_dist(requirement):
     return " (%s)" % ','.join(sorted(requires_dist))
 
 
-def convert_requirements(requirements):
+def convert_requirements(requirements, condition):
     """Yield Requires-Dist: strings for parsed requirements strings."""
     for req in requirements:
         parsed_requirement = pkg_resources.Requirement.parse(req)
+
+        marker = ''
+        if parsed_requirement.marker:
+            marker = str(parsed_requirement.marker)
+
+        if condition:
+            if marker:
+                marker = '(' + marker + ') and ' + condition
+            else:
+                marker = condition
+
+        if marker:
+            marker = ' ; %s' % marker
+
         spec = requires_to_requires_dist(parsed_requirement)
+
         extras = ",".join(sorted(parsed_requirement.extras))
         if extras:
             extras = "[%s]" % extras
-        yield (parsed_requirement.project_name + extras + spec)
+
+        yield (parsed_requirement.project_name + extras + spec + marker)
 
 
 def generate_requirements(extras_require):
@@ -51,15 +67,13 @@ def generate_requirements(extras_require):
         extra = pkg_resources.safe_extra(extra)
         if extra:
             yield 'Provides-Extra', extra
+
             if condition:
                 condition = "(" + condition + ") and "
             condition += "extra == '%s'" % extra
 
-        if condition:
-            condition = ' ; ' + condition
-
-        for new_req in convert_requirements(depends):
-            yield 'Requires-Dist', new_req + condition
+        for new_req in convert_requirements(depends, condition):
+            yield 'Requires-Dist', new_req
 
 
 def pkginfo_to_metadata(egg_info_path, pkginfo_path):

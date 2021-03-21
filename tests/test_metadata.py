@@ -23,6 +23,8 @@ def test_pkginfo_to_metadata(tmpdir):
         ('Provides-Extra', 'test'),
         ('Requires-Dist', "pytest (>=3.0.0) ; extra == 'test'"),
         ('Requires-Dist', "pytest-cov ; extra == 'test'"),
+        ('Requires-Dist', 'pywin32 (==300) ; (sys_platform == "win32") and extra == \'test\''),
+
     ]
 
     pkg_info = tmpdir.join('PKG-INFO')
@@ -65,7 +67,9 @@ pyxdg
 
 [test]
 pytest>=3.0.0
-pytest-cov""")
+pytest-cov
+pywin32==300; sys_platform == 'win32'
+""")
 
     message = pkginfo_to_metadata(egg_info_path=str(egg_info_dir), pkginfo_path=str(pkg_info))
     assert message.items() == expected_metadata
