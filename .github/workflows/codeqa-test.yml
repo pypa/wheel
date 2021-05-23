@@ -47,4 +47,8 @@ jobs:
     - name: Install test dependencies
       run: pip install .[test]
     - name: Test with pytest
-      run: python -b -m pytest -W always
+      run: python -b -m pytest -W always --cov-report=xml:pytest-cov.xml
+    - name: Send coverage data to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        file: pytest-cov.xml
