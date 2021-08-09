@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.37.0 (2021-08-09)**
 
 - Added official Python 3.10 support
 - Updated vendored ``packaging`` library to v20.9
