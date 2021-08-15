@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed ``wheel pack`` duplicating the ``WHEEL`` contents when the build number has changed (#415)
+
 **0.37.0 (2021-08-09)**
 
 - Added official Python 3.10 support
