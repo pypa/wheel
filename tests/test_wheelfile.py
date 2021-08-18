@@ -20,7 +20,7 @@ def test_wheelfile_re(tmpdir):
     # Regression test for #208
     path = tmpdir.join('foo-2-py3-none-any.whl')
     with WheelFile(str(path), 'w') as wf:
-        assert wf.parsed_filename.group('namever') == 'foo-2'
+        assert wf.dist_info_path == 'foo-2.dist-info'
 
 
 @pytest.mark.parametrize('filename', [
@@ -40,7 +40,7 @@ def test_missing_record(wheel_path):
         zf.writestr(native('hello/héllö.py'), as_bytes('print("Héllö, w0rld!")\n'))
 
     exc = pytest.raises(WheelError, WheelFile, wheel_path)
-    exc.match("^Missing test-1.0.dist-info/RECORD file$")
+    exc.match("^Missing RECORD file$")
 
 
 def test_unsupported_hash_algorithm(wheel_path):

@@ -16,8 +16,9 @@ def unpack(path, dest='.'):
     :param dest: Destination directory (default to current directory).
     """
     with WheelFile(path) as wf:
-        namever = wf.parsed_filename.group('namever')
-        destination = os.path.join(dest, namever)
+        name, version = os.path.basename(path).split('-', 2)[:2]
+        dirname = name + '-' + version
+        destination = os.path.join(dest, dirname)
         print("Unpacking to: {}...".format(destination), end='')
         sys.stdout.flush()
         wf.extractall(destination)

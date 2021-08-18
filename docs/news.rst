@@ -4,6 +4,7 @@ Release Notes
 **UNRELEASED**
 
 - Fixed ``wheel pack`` duplicating the ``WHEEL`` contents when the build number has changed (#415)
+- Fixed normalization of the ``.dist-info`` directory in wheels to conform to the PyPA spec (#441)
 
 **0.37.0 (2021-08-09)**
 

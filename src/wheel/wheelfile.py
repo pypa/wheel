@@ -3,22 +3,15 @@ from __future__ import print_function
 import csv
 import hashlib
 import os.path
-import re
 import stat
 import time
 from collections import OrderedDict
 from distutils import log as logger
 from zipfile import ZIP_DEFLATED, ZipInfo, ZipFile
 
-from wheel.cli import WheelError
-from wheel.util import urlsafe_b64decode, as_unicode, native, urlsafe_b64encode, as_bytes, StringIO
-
-# Non-greedy matching of an optional build number may be too clever (more
-# invalid wheel filenames will match). Separate regex for .dist-info?
-WHEEL_INFO_RE = re.compile(
-    r"""^(?P<namever>(?P<name>.+?)-(?P<ver>.+?))(-(?P<build>\d[^-]*))?
-     -(?P<pyver>.+?)-(?P<abi>.+?)-(?P<plat>.+?)\.whl$""",
-    re.VERBOSE)
+from .cli import WheelError
+from .util import urlsafe_b64decode, as_unicode, native, urlsafe_b64encode, as_bytes, StringIO
+from .vendored.packaging.utils import InvalidWheelFilename, parse_wheel_filename
 
 
 def get_zipinfo_datetime(timestamp=None):
@@ -37,13 +30,15 @@ class WheelFile(ZipFile):
 
     def __init__(self, file, mode='r', compression=ZIP_DEFLATED):
         basename = os.path.basename(file)
-        self.parsed_filename = WHEEL_INFO_RE.match(basename)
-        if not basename.endswith('.whl') or self.parsed_filename is None:
+        try:
+            name, version, build, tags = parse_wheel_filename(basename)
+        except InvalidWheelFilename:
             raise WheelError("Bad wheel filename {!r}".format(basename))
 
+        name = name.replace('-', '_')
         ZipFile.__init__(self, file, mode, compression=compression, allowZip64=True)
 
-        self.dist_info_path = '{}.dist-info'.format(self.parsed_filename.group('namever'))
+        self.dist_info_path = '{name}-{version}.dist-info'.format(name=name, version=version)
         self.record_path = self.dist_info_path + '/RECORD'
         self._file_hashes = OrderedDict()
         self._file_sizes = {}
@@ -57,7 +52,20 @@ class WheelFile(ZipFile):
             try:
                 record = self.open(self.record_path)
             except KeyError:
-                raise WheelError('Missing {} file'.format(self.record_path))
+                # Try again with the old, denormalized .dist-info path
+                name, version = basename.split('-', 2)[:2]
+                del self._file_hashes[self.record_path]
+                del self._file_hashes[self.record_path + '.jws']
+                del self._file_hashes[self.record_path + '.p7s']
+                self.dist_info_path = '{}-{}.dist-info'.format(name, version)
+                self.record_path = self.dist_info_path + '/RECORD'
+                self._file_hashes[self.record_path] = None, None
+                self._file_hashes[self.record_path + '.jws'] = None, None
+                self._file_hashes[self.record_path + '.p7s'] = None, None
+                try:
+                    record = self.open(self.record_path)
+                except KeyError:
+                    raise WheelError('Missing RECORD file')
 
             with record:
                 for line in record:
