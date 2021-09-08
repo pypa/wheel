@@ -1,4 +1,5 @@
 import os
+from textwrap import dedent
 from zipfile import ZipFile
 
 import pytest
@@ -47,7 +48,15 @@ def test_pack(tmpdir_factory, tmpdir, build_tag_arg, existing_build_tag, filenam
     assert new_record_lines == old_record_lines
 
     expected_build_num = build_tag_arg or existing_build_tag
+    expected_wheel_content = dedent("""\
+        Wheel-Version: 1.0
+        Generator: bdist_wheel (0.30.0)
+        Root-Is-Purelib: false
+        Tag: py2-none-any
+        Tag: py3-none-any
+    """.replace('\n', '\r\n'))
     if expected_build_num:
-        assert ('Build: %s\r\n' % expected_build_num).encode() in new_wheel_file_content
-    else:
-        assert b'Build: ' not in new_wheel_file_content
+        expected_wheel_content += 'Build: %s\r\n' % expected_build_num
+
+    expected_wheel_content = expected_wheel_content.encode('ascii')
+    assert new_wheel_file_content == expected_wheel_content
