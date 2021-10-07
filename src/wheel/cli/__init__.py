@@ -31,10 +31,32 @@ def convert_f(args):
     convert(args.files, args.dest_dir, args.verbose)
 
 
+def tags_f(args):
+    from .tags import tags
+
+    for name in tags(
+        args.wheel,
+        args.python_tag and args.python_tag.split("."),
+        args.abi_tag and args.abi_tag.split("."),
+        args.platform_tag and args.platform_tag.split("."),
+        args.build,
+        args.remove,
+    ):
+        print(name)
+
+
 def version_f(args):
     from .. import __version__
 
     print("wheel %s" % __version__)
+
+
+TAGS_HELP = """\
+Make a new wheel with given tags. Any tags unspecified will remain the same.
+Separate multiple tags with a dot. Starting with a dot will append to the
+existing tags. The original file will remain unless --remove is given. The
+output file(s) will be displayed on stdout.
+"""
 
 
 def parser():
@@ -71,6 +93,27 @@ def parser():
     )
     convert_parser.add_argument("--verbose", "-v", action="store_true")
     convert_parser.set_defaults(func=convert_f)
+
+    tags_parser = s.add_parser(
+        "tags", help="Add or replace the tags on a wheel", description=TAGS_HELP
+    )
+    tags_parser.add_argument("wheel", nargs="*", help="Existing wheel(s) to retag")
+    tags_parser.add_argument(
+        "--remove",
+        action="store_true",
+        help="Remove the original files, keeping only the renamed ones",
+    )
+    tags_parser.add_argument(
+        "--python-tag", metavar="TAG", help="Specify an interpreter tag(s)"
+    )
+    tags_parser.add_argument("--abi-tag", metavar="TAG", help="Specify an ABI tag(s)")
+    tags_parser.add_argument(
+        "--platform-tag", metavar="TAG", help="Specify a platform tag(s)"
+    )
+    tags_parser.add_argument(
+        "--build", type=int, metavar="NUMBER", help="Specify a build number"
+    )
+    tags_parser.set_defaults(func=tags_f)
 
     version_parser = s.add_parser("version", help="Print version and exit")
     version_parser.set_defaults(func=version_f)
