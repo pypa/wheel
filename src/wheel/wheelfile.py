@@ -64,6 +64,7 @@ class WheelFile(ZipFile):
                     path, hash_sum, size = line
                     if not hash_sum:
                         continue
+
                     algorithm, hash_sum = hash_sum.split(u'=')
                     try:
                         hashlib.new(algorithm)
@@ -74,6 +75,7 @@ class WheelFile(ZipFile):
                         raise WheelError(
                             'Weak hash algorithm ({}) is not permitted by PEP 427'
                             .format(algorithm))
+
                     self._file_hashes[path] = (
                         algorithm, urlsafe_b64decode(hash_sum.encode('ascii')))
 
