@@ -75,6 +75,9 @@ class WheelFile(ZipFile):
                                 'Weak hash algorithm ({}) is not permitted by PEP 427'
                                 .format(algorithm))
 
+                        if path.startswith('"') and path.endswith('"'):
+                            path = path[1:-1]
+
                         self._file_hashes[path] = (
                             algorithm, urlsafe_b64decode(hash_sum.encode('ascii')))
 
