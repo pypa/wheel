@@ -11,7 +11,7 @@ from distutils import log as logger
 from zipfile import ZIP_DEFLATED, ZipInfo, ZipFile
 
 from wheel.cli import WheelError
-from wheel.util import urlsafe_b64decode, as_unicode, native, urlsafe_b64encode, as_bytes, StringIO
+from wheel.util import urlsafe_b64decode, as_unicode, native, urlsafe_b64encode, as_bytes, StringIO, TextIOWrapper
 
 # Non-greedy matching of an optional build number may be too clever (more
 # invalid wheel filenames will match). Separate regex for .dist-info?
@@ -60,26 +60,23 @@ class WheelFile(ZipFile):
                 raise WheelError('Missing {} file'.format(self.record_path))
 
             with record:
-                for line in record:
-                    line = line.decode('utf-8')
-                    path, hash_sum, size = line.rsplit(u',', 2)
-                    if hash_sum:
-                        algorithm, hash_sum = hash_sum.split(u'=')
-                        try:
-                            hashlib.new(algorithm)
-                        except ValueError:
-                            raise WheelError('Unsupported hash algorithm: {}'.format(algorithm))
+                for line in csv.reader(TextIOWrapper(record)):
+                    path, hash_sum, size = line
+                    if not hash_sum:
+                        continue
+                    algorithm, hash_sum = hash_sum.split(u'=')
+                    try:
+                        hashlib.new(algorithm)
+                    except ValueError:
+                        raise WheelError('Unsupported hash algorithm: {}'.format(algorithm))
 
-                        if algorithm.lower() in {'md5', 'sha1'}:
-                            raise WheelError(
-                                'Weak hash algorithm ({}) is not permitted by PEP 427'
-                                .format(algorithm))
+                    if algorithm.lower() in {'md5', 'sha1'}:
+                        raise WheelError(
+                            'Weak hash algorithm ({}) is not permitted by PEP 427'
+                            .format(algorithm))
+                    self._file_hashes[path] = (
+                        algorithm, urlsafe_b64decode(hash_sum.encode('ascii')))
 
-                        if path.startswith('"') and path.endswith('"'):
-                            path = path[1:-1]
-
-                        self._file_hashes[path] = (
-                            algorithm, urlsafe_b64decode(hash_sum.encode('ascii')))
 
     def open(self, name_or_info, mode="r", pwd=None):
         def _update_crc(newdata, eof=None):

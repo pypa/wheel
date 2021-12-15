@@ -7,6 +7,7 @@ if sys.version_info[0] < 3:
     text_type = unicode  # noqa: F821
 
     StringIO = io.BytesIO
+    TextIOWrapper = lambda bytes_io: bytes_io
 
     def native(s, encoding='utf-8'):
         if isinstance(s, unicode):  # noqa: F821
@@ -16,12 +17,12 @@ else:
     text_type = str
 
     StringIO = io.StringIO
+    TextIOWrapper = io.TextIOWrapper
 
     def native(s, encoding='utf-8'):
         if isinstance(s, bytes):
             return s.decode(encoding)
         return s
-
 
 def urlsafe_b64encode(data):
     """urlsafe_b64encode without padding"""
