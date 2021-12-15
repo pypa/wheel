@@ -8,7 +8,7 @@ if sys.version_info[0] < 3:
 
     StringIO = io.BytesIO
 
-    def TextIOWrapper(bytes_io): 
+    def TextIOWrapper(bytes_io):
         return bytes_io
 
     def native(s, encoding='utf-8'):

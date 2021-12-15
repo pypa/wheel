@@ -12,12 +12,12 @@ from zipfile import ZIP_DEFLATED, ZipInfo, ZipFile
 
 from wheel.cli import WheelError
 from wheel.util import (
-    urlsafe_b64decode, 
-    as_unicode, 
-    native, 
-    urlsafe_b64encode, 
-    as_bytes, 
-    StringIO, 
+    urlsafe_b64decode,
+    as_unicode,
+    native,
+    urlsafe_b64encode,
+    as_bytes,
+    StringIO,
     TextIOWrapper
 )
 
