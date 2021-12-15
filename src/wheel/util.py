@@ -8,9 +8,6 @@ if sys.version_info[0] < 3:
 
     StringIO = io.BytesIO
 
-    def TextIOWrapper(bytes_io):
-        return bytes_io
-
     def native(s, encoding='utf-8'):
         if isinstance(s, unicode):  # noqa: F821
             return s.encode(encoding)
@@ -19,7 +16,6 @@ else:
     text_type = str
 
     StringIO = io.StringIO
-    TextIOWrapper = io.TextIOWrapper
 
     def native(s, encoding='utf-8'):
         if isinstance(s, bytes):

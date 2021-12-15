@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import csv
 import hashlib
+from io import TextIOWrapper
 import os.path
 import re
 import stat
