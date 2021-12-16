@@ -6,7 +6,6 @@ import os.path
 import re
 import stat
 import time
-
 from collections import OrderedDict
 from distutils import log as logger
 from io import TextIOWrapper
