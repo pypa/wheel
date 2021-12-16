@@ -62,7 +62,7 @@ class WheelFile(ZipFile):
                 raise WheelError('Missing {} file'.format(self.record_path))
 
             with record:
-                for line in csv.reader(TextIOWrapper(record)):
+                for line in csv.reader(TextIOWrapper(record), newline=''):
                     path, hash_sum, size = line
                     if not hash_sum:
                         continue
