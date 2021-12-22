@@ -1,8 +1,5 @@
-from __future__ import print_function
-
 import os.path
 import re
-import sys
 
 from wheel.cli import WheelError
 from wheel.wheelfile import WheelFile
@@ -75,8 +72,7 @@ def pack(directory, dest_dir, build_number):
     # Repack the wheel
     wheel_path = os.path.join(dest_dir, '{}-{}.whl'.format(name_version, tagline))
     with WheelFile(wheel_path, 'w') as wf:
-        print("Repacking wheel as {}...".format(wheel_path), end='')
-        sys.stdout.flush()
+        print("Repacking wheel as {}...".format(wheel_path), end='', flush=True)
         wf.write_files(directory)
 
     print('OK')

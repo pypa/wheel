@@ -1,7 +1,6 @@
 import os.path
 import re
 import shutil
-import sys
 import tempfile
 import zipfile
 from distutils import dist
@@ -261,8 +260,7 @@ def convert(files, dest_dir, verbose):
                 conv = wininst2wheel
 
             if verbose:
-                print("{}... ".format(installer))
-                sys.stdout.flush()
+                print("{}... ".format(installer), flush=True)
 
             conv(installer, dest_dir)
             if verbose:

@@ -14,6 +14,7 @@ import warnings
 from collections import OrderedDict
 from distutils.core import Command
 from distutils import log as logger
+from email.generator import BytesGenerator
 from io import BytesIO
 from glob import iglob
 from shutil import rmtree
@@ -29,10 +30,6 @@ from .vendored.packaging import tags
 from .wheelfile import WheelFile
 from . import __version__ as wheel_version
 
-if sys.version_info < (3,):
-    from email.generator import Generator as BytesGenerator
-else:
-    from email.generator import BytesGenerator
 
 safe_name = pkg_resources.safe_name
 safe_version = pkg_resources.safe_version
@@ -69,8 +66,7 @@ def get_flag(var, fallback, expected=True, warn=True):
 
 
 def get_abi_tag():
-    """Return the ABI tag based on SOABI (if available) or emulate SOABI
-    (CPython 2, PyPy)."""
+    """Return the ABI tag based on SOABI (if available) or emulate SOABI (PyPy)."""
     soabi = get_config_var('SOABI')
     impl = tags.interpreter_name()
     if not soabi and impl in ('cp', 'pp') and hasattr(sys, 'maxunicode'):
@@ -81,19 +77,14 @@ def get_abi_tag():
                     hasattr(sys, 'gettotalrefcount'),
                     warn=(impl == 'cp')):
             d = 'd'
+
         if get_flag('WITH_PYMALLOC',
                     impl == 'cp',
                     warn=(impl == 'cp' and
                           sys.version_info < (3, 8))) \
                 and sys.version_info < (3, 8):
             m = 'm'
-        if get_flag('Py_UNICODE_SIZE',
-                    sys.maxunicode == 0x10ffff,
-                    expected=4,
-                    warn=(impl == 'cp' and
-                          sys.version_info < (3, 3))) \
-                and sys.version_info < (3, 3):
-            u = 'u'
+
         abi = '%s%s%s%s%s' % (impl, tags.interpreter_version(), d, m, u)
     elif soabi and soabi.startswith('cpython-'):
         abi = 'cp' + soabi.split('-')[1]
@@ -105,6 +96,7 @@ def get_abi_tag():
         abi = soabi.replace('.', '_').replace('-', '_')
     else:
         abi = None
+
     return abi
 
 
@@ -373,10 +365,6 @@ class bdist_wheel(Command):
 
     def write_wheelfile(self, wheelfile_base, generator='bdist_wheel (' + wheel_version + ')'):
         from email.message import Message
-
-        # Workaround for Python 2.7 for when "generator" is unicode
-        if sys.version_info < (3,) and not isinstance(generator, str):
-            generator = generator.encode('utf-8')
 
         msg = Message()
         msg['Wheel-Version'] = '1.0'  # of the spec

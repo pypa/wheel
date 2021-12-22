@@ -1,28 +1,16 @@
-from __future__ import print_function
-
 import csv
 import hashlib
 import os.path
 import re
 import stat
-import sys
 import time
 from collections import OrderedDict
 from distutils import log as logger
+from io import StringIO, TextIOWrapper
 from zipfile import ZIP_DEFLATED, ZipInfo, ZipFile
 
 from wheel.cli import WheelError
-from wheel.util import urlsafe_b64decode, as_unicode, native, urlsafe_b64encode, as_bytes, StringIO
-
-if sys.version_info >= (3,):
-    from io import TextIOWrapper
-
-    def read_csv(fp):
-        return csv.reader(TextIOWrapper(fp, newline='', encoding='utf-8'))
-else:
-    def read_csv(fp):
-        for line in csv.reader(fp):
-            yield [column.decode('utf-8') for column in line]
+from wheel.util import urlsafe_b64decode, as_unicode, native, urlsafe_b64encode, as_bytes
 
 # Non-greedy matching of an optional build number may be too clever (more
 # invalid wheel filenames will match). Separate regex for .dist-info?
@@ -71,7 +59,7 @@ class WheelFile(ZipFile):
                 raise WheelError('Missing {} file'.format(self.record_path))
 
             with record:
-                for line in read_csv(record):
+                for line in csv.reader(TextIOWrapper(record, newline='', encoding='utf-8')):
                     path, hash_sum, size = line
                     if not hash_sum:
                         continue
