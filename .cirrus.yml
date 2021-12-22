@@ -2,7 +2,7 @@ freebsd_instance:
   image_family: freebsd-13-0-snap
 
 test_task:
-  only_if: "$CIRRUS_BRANCH == 'master' || $CIRRUS_PR != ''"
+  only_if: "$CIRRUS_BRANCH == 'main' || $CIRRUS_PR != ''"
   skip: "!changesInclude('.cirrus.yml', '**.py', 'pyproject.toml', 'setup.*')"
 
   pip_cache:
