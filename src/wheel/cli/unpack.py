@@ -15,7 +15,7 @@ def unpack(path, dest='.'):
     with WheelFile(path) as wf:
         namever = wf.parsed_filename.group('namever')
         destination = os.path.join(dest, namever)
-        print("Unpacking to: {}...".format(destination), end='', flush=True)
+        print(f"Unpacking to: {destination}...", end='', flush=True)
         wf.extractall(destination)
 
     print('OK')

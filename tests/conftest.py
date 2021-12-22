@@ -12,11 +12,8 @@ import pytest
 @pytest.fixture(scope='session')
 def wheels_and_eggs(tmpdir_factory):
     """Build wheels and eggs from test distributions."""
-    test_distributions = "complex-dist", "simple.dist", "headers.dist", "commasinfilenames.dist"
-    if sys.version_info >= (3, 6):
-        # Only Python 3.6+ can handle packaging unicode file names reliably
-        # across different platforms
-        test_distributions += ("unicode.dist",)
+    test_distributions = ("complex-dist", "simple.dist", "headers.dist", "commasinfilenames.dist",
+                          "unicode.dist")
 
     if sys.platform != 'win32':
         # ABI3 extensions don't really work on Windows

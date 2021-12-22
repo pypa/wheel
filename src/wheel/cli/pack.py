@@ -21,9 +21,9 @@ def pack(directory, dest_dir, build_number):
     dist_info_dirs = [fn for fn in os.listdir(directory)
                       if os.path.isdir(os.path.join(directory, fn)) and DIST_INFO_RE.match(fn)]
     if len(dist_info_dirs) > 1:
-        raise WheelError('Multiple .dist-info directories found in {}'.format(directory))
+        raise WheelError(f'Multiple .dist-info directories found in {directory}')
     elif not dist_info_dirs:
-        raise WheelError('No .dist-info directories found in {}'.format(directory))
+        raise WheelError(f'No .dist-info directories found in {directory}')
 
     # Determine the target wheel filename
     dist_info_dir = dist_info_dirs[0]
@@ -70,9 +70,9 @@ def pack(directory, dest_dir, build_number):
     tagline = '-'.join(['.'.join(impls), '.'.join(abivers), '.'.join(platforms)])
 
     # Repack the wheel
-    wheel_path = os.path.join(dest_dir, '{}-{}.whl'.format(name_version, tagline))
+    wheel_path = os.path.join(dest_dir, f'{name_version}-{tagline}.whl')
     with WheelFile(wheel_path, 'w') as wf:
-        print("Repacking wheel as {}...".format(wheel_path), end='', flush=True)
+        print(f"Repacking wheel as {wheel_path}...", end='', flush=True)
         wf.write_files(directory)
 
     print('OK')

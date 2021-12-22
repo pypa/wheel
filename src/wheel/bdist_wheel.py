@@ -38,7 +38,7 @@ PY_LIMITED_API_PATTERN = r'cp3\d'
 
 
 def python_tag():
-    return 'py{}'.format(sys.version_info[0])
+    return f'py{sys.version_info[0]}'
 
 
 def get_platform(archive_root):
@@ -59,7 +59,7 @@ def get_flag(var, fallback, expected=True, warn=True):
     val = get_config_var(var)
     if val is None:
         if warn:
-            warnings.warn("Config variable '{0}' is unset, Python ABI tag may "
+            warnings.warn("Config variable '{}' is unset, Python ABI tag may "
                           "be incorrect".format(var), RuntimeWarning, 2)
         return fallback
     return val == expected
@@ -85,7 +85,7 @@ def get_abi_tag():
                 and sys.version_info < (3, 8):
             m = 'm'
 
-        abi = '%s%s%s%s%s' % (impl, tags.interpreter_version(), d, m, u)
+        abi = f'{impl}{tags.interpreter_version()}{d}{m}{u}'
     elif soabi and soabi.startswith('cpython-'):
         abi = 'cp' + soabi.split('-')[1]
     elif soabi and soabi.startswith('pypy-'):
@@ -197,7 +197,7 @@ class bdist_wheel(Command):
         try:
             self.compression = self.supported_compressions[self.compression]
         except KeyError:
-            raise ValueError('Unsupported compression: {}'.format(self.compression))
+            raise ValueError(f'Unsupported compression: {self.compression}')
 
         need_options = ('dist_dir', 'plat_name', 'skip_build')
 
@@ -276,7 +276,7 @@ class bdist_wheel(Command):
             # issue gh-374: allow overriding plat_name
             supported_tags = [(t.interpreter, t.abi, plat_name)
                               for t in tags.sys_tags()]
-            assert tag in supported_tags, "would build wheel with unsupported tag {}".format(tag)
+            assert tag in supported_tags, f"would build wheel with unsupported tag {tag}"
         return tag
 
     def run(self):
@@ -327,7 +327,7 @@ class bdist_wheel(Command):
         self.run_command('install')
 
         impl_tag, abi_tag, plat_tag = self.get_tag()
-        archive_basename = "{}-{}-{}-{}".format(self.wheel_dist_name, impl_tag, abi_tag, plat_tag)
+        archive_basename = f"{self.wheel_dist_name}-{impl_tag}-{abi_tag}-{plat_tag}"
         if not self.relative:
             archive_root = self.bdist_dir
         else:
@@ -441,10 +441,10 @@ class bdist_wheel(Command):
             import glob
             pat = os.path.join(os.path.dirname(egginfo_path), '*.egg-info')
             possible = glob.glob(pat)
-            err = "Egg metadata expected at %s but not found" % (egginfo_path,)
+            err = f"Egg metadata expected at {egginfo_path} but not found"
             if possible:
                 alt = os.path.basename(possible[0])
-                err += " (%s found - possible misnamed archive file?)" % (alt,)
+                err += f" ({alt} found - possible misnamed archive file?)"
 
             raise ValueError(err)
 
@@ -466,7 +466,7 @@ class bdist_wheel(Command):
 
             # delete dependency_links if it is only whitespace
             dependency_links_path = os.path.join(distinfo_path, 'dependency_links.txt')
-            with open(dependency_links_path, 'r') as dependency_links_file:
+            with open(dependency_links_path) as dependency_links_file:
                 dependency_links = dependency_links_file.read().strip()
             if not dependency_links:
                 adios(dependency_links_path)

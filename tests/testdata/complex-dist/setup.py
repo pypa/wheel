@@ -2,8 +2,8 @@ from setuptools import setup
 
 setup(name='complex-dist',
       version='0.1',
-      description=u'Another testing distribution \N{SNOWMAN}',
-      long_description=u'Another testing distribution \N{SNOWMAN}',
+      description='Another testing distribution \N{SNOWMAN}',
+      long_description='Another testing distribution \N{SNOWMAN}',
       author="Illustrious Author",
       author_email="illustrious@example.org",
       url="http://example.org/exemplary",

@@ -57,7 +57,7 @@ def test_unicode_record(wheel_paths):
     with ZipFile(path) as zf:
         record = zf.read('unicode.dist-0.1.dist-info/RECORD')
 
-    assert u'åäö_日本語.py'.encode('utf-8') in record
+    assert 'åäö_日本語.py'.encode() in record
 
 
 def test_licenses_default(dummy_dist, monkeypatch, tmpdir):
@@ -138,7 +138,7 @@ def test_build_from_readonly_tree(dummy_dist, monkeypatch, tmpdir):
 def test_compression(dummy_dist, monkeypatch, tmpdir, option, compress_type):
     monkeypatch.chdir(dummy_dist)
     subprocess.check_call([sys.executable, 'setup.py', 'bdist_wheel', '-b', str(tmpdir),
-                           '--universal', '--compression={}'.format(option)])
+                           '--universal', f'--compression={option}'])
     with WheelFile('dist/dummy_dist-1.0-py2.py3-none-any.whl') as wf:
         filenames = set(wf.namelist())
         assert 'dummy_dist-1.0.dist-info/RECORD' in filenames

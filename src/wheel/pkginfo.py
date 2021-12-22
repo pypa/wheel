@@ -12,7 +12,7 @@ def read_pkg_info_bytes(bytestr):
 
 
 def read_pkg_info(path):
-    with open(path, "r", encoding="ascii", errors="surrogateescape") as headers:
+    with open(path, encoding="ascii", errors="surrogateescape") as headers:
         message = Parser().parse(headers)
 
     return message

@@ -29,7 +29,7 @@ def test_wheelfile_re(tmpdir):
 ])
 def test_bad_wheel_filename(filename):
     exc = pytest.raises(WheelError, WheelFile, filename)
-    exc.match('^Bad wheel filename {!r}$'.format(filename))
+    exc.match(f'^Bad wheel filename {filename!r}$')
 
 
 def test_missing_record(wheel_path):
@@ -56,14 +56,14 @@ def test_unsupported_hash_algorithm(wheel_path):
     ('sha1', 'QjCnGu5Qucb6-vir1a6BVptvOA4')
 ], ids=['md5', 'sha1'])
 def test_weak_hash_algorithm(wheel_path, algorithm, digest):
-    hash_string = '{}={}'.format(algorithm, digest)
+    hash_string = f'{algorithm}={digest}'
     with ZipFile(wheel_path, 'w') as zf:
         zf.writestr(native('hello/héllö.py'), as_bytes('print("Héllö, w0rld!")\n'))
         zf.writestr('test-1.0.dist-info/RECORD',
-                    as_bytes('hello/héllö.py,{},25'.format(hash_string)))
+                    as_bytes(f'hello/héllö.py,{hash_string},25'))
 
     exc = pytest.raises(WheelError, WheelFile, wheel_path)
-    exc.match(r"^Weak hash algorithm \({}\) is not permitted by PEP 427$".format(algorithm))
+    exc.match(fr"^Weak hash algorithm \({algorithm}\) is not permitted by PEP 427$")
 
 
 @pytest.mark.parametrize('algorithm, digest', [
@@ -73,11 +73,11 @@ def test_weak_hash_algorithm(wheel_path, algorithm, digest):
                'iLNpWVxTwuDWqBQ')
 ], ids=['sha256', 'sha384', 'sha512'])
 def test_testzip(wheel_path, algorithm, digest):
-    hash_string = '{}={}'.format(algorithm, digest)
+    hash_string = f'{algorithm}={digest}'
     with ZipFile(wheel_path, 'w') as zf:
         zf.writestr(native('hello/héllö.py'), as_bytes('print("Héllö, world!")\n'))
         zf.writestr('test-1.0.dist-info/RECORD',
-                    as_bytes('hello/héllö.py,{},25'.format(hash_string)))
+                    as_bytes(f'hello/héllö.py,{hash_string},25'))
 
     with WheelFile(wheel_path) as wf:
         wf.testzip()

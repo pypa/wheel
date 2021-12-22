@@ -56,7 +56,7 @@ def test_default_tag(temp_pkg):
     assert dist_dir.check(dir=1)
     wheels = dist_dir.listdir()
     assert len(wheels) == 1
-    assert wheels[0].basename == 'Test-1.0-py%s-none-any.whl' % (sys.version_info[0],)
+    assert wheels[0].basename == f'Test-1.0-py{sys.version_info[0]}-none-any.whl'
     assert wheels[0].ext == '.whl'
 
 
@@ -67,7 +67,7 @@ def test_build_number(temp_pkg):
     assert dist_dir.check(dir=1)
     wheels = dist_dir.listdir()
     assert len(wheels) == 1
-    assert (wheels[0].basename == 'Test-1.0-1-py%s-none-any.whl' % (sys.version_info[0],))
+    assert (wheels[0].basename == f'Test-1.0-1-py{sys.version_info[0]}-none-any.whl')
     assert wheels[0].ext == '.whl'
 
 
