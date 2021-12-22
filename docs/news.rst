@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.37.1 (2021-12-22)**
 
 - Fixed ``wheel pack`` duplicating the ``WHEEL`` contents when the build number has changed (#415)
 - Fixed parsing of file names containing commas in ``RECORD`` (PR by Hood Chatham)
