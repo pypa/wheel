@@ -4,6 +4,7 @@ Release Notes
 **UNRELEASED**
 
 - Dropped support for Python < 3.7
+- Updated vendored ``packaging`` to 21.3
 
 **0.37.1 (2021-12-22)**
 
