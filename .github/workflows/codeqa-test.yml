@@ -6,17 +6,20 @@ on:
   pull_request:
 
 jobs:
-  flake8:
+  lint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Check code style with Flake8
-      uses: TrueBrain/actions-flake8@v2
+    - uses: actions/setup-python@v2
       with:
-        path: src tests
+        python-version: 3.x
+    - name: Install dependencies
+      run: pip install flake8
+    - name: Run flake8
+      run: flake8 src tests
 
   test:
-    needs: [flake8]
+    needs: [lint]
     strategy:
       fail-fast: false
       matrix:
