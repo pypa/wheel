@@ -18,7 +18,7 @@ if sys.version_info >= (3,):
     from io import TextIOWrapper
 
     def read_csv(fp):
-        return csv.reader(TextIOWrapper(fp, newline=''))
+        return csv.reader(TextIOWrapper(fp, newline='', encoding='utf-8'))
 else:
     def read_csv(fp):
         for line in csv.reader(fp):
