@@ -1,3 +1,9 @@
 [build-system]
 requires = ["setuptools >= 45.2.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.black]
+target-version = ['py37']
+extend-exclude = '''
+^/src/wheel/vendored/
+'''
