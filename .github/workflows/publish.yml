@@ -15,10 +15,11 @@ jobs:
       with:
         python-version: 3.x
     - name: Install dependencies
-      run: pip install .
+      run: pip install build -e .
     - name: Create packages
-      run: python setup.py sdist bdist_wheel
+      run: python -m build -n -s -w .
     - name: Upload packages
       uses: pypa/gh-action-pypi-publish@master
       with:
+        user: __token__
         password: ${{ secrets.pypi_password }}
