@@ -8,5 +8,10 @@ extend-exclude = '''
 ^/src/wheel/vendored/
 '''
 
+[tool.isort]
+src_paths = ["src"]
+profile = "black"
+skip_gitignore = true
+
 [tool.flake8]
 max-line-length = 88

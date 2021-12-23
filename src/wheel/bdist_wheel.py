@@ -6,30 +6,29 @@ A wheel is a built archive format.
 
 import distutils
 import os
+import re
 import shutil
 import stat
 import sys
-import re
 import warnings
 from collections import OrderedDict
-from distutils.core import Command
 from distutils import log as logger
+from distutils.core import Command
 from email.generator import BytesGenerator
-from io import BytesIO
 from glob import iglob
+from io import BytesIO
 from shutil import rmtree
 from sysconfig import get_config_var
 from zipfile import ZIP_DEFLATED, ZIP_STORED
 
 import pkg_resources
 
-from .pkginfo import write_pkg_info
+from . import __version__ as wheel_version
 from .macosx_libfile import calculate_macosx_platform_tag
 from .metadata import pkginfo_to_metadata
+from .pkginfo import write_pkg_info
 from .vendored.packaging import tags
 from .wheelfile import WheelFile
-from . import __version__ as wheel_version
-
 
 safe_name = pkg_resources.safe_name
 safe_version = pkg_resources.safe_version

@@ -1,10 +1,10 @@
 import sys
-from zipfile import ZipFile, ZIP_DEFLATED
+from zipfile import ZIP_DEFLATED, ZipFile
 
 import pytest
 
 from wheel.cli import WheelError
-from wheel.util import native, as_bytes
+from wheel.util import as_bytes, native
 from wheel.wheelfile import WheelFile
 
 
