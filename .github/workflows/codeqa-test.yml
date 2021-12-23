@@ -18,11 +18,11 @@ jobs:
         path: ~/.cache/pip
         key: pip-lint
     - name: Install dependencies
-      run: pip install black flake8
+      run: pip install black pyproject-flake8
     - name: Run black
       run: black --check --diff src tests
     - name: Run flake8
-      run: flake8 src tests
+      run: pflake8 src tests
 
   test:
     strategy:

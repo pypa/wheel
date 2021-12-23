@@ -7,3 +7,6 @@ target-version = ['py37']
 extend-exclude = '''
 ^/src/wheel/vendored/
 '''
+
+[tool.flake8]
+max-line-length = 88
