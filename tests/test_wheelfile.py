@@ -4,7 +4,6 @@ from zipfile import ZIP_DEFLATED, ZipFile
 import pytest
 
 from wheel.cli import WheelError
-from wheel.util import as_bytes, native
 from wheel.wheelfile import WheelFile
 
 
@@ -37,7 +36,7 @@ def test_bad_wheel_filename(filename):
 
 def test_missing_record(wheel_path):
     with ZipFile(wheel_path, "w") as zf:
-        zf.writestr(native("hello/héllö.py"), as_bytes('print("Héllö, w0rld!")\n'))
+        zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
 
     exc = pytest.raises(WheelError, WheelFile, wheel_path)
     exc.match("^Missing test-1.0.dist-info/RECORD file$")
@@ -45,12 +44,10 @@ def test_missing_record(wheel_path):
 
 def test_unsupported_hash_algorithm(wheel_path):
     with ZipFile(wheel_path, "w") as zf:
-        zf.writestr(native("hello/héllö.py"), as_bytes('print("Héllö, w0rld!")\n'))
+        zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
         zf.writestr(
             "test-1.0.dist-info/RECORD",
-            as_bytes(
-                "hello/héllö.py,sha000=bv-QV3RciQC2v3zL8Uvhd_arp40J5A9xmyubN34OVwo,25"
-            ),
+            "hello/héllö.py,sha000=bv-QV3RciQC2v3zL8Uvhd_arp40J5A9xmyubN34OVwo,25",
         )
 
     exc = pytest.raises(WheelError, WheelFile, wheel_path)
@@ -65,10 +62,8 @@ def test_unsupported_hash_algorithm(wheel_path):
 def test_weak_hash_algorithm(wheel_path, algorithm, digest):
     hash_string = f"{algorithm}={digest}"
     with ZipFile(wheel_path, "w") as zf:
-        zf.writestr(native("hello/héllö.py"), as_bytes('print("Héllö, w0rld!")\n'))
-        zf.writestr(
-            "test-1.0.dist-info/RECORD", as_bytes(f"hello/héllö.py,{hash_string},25")
-        )
+        zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
+        zf.writestr("test-1.0.dist-info/RECORD", f"hello/héllö.py,{hash_string},25")
 
     exc = pytest.raises(WheelError, WheelFile, wheel_path)
     exc.match(fr"^Weak hash algorithm \({algorithm}\) is not permitted by PEP 427$")
@@ -90,10 +85,8 @@ def test_weak_hash_algorithm(wheel_path, algorithm, digest):
 def test_testzip(wheel_path, algorithm, digest):
     hash_string = f"{algorithm}={digest}"
     with ZipFile(wheel_path, "w") as zf:
-        zf.writestr(native("hello/héllö.py"), as_bytes('print("Héllö, world!")\n'))
-        zf.writestr(
-            "test-1.0.dist-info/RECORD", as_bytes(f"hello/héllö.py,{hash_string},25")
-        )
+        zf.writestr("hello/héllö.py", 'print("Héllö, world!")\n')
+        zf.writestr("test-1.0.dist-info/RECORD", f"hello/héllö.py,{hash_string},25")
 
     with WheelFile(wheel_path) as wf:
         wf.testzip()
@@ -101,45 +94,43 @@ def test_testzip(wheel_path, algorithm, digest):
 
 def test_testzip_missing_hash(wheel_path):
     with ZipFile(wheel_path, "w") as zf:
-        zf.writestr(native("hello/héllö.py"), as_bytes('print("Héllö, world!")\n'))
+        zf.writestr("hello/héllö.py", 'print("Héllö, world!")\n')
         zf.writestr("test-1.0.dist-info/RECORD", "")
 
     with WheelFile(wheel_path) as wf:
         exc = pytest.raises(WheelError, wf.testzip)
-        exc.match(native("^No hash found for file 'hello/héllö.py'$"))
+        exc.match("^No hash found for file 'hello/héllö.py'$")
 
 
 def test_testzip_bad_hash(wheel_path):
     with ZipFile(wheel_path, "w") as zf:
-        zf.writestr(native("hello/héllö.py"), as_bytes('print("Héllö, w0rld!")\n'))
+        zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
         zf.writestr(
             "test-1.0.dist-info/RECORD",
-            as_bytes(
-                "hello/héllö.py,sha256=bv-QV3RciQC2v3zL8Uvhd_arp40J5A9xmyubN34OVwo,25"
-            ),
+            "hello/héllö.py,sha256=bv-QV3RciQC2v3zL8Uvhd_arp40J5A9xmyubN34OVwo,25",
         )
 
     with WheelFile(wheel_path) as wf:
         exc = pytest.raises(WheelError, wf.testzip)
-        exc.match(native("^Hash mismatch for file 'hello/héllö.py'$"))
+        exc.match("^Hash mismatch for file 'hello/héllö.py'$")
 
 
 def test_write_str(wheel_path):
     with WheelFile(wheel_path, "w") as wf:
-        wf.writestr(native("hello/héllö.py"), as_bytes('print("Héllö, world!")\n'))
-        wf.writestr(native("hello/h,ll,.py"), as_bytes('print("Héllö, world!")\n'))
+        wf.writestr("hello/héllö.py", 'print("Héllö, world!")\n')
+        wf.writestr("hello/h,ll,.py", 'print("Héllö, world!")\n')
 
     with ZipFile(wheel_path, "r") as zf:
         infolist = zf.infolist()
         assert len(infolist) == 3
-        assert infolist[0].filename == native("hello/héllö.py")
+        assert infolist[0].filename == "hello/héllö.py"
         assert infolist[0].file_size == 25
-        assert infolist[1].filename == native("hello/h,ll,.py")
+        assert infolist[1].filename == "hello/h,ll,.py"
         assert infolist[1].file_size == 25
         assert infolist[2].filename == "test-1.0.dist-info/RECORD"
 
         record = zf.read("test-1.0.dist-info/RECORD")
-        assert record == as_bytes(
+        assert record.decode("utf-8") == (
             "hello/héllö.py,sha256=bv-QV3RciQC2v3zL8Uvhd_arp40J5A9xmyubN34OVwo,25\n"
             '"hello/h,ll,.py",sha256=bv-QV3RciQC2v3zL8Uvhd_arp40J5A9xmyubN34OVwo,25\n'
             "test-1.0.dist-info/RECORD,,\n"
@@ -154,7 +145,7 @@ def test_timestamp(tmpdir_factory, wheel_path, monkeypatch):
         build_dir.join(filename).write(filename + "\n")
 
     # The earliest date representable in TarInfos, 1980-01-01
-    monkeypatch.setenv(native("SOURCE_DATE_EPOCH"), native("315576060"))
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "315576060")
 
     with WheelFile(wheel_path, "w") as wf:
         wf.write_files(str(build_dir))

@@ -10,13 +10,7 @@ from io import StringIO, TextIOWrapper
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 from wheel.cli import WheelError
-from wheel.util import (
-    as_bytes,
-    as_unicode,
-    native,
-    urlsafe_b64decode,
-    urlsafe_b64encode,
-)
+from wheel.util import urlsafe_b64decode, urlsafe_b64encode
 
 # Non-greedy matching of an optional build number may be too clever (more
 # invalid wheel filenames will match). Separate regex for .dist-info?
@@ -93,18 +87,14 @@ class WheelFile(ZipFile):
                     )
 
     def open(self, name_or_info, mode="r", pwd=None):
-        def _update_crc(newdata, eof=None):
-            if eof is None:
-                eof = ef._eof
-                update_crc_orig(newdata)
-            else:  # Python 2
-                update_crc_orig(newdata, eof)
-
+        def _update_crc(newdata):
+            eof = ef._eof
+            update_crc_orig(newdata)
             running_hash.update(newdata)
             if eof and running_hash.digest() != expected_hash:
-                raise WheelError(f"Hash mismatch for file '{native(ef_name)}'")
+                raise WheelError(f"Hash mismatch for file '{ef_name}'")
 
-        ef_name = as_unicode(
+        ef_name = (
             name_or_info.filename if isinstance(name_or_info, ZipInfo) else name_or_info
         )
         if (
@@ -112,7 +102,7 @@ class WheelFile(ZipFile):
             and not ef_name.endswith("/")
             and ef_name not in self._file_hashes
         ):
-            raise WheelError(f"No hash found for file '{native(ef_name)}'")
+            raise WheelError(f"No hash found for file '{ef_name}'")
 
         ef = ZipFile.open(self, name_or_info, mode, pwd)
         if mode == "r" and not ef_name.endswith("/"):
@@ -159,8 +149,11 @@ class WheelFile(ZipFile):
         zinfo.compress_type = compress_type or self.compression
         self.writestr(zinfo, data, compress_type)
 
-    def writestr(self, zinfo_or_arcname, bytes, compress_type=None):
-        ZipFile.writestr(self, zinfo_or_arcname, bytes, compress_type)
+    def writestr(self, zinfo_or_arcname, data, compress_type=None):
+        if isinstance(data, str):
+            data = data.encode("utf-8")
+
+        ZipFile.writestr(self, zinfo_or_arcname, data, compress_type)
         fname = (
             zinfo_or_arcname.filename
             if isinstance(zinfo_or_arcname, ZipInfo)
@@ -168,11 +161,12 @@ class WheelFile(ZipFile):
         )
         logger.info("adding '%s'", fname)
         if fname != self.record_path:
-            hash_ = self._default_algorithm(bytes)
-            self._file_hashes[fname] = hash_.name, native(
-                urlsafe_b64encode(hash_.digest())
+            hash_ = self._default_algorithm(data)
+            self._file_hashes[fname] = (
+                hash_.name,
+                urlsafe_b64encode(hash_.digest()).decode("ascii"),
             )
-            self._file_sizes[fname] = len(bytes)
+            self._file_sizes[fname] = len(data)
 
     def close(self):
         # Write RECORD
@@ -186,9 +180,9 @@ class WheelFile(ZipFile):
                 )
             )
             writer.writerow((format(self.record_path), "", ""))
-            zinfo = ZipInfo(native(self.record_path), date_time=get_zipinfo_datetime())
+            zinfo = ZipInfo(self.record_path, date_time=get_zipinfo_datetime())
             zinfo.compress_type = self.compression
             zinfo.external_attr = 0o664 << 16
-            self.writestr(zinfo, as_bytes(data.getvalue()))
+            self.writestr(zinfo, data.getvalue())
 
         ZipFile.close(self)
