@@ -3,8 +3,9 @@ import re
 import shutil
 import tempfile
 import zipfile
-from distutils import dist
 from glob import iglob
+
+from setuptools.dist import Distribution
 
 from ..bdist_wheel import bdist_wheel
 from ..wheelfile import WheelFile
@@ -68,9 +69,9 @@ def egg2wheel(egg_path, dest_dir):
 
     root_is_purelib = egg_info["arch"] is None
     if root_is_purelib:
-        bw = bdist_wheel(dist.Distribution())
+        bw = bdist_wheel(Distribution())
     else:
-        bw = _bdist_wheel_tag(dist.Distribution())
+        bw = _bdist_wheel_tag(Distribution())
 
     bw.root_is_pure = root_is_purelib
     bw.python_tag = pyver
@@ -227,9 +228,9 @@ def wininst2wheel(path, dest_dir):
         pyver = pyver.replace("py", "cp")
     wheel_name = "-".join((dist_info, pyver, abi, arch))
     if root_is_purelib:
-        bw = bdist_wheel(dist.Distribution())
+        bw = bdist_wheel(Distribution())
     else:
-        bw = _bdist_wheel_tag(dist.Distribution())
+        bw = _bdist_wheel_tag(Distribution())
 
     bw.root_is_pure = root_is_purelib
     bw.python_tag = pyver
