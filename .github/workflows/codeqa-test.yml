@@ -59,10 +59,12 @@ jobs:
     - name: Install the project
       run: "pip install --no-binary=:all: ."
     - name: Install test dependencies
-      run: pip install .[test]
+      run: pip install .[test] coverage
     - name: Test with pytest
-      run: python -b -m pytest -W always --cov-report=xml:pytest-cov.xml
+      run: |
+        coverage run -m pytest -W always
+        coverage xml
     - name: Send coverage data to Codecov
       uses: codecov/codecov-action@v1
       with:
-        file: pytest-cov.xml
+        file: coverage.xml
