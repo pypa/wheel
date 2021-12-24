@@ -55,9 +55,9 @@ def get_platform(archive_root):
     result = sysconfig.get_platform()
     if result.startswith("macosx") and archive_root is not None:
         result = calculate_macosx_platform_tag(archive_root, result)
-    if result == "linux_x86_64" and sys.maxsize == 2147483647:
+    elif result == "linux-x86_64" and sys.maxsize == 2147483647:
         # pip pull request #3497
-        result = "linux_i686"
+        result = "linux-i686"
 
     return result.replace("-", "_")
 

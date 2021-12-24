@@ -213,6 +213,6 @@ class TestGetPlatformMacosx:
 
 
 def test_get_platform_linux(monkeypatch):
-    monkeypatch.setattr(sysconfig, "get_platform", return_factory("linux_x86_64"))
+    monkeypatch.setattr(sysconfig, "get_platform", return_factory("linux-x86_64"))
     monkeypatch.setattr(sys, "maxsize", 2147483647)
     assert get_platform(None) == "linux_i686"
