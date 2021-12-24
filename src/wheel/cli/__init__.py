@@ -7,13 +7,6 @@ import os
 import sys
 
 
-def require_pkgresources(name):
-    try:
-        import pkg_resources  # noqa: F401
-    except ImportError:
-        raise RuntimeError(f"'{name}' needs pkg_resources (part of setuptools).")
-
-
 class WheelError(Exception):
     pass
 

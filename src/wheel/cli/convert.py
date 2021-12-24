@@ -9,7 +9,7 @@ from setuptools.dist import Distribution
 
 from ..bdist_wheel import bdist_wheel
 from ..wheelfile import WheelFile
-from . import WheelError, require_pkgresources
+from . import WheelError
 
 egg_info_re = re.compile(
     r"""
@@ -253,9 +253,6 @@ def wininst2wheel(path, dest_dir):
 
 
 def convert(files, dest_dir, verbose):
-    # Only support wheel convert if pkg_resources is present
-    require_pkgresources("wheel convert")
-
     for pat in files:
         for installer in iglob(pat):
             if os.path.splitext(installer)[1] == ".egg":
