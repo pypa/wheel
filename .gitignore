@@ -12,4 +12,3 @@ __pycache__
 .idea
 .cache
 .eggs
-.pre-commit-config.yaml
