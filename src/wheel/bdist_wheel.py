@@ -26,6 +26,7 @@ from . import __version__ as wheel_version
 from .macosx_libfile import calculate_macosx_platform_tag
 from .metadata import pkginfo_to_metadata
 from .pkginfo import write_pkg_info
+from .util import log
 from .vendored.packaging import tags
 from .wheelfile import WheelFile
 
@@ -33,17 +34,6 @@ safe_name = pkg_resources.safe_name
 safe_version = pkg_resources.safe_version
 
 PY_LIMITED_API_PATTERN = r"cp3\d"
-
-
-def log(msg, *, error=False):
-    stream = sys.stderr if error else sys.stdout
-    try:
-        print(msg, file=stream, flush=True)
-    except UnicodeEncodeError:
-        # emulate backslashreplace error handler
-        encoding = stream.encoding
-        msg = msg.encode(encoding, "backslashreplace").decode(encoding)
-        print(msg, file=stream, flush=True)
 
 
 def python_tag():

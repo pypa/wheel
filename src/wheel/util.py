@@ -1,4 +1,5 @@
 import base64
+import sys
 
 
 def native(s, encoding="utf-8"):
@@ -30,3 +31,14 @@ def as_bytes(s):
         return s.encode("utf-8")
     else:
         return s
+
+
+def log(msg, *, error=False):
+    stream = sys.stderr if error else sys.stdout
+    try:
+        print(msg, file=stream, flush=True)
+    except UnicodeEncodeError:
+        # emulate backslashreplace error handler
+        encoding = stream.encoding
+        msg = msg.encode(encoding, "backslashreplace").decode(encoding)
+        print(msg, file=stream, flush=True)
