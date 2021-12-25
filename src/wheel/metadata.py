@@ -87,51 +87,17 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
 
     description = pkg_info["Description"]
     if description:
-        pkg_info.set_payload(dedent_description(pkg_info))
+        description_lines = pkg_info["Description"].splitlines()
+        dedented_description = "\n".join(
+            # if the first line of long_description is blank,
+            # the first line here will be indented.
+            (
+                description_lines[0].lstrip(),
+                textwrap.dedent("\n".join(description_lines[1:])),
+                "\n",
+            )
+        )
+        pkg_info.set_payload(dedented_description)
         del pkg_info["Description"]
 
     return pkg_info
-
-
-def pkginfo_unicode(pkg_info, field):
-    """Hack to coax Unicode out of an email Message() - Python 3.3+"""
-    text = pkg_info[field]
-    field = field.lower()
-    if not isinstance(text, str):
-        for item in pkg_info.raw_items():
-            if item[0].lower() == field:
-                text = item[1].encode("ascii", "surrogateescape").decode("utf-8")
-                break
-
-    return text
-
-
-def dedent_description(pkg_info):
-    """
-    Dedent and convert pkg_info['Description'] to Unicode.
-    """
-    description = pkg_info["Description"]
-
-    # Python 3 Unicode handling, sorta.
-    surrogates = False
-    if not isinstance(description, str):
-        surrogates = True
-        description = pkginfo_unicode(pkg_info, "Description")
-
-    description_lines = description.splitlines()
-    description_dedent = "\n".join(
-        # if the first line of long_description is blank,
-        # the first line here will be indented.
-        (
-            description_lines[0].lstrip(),
-            textwrap.dedent("\n".join(description_lines[1:])),
-            "\n",
-        )
-    )
-
-    if surrogates:
-        description_dedent = description_dedent.encode("utf8").decode(
-            "ascii", "surrogateescape"
-        )
-
-    return description_dedent
