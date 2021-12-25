@@ -4,10 +4,9 @@ Tools for converting old- to new-style metadata.
 
 import os.path
 import textwrap
+from email.parser import Parser
 
 import pkg_resources
-
-from .pkginfo import read_pkg_info
 
 
 def requires_to_requires_dist(requirement):
@@ -66,7 +65,9 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
     """
     Convert .egg-info directory with PKG-INFO to the Metadata 2.1 format
     """
-    pkg_info = read_pkg_info(pkginfo_path)
+    with open(pkginfo_path, encoding="utf-8") as headers:
+        pkg_info = Parser().parse(headers)
+
     pkg_info.replace_header("Metadata-Version", "2.1")
     # Those will be regenerated from `requires.txt`.
     del pkg_info["Provides-Extra"]
