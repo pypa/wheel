@@ -17,9 +17,11 @@ def requires_to_requires_dist(requirement):
     requires_dist = []
     for op, ver in requirement.specs:
         requires_dist.append(op + ver)
-    if not requires_dist:
+
+    if requires_dist:
+        return " (" + ",".join(sorted(requires_dist)) + ")"
+    else:
         return ""
-    return " (%s)" % ",".join(sorted(requires_dist))
 
 
 def convert_requirements(requirements):
@@ -29,8 +31,9 @@ def convert_requirements(requirements):
         spec = requires_to_requires_dist(parsed_requirement)
         extras = ",".join(sorted(parsed_requirement.extras))
         if extras:
-            extras = "[%s]" % extras
-        yield (parsed_requirement.project_name + extras + spec)
+            extras = f"[{extras}]"
+
+        yield parsed_requirement.project_name + extras + spec
 
 
 def generate_requirements(extras_require):
