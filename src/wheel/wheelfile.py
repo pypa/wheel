@@ -115,7 +115,7 @@ class WheelFile(ZipFile):
         return ef
 
     def write_files(self, base_dir):
-        log(f"creating '{self.filename}' and adding '{base_dir}' to it")
+        log.info(f"creating '{self.filename}' and adding '{base_dir}' to it")
         deferred = []
         for root, dirnames, filenames in os.walk(base_dir):
             # Sort the directory names so that `os.walk` will walk them in a
@@ -158,7 +158,7 @@ class WheelFile(ZipFile):
             if isinstance(zinfo_or_arcname, ZipInfo)
             else zinfo_or_arcname
         )
-        log(f"adding '{fname}'")
+        log.info(f"adding '{fname}'")
         if fname != self.record_path:
             hash_ = self._default_algorithm(data)
             self._file_hashes[fname] = (

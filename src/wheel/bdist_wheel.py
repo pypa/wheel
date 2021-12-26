@@ -236,9 +236,8 @@ class bdist_wheel(Command):
         wheel = self.distribution.get_option_dict("wheel")
         if "universal" in wheel:
             # please don't define this in your global configs
-            log(
+            log.warning(
                 "The [wheel] section is deprecated. Use [bdist_wheel] instead.",
-                error=True,
             )
             val = wheel["universal"][1].strip()
             if val.lower() in ("1", "true", "yes"):
@@ -354,7 +353,7 @@ class bdist_wheel(Command):
             basedir_observed,
         )
 
-        log(f"installing to {self.bdist_dir}")
+        log.info(f"installing to {self.bdist_dir}")
 
         self.run_command("install")
 
@@ -395,7 +394,7 @@ class bdist_wheel(Command):
         )
 
         if not self.keep_temp:
-            log(f"removing {self.bdist_dir}")
+            log.info(f"removing {self.bdist_dir}")
             if not self.dry_run:
                 rmtree(self.bdist_dir, onerror=remove_readonly)
 
@@ -419,7 +418,7 @@ class bdist_wheel(Command):
                     msg["Tag"] = "-".join((impl, abi, plat))
 
         wheelfile_path = os.path.join(wheelfile_base, "WHEEL")
-        log("creating {wheelfile_path}")
+        log.info(f"creating {wheelfile_path}")
         buffer = BytesIO()
         BytesGenerator(buffer, maxheaderlen=0).flatten(msg)
         with open(wheelfile_path, "wb") as f:
@@ -454,11 +453,11 @@ class bdist_wheel(Command):
         for pattern in patterns:
             for path in iglob(pattern):
                 if path.endswith("~"):
-                    log(f'ignoring license file "{path}" as it looks like a backup')
+                    log.debug(f'ignoring license file "{path}" as it looks like a backup')
                     continue
 
                 if path not in files and os.path.isfile(path):
-                    log(f'adding license file "{path}" (matched pattern "{pattern}")')
+                    log.info(f'adding license file "{path}" (matched pattern "{pattern}")')
                     files.add(path)
 
         return files
