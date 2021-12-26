@@ -1,15 +1,18 @@
 """
 Tools for converting old- to new-style metadata.
 """
+from __future__ import annotations
 
 import os.path
 import textwrap
+from email.message import Message
 from email.parser import Parser
+from typing import Iterator, Tuple
 
-import pkg_resources
+from pkg_resources import Requirement, safe_extra, split_sections
 
 
-def requires_to_requires_dist(requirement):
+def requires_to_requires_dist(requirement: Requirement) -> str:
     """Return the version specifier for a requirement in PEP 345/566 fashion."""
     if getattr(requirement, "url", None):
         return " @ " + requirement.url
@@ -24,10 +27,10 @@ def requires_to_requires_dist(requirement):
         return ""
 
 
-def convert_requirements(requirements):
+def convert_requirements(requirements: list[str]) -> Iterator[str]:
     """Yield Requires-Dist: strings for parsed requirements strings."""
     for req in requirements:
-        parsed_requirement = pkg_resources.Requirement.parse(req)
+        parsed_requirement = Requirement.parse(req)
         spec = requires_to_requires_dist(parsed_requirement)
         extras = ",".join(sorted(parsed_requirement.extras))
         if extras:
@@ -36,7 +39,9 @@ def convert_requirements(requirements):
         yield parsed_requirement.project_name + extras + spec
 
 
-def generate_requirements(extras_require):
+def generate_requirements(
+    extras_require: dict[str, list[str]]
+) -> Iterator[Tuple[str, str]]:
     """
     Convert requirements from a setup()-style dictionary to
     ('Requires-Dist', 'requirement') and ('Provides-Extra', 'extra') tuples.
@@ -50,7 +55,7 @@ def generate_requirements(extras_require):
         if ":" in extra:  # setuptools extra:condition syntax
             extra, condition = extra.split(":", 1)
 
-        extra = pkg_resources.safe_extra(extra)
+        extra = safe_extra(extra)
         if extra:
             yield "Provides-Extra", extra
             if condition:
@@ -64,7 +69,7 @@ def generate_requirements(extras_require):
             yield "Requires-Dist", new_req + condition
 
 
-def pkginfo_to_metadata(egg_info_path, pkginfo_path):
+def pkginfo_to_metadata(egg_info_path: str, pkginfo_path: str) -> Message:
     """
     Convert .egg-info directory with PKG-INFO to the Metadata 2.1 format
     """
@@ -80,9 +85,7 @@ def pkginfo_to_metadata(egg_info_path, pkginfo_path):
         with open(requires_path) as requires_file:
             requires = requires_file.read()
 
-        parsed_requirements = sorted(
-            pkg_resources.split_sections(requires), key=lambda x: x[0] or ""
-        )
+        parsed_requirements = sorted(split_sections(requires), key=lambda x: x[0] or "")
         for extra, reqs in parsed_requirements:
             for key, value in generate_requirements({extra: reqs}):
                 if (key, value) not in pkg_info.items():

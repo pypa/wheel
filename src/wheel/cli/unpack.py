@@ -1,9 +1,11 @@
-import os.path
+from __future__ import annotations
+
+from pathlib import Path
 
 from ..wheelfile import WheelFile
 
 
-def unpack(path, dest="."):
+def unpack(path: str, dest: str = ".") -> None:
     """Unpack a wheel.
 
     Wheel content will be unpacked to {dest}/{name}-{ver}, where {name}
@@ -14,7 +16,7 @@ def unpack(path, dest="."):
     """
     with WheelFile(path) as wf:
         namever = wf.parsed_filename.group("namever")
-        destination = os.path.join(dest, namever)
+        destination = Path(dest) / namever
         print(f"Unpacking to: {destination}...", end="", flush=True)
         wf.extractall(destination)
 
