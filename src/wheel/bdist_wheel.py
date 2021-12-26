@@ -12,7 +12,7 @@ import sys
 import sysconfig
 import warnings
 from collections import OrderedDict
-from email.generator import BytesGenerator
+from email.generator import BytesGenerator, Generator
 from glob import iglob
 from io import BytesIO
 from shutil import rmtree
@@ -25,7 +25,6 @@ from setuptools import Command
 from . import __version__ as wheel_version
 from .macosx_libfile import calculate_macosx_platform_tag
 from .metadata import pkginfo_to_metadata
-from .pkginfo import write_pkg_info
 from .util import log
 from .vendored.packaging import tags
 from .wheelfile import WheelFile
@@ -521,7 +520,9 @@ class bdist_wheel(Command):
             if not dependency_links:
                 adios(dependency_links_path)
 
-        write_pkg_info(os.path.join(distinfo_path, "METADATA"), pkg_info)
+        pkg_info_path = os.path.join(distinfo_path, "METADATA")
+        with open(pkg_info_path, "w", encoding="utf-8") as out:
+            Generator(out, mangle_from_=False, maxheaderlen=0).flatten(pkg_info)
 
         for license_path in self.license_paths:
             filename = os.path.basename(license_path)
