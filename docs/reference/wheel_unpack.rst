@@ -44,4 +44,3 @@ Examples
     wheel.install.BadWheelFile: Bad hash for file 'mypackage/module.py'
     $ echo $?
     1
-
