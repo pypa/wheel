@@ -453,11 +453,15 @@ class bdist_wheel(Command):
         for pattern in patterns:
             for path in iglob(pattern):
                 if path.endswith("~"):
-                    log.debug(f'ignoring license file "{path}" as it looks like a backup')
+                    log.debug(
+                        f'ignoring license file "{path}" as it looks like a ' f"backup"
+                    )
                     continue
 
                 if path not in files and os.path.isfile(path):
-                    log.info(f'adding license file "{path}" (matched pattern "{pattern}")')
+                    log.info(
+                        f'adding license file "{path}" (matched pattern "{pattern}")'
+                    )
                     files.add(path)
 
         return files
