@@ -1,6 +1,6 @@
 # copied from setuptools.logging, omitting monkeypatching
-import sys
 import logging
+import sys
 
 
 def _not_warning(record):
@@ -20,4 +20,5 @@ def configure():
     out_handler.addFilter(_not_warning)
     handlers = err_handler, out_handler
     logging.basicConfig(
-        format="{message}", style='{', handlers=handlers, level=logging.DEBUG)
+        format="{message}", style="{", handlers=handlers, level=logging.DEBUG
+    )

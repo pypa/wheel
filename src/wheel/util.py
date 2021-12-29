@@ -3,14 +3,15 @@ from __future__ import annotations
 import base64
 import logging
 
-log = logging.getLogger('wheel')
+log = logging.getLogger("wheel")
 
 # ensure Python logging is configured
 try:
-    __import__('setuptools.logging')
+    __import__("setuptools.logging")
 except ImportError:
     # setuptools < ??
     from . import _setuptools_logging
+
     _setuptools_logging.configure()
 
 
