@@ -2,72 +2,14 @@ from __future__ import annotations
 
 import itertools
 import os
-import shutil
-import sys
-import tempfile
-from contextlib import contextmanager
 
 from ..wheelfile import WheelFile
-from .pack import pack
-from .unpack import unpack
+from .pack import read_tags, set_build_number
 
 try:
     from typing import Iterator
 except ImportError:
     pass
-
-
-@contextmanager
-def redirect_stdout(new_target):
-    old_target, sys.stdout = sys.stdout, new_target
-    try:
-        yield new_target
-    finally:
-        sys.stdout = old_target
-
-
-@contextmanager
-def temporary_directory():
-    try:
-        dirname = tempfile.mkdtemp()
-        yield dirname
-    finally:
-        shutil.rmtree(dirname)
-
-
-class InWheelCtx:
-    @property
-    def parsed_filename(self):
-        return self.wheel.parsed_filename
-
-    @property
-    def filename(self):
-        return self.wheel.filename
-
-    def __init__(self, wheel, tmpdir):
-        self.wheel = WheelFile(wheel)
-        self.tmpdir = tmpdir
-        self.build_number = None
-        # If dirname is unset, don't pack a new wheel
-        self.dirname = None
-
-    def __enter__(self):
-        with redirect_stdout(sys.stderr):
-            unpack(self.wheel.filename, self.tmpdir)
-        self.wheel.__enter__()
-        return self
-
-    def __exit__(self, *args):
-        self.wheel.__exit__(*args)
-        if self.dirname:
-            with redirect_stdout(sys.stderr):
-                pack(
-                    os.path.join(
-                        self.tmpdir, self.wheel.parsed_filename.group("namever")
-                    ),
-                    self.dirname,
-                    self.build_number,
-                )
 
 
 def compute_tags(original_tags: list[str], new_tags: list[str] | None) -> list[str]:
@@ -104,52 +46,103 @@ def tags(
     """
 
     for wheel in wheels:
-        with temporary_directory() as tmpdir, InWheelCtx(wheel, tmpdir) as wfctx:
-            namever = wfctx.parsed_filename.group("namever")
-            build = wfctx.parsed_filename.group("build")
-            original_python_tags = wfctx.parsed_filename.group("pyver").split(".")
-            original_abi_tags = wfctx.parsed_filename.group("abi").split(".")
-            orignial_plat_tags = wfctx.parsed_filename.group("plat").split(".")
+        with WheelFile(wheel, "r") as f:
+            wheel_info = f.read(f.dist_info_path + "/WHEEL")
 
-            if build_number is not None:
-                build = str(build_number)
+            original_wheel_name = os.path.basename(f.filename)
+            namever = f.parsed_filename.group("namever")
+            build = f.parsed_filename.group("build")
+            original_python_tags = f.parsed_filename.group("pyver").split(".")
+            original_abi_tags = f.parsed_filename.group("abi").split(".")
+            orignial_plat_tags = f.parsed_filename.group("plat").split(".")
 
-            final_python_tags = compute_tags(original_python_tags, python_tags)
-            final_abi_tags = compute_tags(original_abi_tags, abi_tags)
-            final_plat_tags = compute_tags(orignial_plat_tags, platform_tags)
+        tags, existing_build_number = read_tags(wheel_info)
 
-            final_tags = [
-                ".".join(sorted(final_python_tags)),
-                ".".join(sorted(final_abi_tags)),
-                ".".join(sorted(final_plat_tags)),
+        impls = {tag.split("-")[0] for tag in tags}
+        abivers = {tag.split("-")[1] for tag in tags}
+        platforms = {tag.split("-")[2] for tag in tags}
+
+        if impls != set(original_python_tags):
+            raise AssertionError(f"{impls} != {original_python_tags}")
+
+        if abivers != set(original_abi_tags):
+            raise AssertionError(f"{abivers} != {original_abi_tags}")
+
+        if platforms != set(orignial_plat_tags):
+            raise AssertionError(f"{platforms} != {orignial_plat_tags}")
+
+        if existing_build_number != build:
+            raise AssertionError(
+                f"Incorrect filename '{build}' & "
+                f"*.dist-info/WHEEL '{existing_build_number}' build numbers"
+            )
+
+        # Start changing as needed
+        if build_number is not None:
+            build = str(build_number)
+
+        final_python_tags = compute_tags(original_python_tags, python_tags)
+        final_abi_tags = compute_tags(original_abi_tags, abi_tags)
+        final_plat_tags = compute_tags(orignial_plat_tags, platform_tags)
+
+        final_tags = [
+            ".".join(sorted(final_python_tags)),
+            ".".join(sorted(final_abi_tags)),
+            ".".join(sorted(final_plat_tags)),
+        ]
+
+        if build:
+            final_tags.insert(0, build)
+        final_tags.insert(0, namever)
+
+        final_wheel_name = "-".join(final_tags) + ".whl"
+
+        if original_wheel_name != final_wheel_name:
+            tags = [
+                f"{a}-{b}-{c}"
+                for a, b, c in itertools.product(
+                    final_python_tags, final_abi_tags, final_plat_tags
+                )
             ]
 
-            if build:
-                final_tags.insert(0, build)
-            final_tags.insert(0, namever)
+            original_wheel_path = os.path.join(
+                os.path.dirname(f.filename), original_wheel_name
+            )
+            final_wheel_path = os.path.join(
+                os.path.dirname(f.filename), final_wheel_name
+            )
 
-            original_wheel_name = os.path.basename(wfctx.filename)
-            final_wheel_name = "-".join(final_tags) + ".whl"
+            with WheelFile(original_wheel_path, "r") as fin, WheelFile(
+                final_wheel_path, "w"
+            ) as fout:
+                fout.comment = fin.comment  # preserve the comment
+                for item in fin.infolist():
+                    if item.filename == f.dist_info_path + "/RECORD":
+                        continue
+                    if item.filename == f.dist_info_path + "/WHEEL":
+                        content = fin.read(item)
+                        content = set_tags(content, tags)
+                        content = set_build_number(content, build)
+                        fout.writestr(item, content)
+                    else:
+                        fout.writestr(item, fin.read(item))
 
-            if original_wheel_name != final_wheel_name:
-
-                wheelinfo = os.path.join(
-                    tmpdir, namever, wfctx.wheel.dist_info_path, "WHEEL"
-                )
-                with open(wheelinfo, "rb+") as f:
-                    lines = [line for line in f if not line.startswith(b"Tag:")]
-                    for a, b, c in itertools.product(
-                        final_python_tags, final_abi_tags, final_plat_tags
-                    ):
-                        lines.append(f"Tag: {a}-{b}-{c}\r\n".encode("ascii"))
-                    f.seek(0)
-                    f.truncate()
-                    f.write(b"".join(lines))
-
-                wfctx.build_number = build
-                wfctx.dirname = os.path.dirname(wheel)
-
-        if remove:
-            os.remove(wheel)
+            if remove:
+                os.remove(original_wheel_path)
 
         yield final_wheel_name
+
+
+def set_tags(in_string: bytes, tags: list[str]) -> bytes:
+    """Set the tags in the .dist-info/WHEEL file contents.
+
+    :param in_string: The string to modify.
+    :param tags: The tags to set.
+    """
+
+    lines = [line for line in in_string.splitlines() if not line.startswith(b"Tag:")]
+    for tag in tags:
+        lines.append(b"Tag: " + tag.encode("ascii"))
+    in_string = b"\r\n".join(lines) + b"\r\n"
+
+    return in_string

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from zipfile import ZipFile
 
 import py
 import pytest
@@ -167,4 +168,32 @@ def test_tags_command_del(capsys, wheelpath):
     newname = capsys.readouterr().out.strip()
     assert "test-1.0-py2.py3.py4-cp33m-linux_x86_64.whl" == newname
     output_file = wheelpath.dirpath(newname)
+    output_file.remove()
+
+
+def test_permission_bits(capsys, wheelpath):
+    args = [
+        "tags",
+        "--python-tag",
+        ".py4",
+        str(wheelpath),
+    ]
+    p = parser()
+    args = p.parse_args(args)
+    args.func(args)
+
+    newname = capsys.readouterr().out.strip()
+    assert "test-1.0-py2.py3.py4-none-any.whl" == newname
+    output_file = wheelpath.dirpath(newname)
+
+    with ZipFile(str(output_file), "r") as outf:
+        with ZipFile(str(wheelpath), "r") as inf:
+            for member in inf.namelist():
+                if not member.endswith("/RECORD"):
+                    out_attr = outf.getinfo(member).external_attr
+                    inf_attr = inf.getinfo(member).external_attr
+                    assert (
+                        out_attr == inf_attr
+                    ), f"{member} 0x{out_attr:012o} != 0x{inf_attr:012o}"
+
     output_file.remove()
