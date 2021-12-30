@@ -5,12 +5,13 @@ import re
 import shutil
 import tempfile
 import zipfile
-from distutils import dist
 from glob import iglob
+
+from setuptools.dist import Distribution
 
 from ..bdist_wheel import bdist_wheel
 from ..wheelfile import WheelFile
-from . import WheelError, require_pkgresources
+from . import WheelError
 
 egg_info_re = re.compile(
     r"""
@@ -70,9 +71,9 @@ def egg2wheel(egg_path: str, dest_dir: str):
 
     root_is_purelib = egg_info["arch"] is None
     if root_is_purelib:
-        bw = bdist_wheel(dist.Distribution())
+        bw = bdist_wheel(Distribution())
     else:
-        bw = _bdist_wheel_tag(dist.Distribution())
+        bw = _bdist_wheel_tag(Distribution())
 
     bw.root_is_pure = root_is_purelib
     bw.python_tag = pyver
@@ -229,9 +230,9 @@ def wininst2wheel(path, dest_dir):
         pyver = pyver.replace("py", "cp")
     wheel_name = "-".join((dist_info, pyver, abi, arch))
     if root_is_purelib:
-        bw = bdist_wheel(dist.Distribution())
+        bw = bdist_wheel(Distribution())
     else:
-        bw = _bdist_wheel_tag(dist.Distribution())
+        bw = _bdist_wheel_tag(Distribution())
 
     bw.root_is_pure = root_is_purelib
     bw.python_tag = pyver
@@ -254,9 +255,6 @@ def wininst2wheel(path, dest_dir):
 
 
 def convert(files, dest_dir, verbose):
-    # Only support wheel convert if pkg_resources is present
-    require_pkgresources("wheel convert")
-
     for pat in files:
         for installer in iglob(pat):
             if os.path.splitext(installer)[1] == ".egg":

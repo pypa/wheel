@@ -7,12 +7,11 @@ import re
 import stat
 import time
 from collections import OrderedDict
-from distutils import log as logger
 from io import StringIO, TextIOWrapper
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 from wheel.cli import WheelError
-from wheel.util import urlsafe_b64decode, urlsafe_b64encode
+from wheel.util import log, urlsafe_b64decode, urlsafe_b64encode
 
 # Non-greedy matching of an optional build number may be too clever (more
 # invalid wheel filenames will match). Separate regex for .dist-info?
@@ -118,7 +117,7 @@ class WheelFile(ZipFile):
         return ef
 
     def write_files(self, base_dir):
-        logger.info("creating '%s' and adding '%s' to it", self.filename, base_dir)
+        log.info(f"creating '{self.filename}' and adding '{base_dir}' to it")
         deferred = []
         for root, dirnames, filenames in os.walk(base_dir):
             # Sort the directory names so that `os.walk` will walk them in a
@@ -161,7 +160,7 @@ class WheelFile(ZipFile):
             if isinstance(zinfo_or_arcname, ZipInfo)
             else zinfo_or_arcname
         )
-        logger.info("adding '%s'", fname)
+        log.info(f"adding '{fname}'")
         if fname != self.record_path:
             hash_ = self._default_algorithm(data)
             self._file_hashes[fname] = (

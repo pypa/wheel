@@ -6,16 +6,14 @@ A wheel is a built archive format.
 
 from __future__ import annotations
 
-import distutils
 import os
 import re
 import shutil
 import stat
 import sys
+import sysconfig
 import warnings
 from collections import OrderedDict
-from distutils import log as logger
-from distutils.core import Command
 from email.generator import BytesGenerator, Generator
 from glob import iglob
 from io import BytesIO
@@ -24,10 +22,12 @@ from sysconfig import get_config_var
 from zipfile import ZIP_DEFLATED, ZIP_STORED
 
 import pkg_resources
+from setuptools import Command
 
 from . import __version__ as wheel_version
 from .macosx_libfile import calculate_macosx_platform_tag
 from .metadata import pkginfo_to_metadata
+from .util import log
 from .vendored.packaging import tags
 from .wheelfile import WheelFile
 
@@ -43,14 +43,14 @@ def python_tag():
 
 def get_platform(archive_root):
     """Return our platform name 'win32', 'linux_x86_64'"""
-    # XXX remove distutils dependency
-    result = distutils.util.get_platform()
+    result = sysconfig.get_platform()
     if result.startswith("macosx") and archive_root is not None:
         result = calculate_macosx_platform_tag(archive_root, result)
-    if result == "linux_x86_64" and sys.maxsize == 2147483647:
+    elif result == "linux-x86_64" and sys.maxsize == 2147483647:
         # pip pull request #3497
-        result = "linux_i686"
-    return result
+        result = "linux-i686"
+
+    return result.replace("-", "_")
 
 
 def get_flag(var, fallback, expected=True, warn=True):
@@ -238,7 +238,9 @@ class bdist_wheel(Command):
         wheel = self.distribution.get_option_dict("wheel")
         if "universal" in wheel:
             # please don't define this in your global configs
-            logger.warn("The [wheel] section is deprecated. Use [bdist_wheel] instead.")
+            log.warning(
+                "The [wheel] section is deprecated. Use [bdist_wheel] instead.",
+            )
             val = wheel["universal"][1].strip()
             if val.lower() in ("1", "true", "yes"):
                 self.universal = True
@@ -353,7 +355,7 @@ class bdist_wheel(Command):
             basedir_observed,
         )
 
-        logger.info("installing to %s", self.bdist_dir)
+        log.info(f"installing to {self.bdist_dir}")
 
         self.run_command("install")
 
@@ -394,7 +396,7 @@ class bdist_wheel(Command):
         )
 
         if not self.keep_temp:
-            logger.info("removing %s", self.bdist_dir)
+            log.info(f"removing {self.bdist_dir}")
             if not self.dry_run:
                 rmtree(self.bdist_dir, onerror=remove_readonly)
 
@@ -418,7 +420,7 @@ class bdist_wheel(Command):
                     msg["Tag"] = "-".join((impl, abi, plat))
 
         wheelfile_path = os.path.join(wheelfile_base, "WHEEL")
-        logger.info("creating %s", wheelfile_path)
+        log.info(f"creating {wheelfile_path}")
         buffer = BytesIO()
         BytesGenerator(buffer, maxheaderlen=0).flatten(msg)
         with open(wheelfile_path, "wb") as f:
@@ -453,14 +455,14 @@ class bdist_wheel(Command):
         for pattern in patterns:
             for path in iglob(pattern):
                 if path.endswith("~"):
-                    logger.debug(
-                        'ignoring license file "%s" as it looks like a backup', path
+                    log.debug(
+                        f'ignoring license file "{path}" as it looks like a ' f"backup"
                     )
                     continue
 
                 if path not in files and os.path.isfile(path):
-                    logger.info(
-                        'adding license file "%s" (matched pattern "%s")', path, pattern
+                    log.info(
+                        f'adding license file "{path}" (matched pattern "{pattern}")'
                     )
                     files.add(path)
 
