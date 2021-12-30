@@ -4,6 +4,8 @@ This module implements logic to detect if the currently running Python is
 linked against musl, and what musl version is used.
 """
 
+from __future__ import annotations
+
 import contextlib
 import functools
 import operator
@@ -12,14 +14,14 @@ import re
 import struct
 import subprocess
 import sys
-from typing import IO, Iterator, NamedTuple, Optional, Tuple
+from typing import IO, Iterator, NamedTuple
 
 
-def _read_unpacked(f: IO[bytes], fmt: str) -> Tuple[int, ...]:
+def _read_unpacked(f: IO[bytes], fmt: str) -> tuple[int, ...]:
     return struct.unpack(fmt, f.read(struct.calcsize(fmt)))
 
 
-def _parse_ld_musl_from_elf(f: IO[bytes]) -> Optional[str]:
+def _parse_ld_musl_from_elf(f: IO[bytes]) -> str | None:
     """Detect musl libc location by parsing the Python executable.
 
     Based on: https://gist.github.com/lyssdod/f51579ae8d93c8657a5564aefc2ffbca
@@ -73,7 +75,7 @@ class _MuslVersion(NamedTuple):
     minor: int
 
 
-def _parse_musl_version(output: str) -> Optional[_MuslVersion]:
+def _parse_musl_version(output: str) -> _MuslVersion | None:
     lines = [n for n in (n.strip() for n in output.splitlines()) if n]
     if len(lines) < 2 or lines[0][:4] != "musl":
         return None
@@ -84,7 +86,7 @@ def _parse_musl_version(output: str) -> Optional[_MuslVersion]:
 
 
 @functools.lru_cache()
-def _get_musl_version(executable: str) -> Optional[_MuslVersion]:
+def _get_musl_version(executable: str) -> _MuslVersion | None:
     """Detect currently-running musl runtime version.
 
     This is done by checking the specified executable's dynamic linking
@@ -103,7 +105,7 @@ def _get_musl_version(executable: str) -> Optional[_MuslVersion]:
         ld = _parse_ld_musl_from_elf(f)
     if not ld:
         return None
-    proc = subprocess.run([ld], stderr=subprocess.PIPE, universal_newlines=True)
+    proc = subprocess.run([ld], stderr=subprocess.PIPE, text=True)
     return _parse_musl_version(proc.stderr)
 
 

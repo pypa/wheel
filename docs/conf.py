@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # wheel documentation build configuration file, created by
 # sphinx-quickstart on Thu Jul 12 00:14:09 2012.
@@ -10,7 +9,8 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-import io
+from __future__ import annotations
+
 import os
 import re
 
@@ -49,7 +49,7 @@ copyright = "2012, Daniel Holth"
 # built documents.
 #
 here = os.path.abspath(os.path.dirname(__file__))
-with io.open(
+with open(
     os.path.join(here, "..", "src", "wheel", "__init__.py"), encoding="utf8"
 ) as version_file:
     match = re.search(r"__version__ = '((\d+\.\d+\.\d+).*)'", version_file.read())

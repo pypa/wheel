@@ -4,6 +4,8 @@ Create a wheel (.whl) distribution.
 A wheel is a built archive format.
 """
 
+from __future__ import annotations
+
 import distutils
 import os
 import re

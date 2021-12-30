@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os.path
 import shutil
 import stat
@@ -169,7 +171,7 @@ def test_build_from_readonly_tree(dummy_dist, monkeypatch, tmpdir):
     monkeypatch.chdir(basedir)
 
     # Make the tree read-only
-    for root, dirs, files in os.walk(basedir):
+    for root, _dirs, files in os.walk(basedir):
         for fname in files:
             os.chmod(os.path.join(root, fname), stat.S_IREAD)
 

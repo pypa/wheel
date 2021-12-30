@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from wheel.cli.unpack import unpack
 
 

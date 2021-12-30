@@ -7,7 +7,7 @@ import os.path
 import textwrap
 from email.message import Message
 from email.parser import Parser
-from typing import Iterator, Tuple
+from typing import Iterator
 
 from pkg_resources import Requirement, safe_extra, split_sections
 
@@ -41,7 +41,7 @@ def convert_requirements(requirements: list[str]) -> Iterator[str]:
 
 def generate_requirements(
     extras_require: dict[str, list[str]]
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """
     Convert requirements from a setup()-style dictionary to
     ('Requires-Dist', 'requirement') and ('Provides-Extra', 'extra') tuples.
