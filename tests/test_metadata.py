@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from wheel.metadata import pkginfo_to_metadata
 
 

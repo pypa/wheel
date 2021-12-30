@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 from zipfile import ZIP_DEFLATED, ZipFile
 
