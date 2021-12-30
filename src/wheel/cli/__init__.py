@@ -34,14 +34,19 @@ def convert_f(args):
 def tags_f(args):
     from .tags import tags
 
-    for name in tags(
-        args.wheel,
-        args.python_tag and args.python_tag.split("."),
-        args.abi_tag and args.abi_tag.split("."),
-        args.platform_tag and args.platform_tag.split("."),
-        args.build,
-        args.remove,
-    ):
+    names = (
+        tags(
+            wheel,
+            args.python_tag and args.python_tag.split("."),
+            args.abi_tag and args.abi_tag.split("."),
+            args.platform_tag and args.platform_tag.split("."),
+            args.build,
+            args.remove,
+        )
+        for wheel in args.wheel
+    )
+
+    for name in names:
         print(name)
 
 

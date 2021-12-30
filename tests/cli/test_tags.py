@@ -23,13 +23,13 @@ def wheelpath(tmpdir):
 
 
 def test_tags_no_args(wheelpath):
-    (newname,) = tags([str(wheelpath)])
+    newname = tags(str(wheelpath))
     assert TESTWHEEL_NAME == newname
     assert wheelpath.exists()
 
 
 def test_python_tags(wheelpath):
-    (newname,) = tags([str(wheelpath)], python_tags=["py3"])
+    newname = tags(str(wheelpath), python_tags=["py3"])
     assert TESTWHEEL_NAME.replace("py2.py3", "py3") == newname
     output_file = wheelpath.dirpath(newname)
     with WheelFile(str(output_file)) as f:
@@ -40,10 +40,10 @@ def test_python_tags(wheelpath):
     )
     output_file.remove()
 
-    (newname,) = tags([str(wheelpath)], python_tags=["py2.py3"])
+    newname = tags(str(wheelpath), python_tags=["py2.py3"])
     assert TESTWHEEL_NAME == newname
 
-    (newname,) = tags([str(wheelpath)], python_tags=["", "py4"], remove=True)
+    newname = tags(str(wheelpath), python_tags=["", "py4"], remove=True)
     assert not wheelpath.exists()
     assert TESTWHEEL_NAME.replace("py2.py3", "py2.py3.py4") == newname
     output_file = wheelpath.dirpath(newname)
@@ -51,20 +51,20 @@ def test_python_tags(wheelpath):
 
 
 def test_abi_tags(wheelpath):
-    (newname,) = tags([str(wheelpath)], abi_tags=["cp33m"])
+    newname = tags(str(wheelpath), abi_tags=["cp33m"])
     assert TESTWHEEL_NAME.replace("none", "cp33m") == newname
     output_file = wheelpath.dirpath(newname)
     output_file.remove()
 
-    (newname,) = tags([str(wheelpath)], abi_tags=["abi3", "cp33m"])
+    newname = tags(str(wheelpath), abi_tags=["abi3", "cp33m"])
     assert TESTWHEEL_NAME.replace("none", "abi3.cp33m") == newname
     output_file = wheelpath.dirpath(newname)
     output_file.remove()
 
-    (newname,) = tags([str(wheelpath)], abi_tags=["none"])
+    newname = tags(str(wheelpath), abi_tags=["none"])
     assert TESTWHEEL_NAME == newname
 
-    (newname,) = tags([str(wheelpath)], abi_tags=["", "abi3", "cp33m"], remove=True)
+    newname = tags(str(wheelpath), abi_tags=["", "abi3", "cp33m"], remove=True)
     assert not wheelpath.exists()
     assert TESTWHEEL_NAME.replace("none", "abi3.cp33m.none") == newname
     output_file = wheelpath.dirpath(newname)
@@ -72,30 +72,30 @@ def test_abi_tags(wheelpath):
 
 
 def test_plat_tags(wheelpath):
-    (newname,) = tags([str(wheelpath)], platform_tags=["linux_x86_64"])
+    newname = tags(str(wheelpath), platform_tags=["linux_x86_64"])
     assert TESTWHEEL_NAME.replace("any", "linux_x86_64") == newname
     output_file = wheelpath.dirpath(newname)
     assert output_file.exists()
     output_file.remove()
 
-    (newname,) = tags([str(wheelpath)], platform_tags=["linux_x86_64", "win32"])
+    newname = tags(str(wheelpath), platform_tags=["linux_x86_64", "win32"])
     assert TESTWHEEL_NAME.replace("any", "linux_x86_64.win32") == newname
     output_file = wheelpath.dirpath(newname)
     assert output_file.exists()
     output_file.remove()
 
-    (newname,) = tags([str(wheelpath)], platform_tags=["", "linux_x86_64", "win32"])
+    newname = tags(str(wheelpath), platform_tags=["", "linux_x86_64", "win32"])
     assert TESTWHEEL_NAME.replace("any", "any.linux_x86_64.win32") == newname
     output_file = wheelpath.dirpath(newname)
     assert output_file.exists()
     output_file.remove()
 
-    (newname,) = tags([str(wheelpath)], platform_tags=["any"])
+    newname = tags(str(wheelpath), platform_tags=["any"])
     assert TESTWHEEL_NAME == newname
 
 
 def test_build_number(wheelpath):
-    (newname,) = tags([str(wheelpath)], build_number=1)
+    newname = tags(str(wheelpath), build_number=1)
     assert TESTWHEEL_NAME.replace("-py2", "-1-py2") == newname
     output_file = wheelpath.dirpath(newname)
     assert output_file.exists()
@@ -103,8 +103,8 @@ def test_build_number(wheelpath):
 
 
 def test_multi_tags(wheelpath):
-    (newname,) = tags(
-        [str(wheelpath)],
+    newname = tags(
+        str(wheelpath),
         platform_tags=["linux_x86_64"],
         python_tags=["", "py4"],
         build_number=1,
