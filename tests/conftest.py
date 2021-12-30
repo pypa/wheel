@@ -2,6 +2,8 @@
 pytest local configuration plug-in
 """
 
+from __future__ import annotations
+
 import os.path
 import subprocess
 import sys

@@ -3,6 +3,8 @@ Tests for the bdist_wheel tag options (--python-tag, --universal, and
 --plat-name)
 """
 
+from __future__ import annotations
+
 import subprocess
 import sys
 
@@ -48,7 +50,7 @@ def temp_pkg(request, tmpdir):
 
 @pytest.mark.parametrize("temp_pkg", [[True, "xxx"]], indirect=["temp_pkg"])
 def test_nocompile_skips(temp_pkg):
-    assert False  # should have skipped with a "Cannot compile" message
+    assert False  # noqa: B011 - should have skipped with a "Cannot compile" message
 
 
 def test_default_tag(temp_pkg):
