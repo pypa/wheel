@@ -15,6 +15,12 @@ repos:
   - id: requirements-txt-fixer
   - id: trailing-whitespace
 
+- repo: https://github.com/pycqa/isort
+  rev: 5.10.1
+  hooks:
+  - id: isort
+    args: ["-a", "from __future__ import annotations"]
+
 - repo: https://github.com/asottile/pyupgrade
   rev: v2.30.0
   hooks:
@@ -26,11 +32,6 @@ repos:
   hooks:
   - id: black
     args: [--target-version=py37]
-
-- repo: https://github.com/pycqa/isort
-  rev: 5.10.1
-  hooks:
-  - id: isort
 
 - repo: https://gitlab.com/pycqa/flake8
   rev: 3.9.2
