@@ -4,7 +4,7 @@ Development
 Pull Requests
 -------------
 
-- Submit Pull Requests against the ``master`` branch.
+- Submit Pull Requests against the ``main`` branch.
 - Provide a good description of what you're doing and why.
 - Provide tests that cover your changes and try to run the tests locally first.
 
@@ -35,13 +35,13 @@ click "New pull request". That's it.
 Automated Testing
 -----------------
 
-All pull requests and merges to 'master' branch are tested in `Github Actions`_
+All pull requests and merges to ``main`` branch are tested in `GitHub Actions`_
 based on the workflows in the ``.github`` directory.
 
 The only way to trigger the test suite to run again for a pull request is to
 submit another change to the pull branch.
 
-.. _Github Actions: https://github.com/actions
+.. _GitHub Actions: https://github.com/actions
 
 Running Tests Locally
 ---------------------
