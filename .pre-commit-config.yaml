@@ -24,7 +24,7 @@ repos:
     args: ["-a", "from __future__ import annotations"]
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.30.1
+  rev: v2.31.0
   hooks:
   - id: pyupgrade
     args: ["--py37-plus"]
@@ -35,8 +35,8 @@ repos:
   - id: black
     args: [--target-version=py37]
 
-- repo: https://gitlab.com/pycqa/flake8
-  rev: 3.9.2
+- repo: https://github.com/PyCQA/flake8
+  rev: 4.0.1
   hooks:
   - id: flake8
     additional_dependencies: [flake8-bugbear]
