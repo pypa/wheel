@@ -3,7 +3,6 @@
 *.pyc
 *.so
 *.dll
-*.dylib
 build
 dist
 docs/_build
