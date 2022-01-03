@@ -15,9 +15,9 @@ jobs:
       with:
         python-version: 3.x
     - name: Install dependencies
-      run: pip install build -e .
+      run: pip install flit
     - name: Create packages
-      run: python -m build -n -s -w .
+      run: flit build --setup-py
     - name: Upload packages
       uses: pypa/gh-action-pypi-publish@master
       with:
