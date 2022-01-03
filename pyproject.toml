@@ -45,7 +45,6 @@ test = [
 ]
 
 [tool.flit.sdist]
-include = ["src/wheel/_version.py"]
 exclude = [
     ".cirrus.yml",
     ".github/*",
@@ -53,9 +52,6 @@ exclude = [
     ".pre-commit-config.yaml",
     ".readthedocs.yml"
 ]
-
-[tool.setuptools_scm]
-write_to = "src/wheel/_version.py"
 
 [tool.black]
 target-version = ['py37']

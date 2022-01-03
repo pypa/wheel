@@ -9,7 +9,7 @@ test_task:
     folder: ~/.cache/pip
 
   install_script:
-    - pkg install -y py38-sqlite3 git
+    - pkg install -y py38-sqlite3
     - python3.8 -m ensurepip
     - pip3 install .[test]
   script: pytest
