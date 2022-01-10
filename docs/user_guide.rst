@@ -6,7 +6,8 @@ Building Wheels
 
 Building wheels from a setuptools_ based project is simple::
 
-    python setup.py bdist_wheel
+    python -m pip install build
+    python -m build --wheel
 
 This will build any C extensions in the project and then package those and the
 pure Python code into a ``.whl`` file in the ``dist`` directory.
