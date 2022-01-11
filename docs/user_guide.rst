@@ -4,9 +4,10 @@ User Guide
 Building Wheels
 ---------------
 
-Building wheels from a setuptools_ based project is simple::
+To build a wheel for your project::
 
-    python setup.py bdist_wheel
+    python -m pip install build
+    python -m build --wheel
 
 This will build any C extensions in the project and then package those and the
 pure Python code into a ``.whl`` file in the ``dist`` directory.
@@ -20,7 +21,6 @@ adding this to your ``setup.cfg`` file:
     [bdist_wheel]
     universal = 1
 
-.. _setuptools: https://pypi.org/project/setuptools/
 
 Including license files in the generated wheel file
 ---------------------------------------------------
