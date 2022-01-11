@@ -4,7 +4,7 @@ User Guide
 Building Wheels
 ---------------
 
-Building wheels from a setuptools_ based project is simple::
+To build a wheel for your project::
 
     python -m pip install build
     python -m build --wheel
@@ -21,7 +21,6 @@ adding this to your ``setup.cfg`` file:
     [bdist_wheel]
     universal = 1
 
-.. _setuptools: https://pypi.org/project/setuptools/
 
 Including license files in the generated wheel file
 ---------------------------------------------------
