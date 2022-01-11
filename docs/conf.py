@@ -219,7 +219,9 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [("index", "wheel", "wheel Documentation", ["Daniel Holth"], 1)]
+man_pages = [
+    ("manpages/wheel", "wheel", "wheel Documentation", ["Daniel Holth"], 1),
+]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
