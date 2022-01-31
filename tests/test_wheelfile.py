@@ -68,7 +68,7 @@ def test_weak_hash_algorithm(wheel_path, algorithm, digest):
         zf.writestr("test-1.0.dist-info/RECORD", f"hello/héllö.py,{hash_string},25")
 
     exc = pytest.raises(WheelError, WheelFile, wheel_path)
-    exc.match(fr"^Weak hash algorithm \({algorithm}\) is not permitted by PEP 427$")
+    exc.match(rf"^Weak hash algorithm \({algorithm}\) is not permitted by PEP 427$")
 
 
 @pytest.mark.parametrize(
