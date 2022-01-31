@@ -80,14 +80,11 @@ def get_abi_tag():
         if get_flag("Py_DEBUG", hasattr(sys, "gettotalrefcount"), warn=(impl == "cp")):
             d = "d"
 
-        if (
-            get_flag(
-                "WITH_PYMALLOC",
-                impl == "cp",
-                warn=(impl == "cp" and sys.version_info < (3, 8)),
-            )
-            and sys.version_info < (3, 8)
-        ):
+        if get_flag(
+            "WITH_PYMALLOC",
+            impl == "cp",
+            warn=(impl == "cp" and sys.version_info < (3, 8)),
+        ) and sys.version_info < (3, 8):
             m = "m"
 
         abi = f"{impl}{tags.interpreter_version()}{d}{m}{u}"
