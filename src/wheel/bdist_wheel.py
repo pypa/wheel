@@ -118,7 +118,7 @@ def remove_readonly(func, path, excinfo):
 
 def _split_list(value, separator=","):
     """Mimic parsing of a list configuration in setuptools"""
-    values = value.splitlines() if '\n' in value else value.split(separator)
+    values = value.splitlines() if "\n" in value else value.split(separator)
     return (item.strip() for item in values)
 
 
@@ -135,9 +135,7 @@ def _expand(patterns):
                 continue
 
             if path not in files and os.path.isfile(path):
-                log.info(
-                    f'adding license file "{path}" (matched pattern "{pattern}")'
-                )
+                log.info(f'adding license file "{path}" (matched pattern "{pattern}")')
                 files.add(path)
 
     return files
@@ -465,7 +463,7 @@ class bdist_wheel(Command):
 
         license_file = (
             getattr(metadata, "license_file", None)
-            or raw_metadata.get("license_file", ['', None])[-1]
+            or raw_metadata.get("license_file", ["", None])[-1]
         )
 
         if license_file:

@@ -43,6 +43,7 @@ setup(
 )
 """
 
+
 @pytest.fixture
 def dummy_dist(tmpdir_factory):
     basedir = tmpdir_factory.mktemp("dummy_dist")
@@ -99,9 +100,9 @@ def test_licenses_deprecated(dummy_dist, monkeypatch, tmpdir):
         ("setup.cfg", "[metadata]\nlicense_files=licenses/*, LICENSE"),
         (
             "setup.py",
-            SETUPPY_EXAMPLE.replace(")", "  license_files=['licenses/*', 'LICENSE'])")
+            SETUPPY_EXAMPLE.replace(")", "  license_files=['licenses/*', 'LICENSE'])"),
         ),
-    ]
+    ],
 )
 def test_licenses_override(dummy_dist, monkeypatch, tmpdir, config_file, config):
     dummy_dist.join(config_file).write(config)
