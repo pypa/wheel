@@ -34,21 +34,19 @@ OTHER_IGNORED_FILES = {
     "LICENSE~",
     "AUTHORS~",
 }
-
-
-@pytest.fixture
-def dummy_dist(tmpdir_factory):
-    basedir = tmpdir_factory.mktemp("dummy_dist")
-    basedir.join("setup.py").write(
-        """\
+SETUPPY_EXAMPLE = """\
 from setuptools import setup
 
 setup(
     name='dummy_dist',
-    version='1.0'
+    version='1.0',
 )
 """
-    )
+
+@pytest.fixture
+def dummy_dist(tmpdir_factory):
+    basedir = tmpdir_factory.mktemp("dummy_dist")
+    basedir.join("setup.py").write(SETUPPY_EXAMPLE)
     for fname in DEFAULT_LICENSE_FILES | OTHER_IGNORED_FILES:
         basedir.join(fname).write("")
 
@@ -94,11 +92,19 @@ def test_licenses_deprecated(dummy_dist, monkeypatch, tmpdir):
         assert set(wf.namelist()) == DEFAULT_FILES | license_files
 
 
-@pytest.mark.parametrize("patterns", ["licenses/*\n  LICENSE", "licenses/*, LICENSE"])
-def test_licenses_override(dummy_dist, monkeypatch, tmpdir, patterns):
-    dummy_dist.join("setup.cfg").write(
-        "[metadata]\nlicense_files=" + patterns
-    )
+@pytest.mark.parametrize(
+    "config_file, config",
+    [
+        ("setup.cfg", "[metadata]\nlicense_files=licenses/*\n  LICENSE"),
+        ("setup.cfg", "[metadata]\nlicense_files=licenses/*, LICENSE"),
+        (
+            "setup.py",
+            SETUPPY_EXAMPLE.replace(")", "  license_files=['licenses/*', 'LICENSE'])")
+        ),
+    ]
+)
+def test_licenses_override(dummy_dist, monkeypatch, tmpdir, config_file, config):
+    dummy_dist.join(config_file).write(config)
     monkeypatch.chdir(dummy_dist)
     subprocess.check_call(
         [sys.executable, "setup.py", "bdist_wheel", "-b", str(tmpdir), "--universal"]
