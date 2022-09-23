@@ -117,22 +117,6 @@ def test_licenses_override(dummy_dist, monkeypatch, tmpdir, config_file, config)
         assert set(wf.namelist()) == DEFAULT_FILES | license_files
 
 
-def test_licenses_distutils(dummy_dist, monkeypatch, tmpdir):
-    dummy_dist.join("setup.py").write(
-        SETUPPY_EXAMPLE.replace("setuptools", "distutils.core")
-    )
-    dummy_dist.join("setup.cfg").write("[metadata]\nlicense_files=licenses/*, LICENSE")
-    monkeypatch.chdir(dummy_dist)
-    subprocess.check_call(
-        [sys.executable, "setup.py", "bdist_wheel", "-b", str(tmpdir), "--universal"]
-    )
-    with WheelFile("dist/dummy_dist-1.0-py2.py3-none-any.whl") as wf:
-        license_files = {
-            "dummy_dist-1.0.dist-info/" + fname for fname in {"DUMMYFILE", "LICENSE"}
-        }
-        assert set(wf.namelist()) == DEFAULT_FILES | license_files
-
-
 def test_licenses_disabled(dummy_dist, monkeypatch, tmpdir):
     dummy_dist.join("setup.cfg").write("[metadata]\nlicense_files=\n")
     monkeypatch.chdir(dummy_dist)
