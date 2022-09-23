@@ -100,7 +100,9 @@ def test_licenses_deprecated(dummy_dist, monkeypatch, tmpdir):
         ("setup.cfg", "[metadata]\nlicense_files=licenses/*, LICENSE"),
         (
             "setup.py",
-            SETUPPY_EXAMPLE.replace(")", "  license_files=['licenses/*', 'LICENSE'])"),
+            SETUPPY_EXAMPLE.replace(
+                ")", "  license_files=['licenses/DUMMYFILE', 'LICENSE'])"
+            ),
         ),
     ],
 )
