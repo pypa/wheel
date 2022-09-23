@@ -122,6 +122,27 @@ def _split_list(value, separator=","):
     return (item.strip() for item in values)
 
 
+def _expand(patterns):
+    """Expand list of patterns"""
+    files = set()
+
+    for pattern in patterns:
+        for path in iglob(pattern):
+            if path.endswith("~"):
+                log.debug(
+                    f'ignoring license file "{path}" as it looks like a ' f"backup"
+                )
+                continue
+
+            if path not in files and os.path.isfile(path):
+                log.info(
+                    f'adding license file "{path}" (matched pattern "{pattern}")'
+                )
+                files.add(path)
+
+    return files
+
+
 class bdist_wheel(Command):
 
     description = "create a wheel distribution"
@@ -438,37 +459,35 @@ class bdist_wheel(Command):
 
     @property
     def license_paths(self):
-        metadata = self.distribution.get_option_dict("metadata")
+        metadata = self.distribution.metadata
+        raw_metadata = self.distribution.get_option_dict("metadata")
         files = set()
-        pattern_values = _split_list(metadata.get("license_files", ("", ""))[1])
-        patterns = sorted(set(pattern_values))
 
-        if "license_file" in metadata:
+        license_file = (
+            getattr(metadata, "license_file", None)
+            or raw_metadata.get("license_file", ['', None])[-1]
+        )
+
+        if license_file:
             warnings.warn(
                 'The "license_file" option is deprecated. Use '
                 '"license_files" instead.',
                 DeprecationWarning,
             )
-            files.add(metadata["license_file"][1])
+            files.add(license_file)
 
-        if "license_file" not in metadata and "license_files" not in metadata:
-            patterns = ("LICEN[CS]E*", "COPYING*", "NOTICE*", "AUTHORS*")
+        if hasattr(metadata, "license_files"):
+            license_files = metadata.license_files or []
+        elif "license_files" in raw_metadata:
+            # Fallback for non-setuptools
+            raw_patterns = _split_list(raw_metadata["license_files"][1])
+            license_files = _expand(raw_patterns)
+        elif not license_file:
+            license_files = _expand(("LICEN[CS]E*", "COPYING*", "NOTICE*", "AUTHORS*"))
+        else:
+            license_files = []
 
-        for pattern in patterns:
-            for path in iglob(pattern):
-                if path.endswith("~"):
-                    log.debug(
-                        f'ignoring license file "{path}" as it looks like a ' f"backup"
-                    )
-                    continue
-
-                if path not in files and os.path.isfile(path):
-                    log.info(
-                        f'adding license file "{path}" (matched pattern "{pattern}")'
-                    )
-                    files.add(path)
-
-        return files
+        return sorted({*files, *license_files})
 
     def egg2dist(self, egginfo_path, distinfo_path):
         """Convert an .egg-info directory into a .dist-info directory"""
