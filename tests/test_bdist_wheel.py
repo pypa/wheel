@@ -94,9 +94,10 @@ def test_licenses_deprecated(dummy_dist, monkeypatch, tmpdir):
         assert set(wf.namelist()) == DEFAULT_FILES | license_files
 
 
-def test_licenses_override(dummy_dist, monkeypatch, tmpdir):
+@pytest.mark.parametrize("patterns", ["licenses/*\n  LICENSE", "licenses/*, LICENSE"])
+def test_licenses_override(dummy_dist, monkeypatch, tmpdir, patterns):
     dummy_dist.join("setup.cfg").write(
-        "[metadata]\nlicense_files=licenses/*\n  LICENSE"
+        "[metadata]\nlicense_files=" + patterns
     )
     monkeypatch.chdir(dummy_dist)
     subprocess.check_call(
