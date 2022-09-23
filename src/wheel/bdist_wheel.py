@@ -116,6 +116,12 @@ def remove_readonly(func, path, excinfo):
     func(path)
 
 
+def _split_list(value, separator=","):
+    """Mimic parsing of a list configuration in setuptools"""
+    values = value.splitlines() if '\n' in value else value.split(separator)
+    return (item.strip() for item in values)
+
+
 class bdist_wheel(Command):
 
     description = "create a wheel distribution"
@@ -434,9 +440,8 @@ class bdist_wheel(Command):
     def license_paths(self):
         metadata = self.distribution.get_option_dict("metadata")
         files = set()
-        patterns = sorted(
-            {option for option in metadata.get("license_files", ("", ""))[1].split()}
-        )
+        pattern_values = _split_list(metadata.get("license_files", ("", ""))[1])
+        patterns = sorted(set(pattern_values))
 
         if "license_file" in metadata:
             warnings.warn(
