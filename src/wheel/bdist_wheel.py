@@ -432,14 +432,6 @@ class bdist_wheel(Command):
     @property
     def license_paths(self):
         metadata = self.distribution.metadata
-
-        if metadata.license_file:
-            warnings.warn(
-                'The "license_file" option is deprecated. Use '
-                '"license_files" instead.',
-                DeprecationWarning,
-            )
-
         return sorted(metadata.license_files or [])
 
     def egg2dist(self, egginfo_path, distinfo_path):

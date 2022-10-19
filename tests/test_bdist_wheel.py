@@ -90,7 +90,7 @@ def test_licenses_deprecated(dummy_dist, monkeypatch, tmpdir):
         [*prog, "setup.py", "bdist_wheel", "-b", str(tmpdir), "--universal"],
         stderr=subprocess.STDOUT,
     )
-    assert b'"license_file" option is deprecated' in build_log
+    assert b"license_file parameter is deprecated" in build_log
     with WheelFile("dist/dummy_dist-1.0-py2.py3-none-any.whl") as wf:
         license_files = {"dummy_dist-1.0.dist-info/DUMMYFILE"}
         assert set(wf.namelist()) == DEFAULT_FILES | license_files
