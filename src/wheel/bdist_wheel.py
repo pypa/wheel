@@ -23,6 +23,7 @@ from zipfile import ZIP_DEFLATED, ZIP_STORED
 
 import pkg_resources
 from setuptools import Command
+from setuptools import __version__ as setuptools_version
 
 from . import __version__ as wheel_version
 from .macosx_libfile import calculate_macosx_platform_tag
@@ -114,12 +115,6 @@ def remove_readonly(func, path, excinfo):
     print(str(excinfo[1]))
     os.chmod(path, stat.S_IWRITE)
     func(path)
-
-
-def _split_list(value, separator=","):
-    """Mimic parsing of a list configuration in setuptools"""
-    values = value.splitlines() if "\n" in value else value.split(separator)
-    return (item.strip() for item in values)
 
 
 def _expand(patterns):
@@ -458,14 +453,9 @@ class bdist_wheel(Command):
     @property
     def license_paths(self):
         metadata = self.distribution.metadata
-        raw_metadata = self.distribution.get_option_dict("metadata")
         files = set()
 
-        license_file = (
-            getattr(metadata, "license_file", None)
-            or raw_metadata.get("license_file", ["", None])[-1]
-        )
-
+        license_file = getattr(metadata, "license_file", None)
         if license_file:
             warnings.warn(
                 'The "license_file" option is deprecated. Use '
@@ -476,10 +466,9 @@ class bdist_wheel(Command):
 
         if hasattr(metadata, "license_files"):
             license_files = metadata.license_files or []
-        elif "license_files" in raw_metadata:
-            # Fallback for non-setuptools
-            raw_patterns = _split_list(raw_metadata["license_files"][1])
-            license_files = _expand(raw_patterns)
+            all_licenses = "".join(license_files)
+            if any(ch in all_licenses for ch in '*?[]'):
+                license_files = _expand(license_files)  # issue in old setuptools
         elif not license_file:
             license_files = _expand(("LICEN[CS]E*", "COPYING*", "NOTICE*", "AUTHORS*"))
         else:

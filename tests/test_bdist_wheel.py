@@ -11,6 +11,7 @@ import pytest
 
 from wheel.bdist_wheel import bdist_wheel
 from wheel.wheelfile import WheelFile
+from setuptools import __version__ as setuptools_version
 
 DEFAULT_FILES = {
     "dummy_dist-1.0.dist-info/top_level.txt",
@@ -70,6 +71,10 @@ def test_unicode_record(wheel_paths):
     assert "åäö_日本語.py".encode() in record
 
 
+@pytest.mark.xfail(
+    tuple(setuptools_version.split(".")) < ("57", "0"),
+    reason="Old versions of setuptools don't get license_files quite right",
+)
 def test_licenses_default(dummy_dist, monkeypatch, tmpdir):
     monkeypatch.chdir(dummy_dist)
     subprocess.check_call(
