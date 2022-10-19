@@ -117,25 +117,6 @@ def remove_readonly(func, path, excinfo):
     func(path)
 
 
-def _expand(patterns):
-    """Expand list of patterns"""
-    files = set()
-
-    for pattern in patterns:
-        for path in iglob(pattern):
-            if path.endswith("~"):
-                log.debug(
-                    f'ignoring license file "{path}" as it looks like a ' f"backup"
-                )
-                continue
-
-            if path not in files and os.path.isfile(path):
-                log.info(f'adding license file "{path}" (matched pattern "{pattern}")')
-                files.add(path)
-
-    return files
-
-
 class bdist_wheel(Command):
 
     description = "create a wheel distribution"
@@ -464,16 +445,7 @@ class bdist_wheel(Command):
             )
             files.add(license_file)
 
-        if hasattr(metadata, "license_files"):
-            license_files = metadata.license_files or []
-            all_licenses = "".join(license_files)
-            if any(ch in all_licenses for ch in '*?[]'):
-                license_files = _expand(license_files)  # issue in old setuptools
-        elif not license_file:
-            license_files = _expand(("LICEN[CS]E*", "COPYING*", "NOTICE*", "AUTHORS*"))
-        else:
-            license_files = []
-
+        license_files = getattr(metadata, "license_files", None) or []
         return sorted({*files, *license_files})
 
     def egg2dist(self, egginfo_path, distinfo_path):
