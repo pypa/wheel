@@ -8,10 +8,10 @@ import sys
 from zipfile import ZipFile
 
 import pytest
+from setuptools import __version__ as setuptools_version
 
 from wheel.bdist_wheel import bdist_wheel
 from wheel.wheelfile import WheelFile
-from setuptools import __version__ as setuptools_version
 
 DEFAULT_FILES = {
     "dummy_dist-1.0.dist-info/top_level.txt",

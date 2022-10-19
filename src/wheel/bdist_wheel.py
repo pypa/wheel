@@ -15,7 +15,6 @@ import sysconfig
 import warnings
 from collections import OrderedDict
 from email.generator import BytesGenerator, Generator
-from glob import iglob
 from io import BytesIO
 from shutil import rmtree
 from sysconfig import get_config_var
@@ -23,7 +22,6 @@ from zipfile import ZIP_DEFLATED, ZIP_STORED
 
 import pkg_resources
 from setuptools import Command
-from setuptools import __version__ as setuptools_version
 
 from . import __version__ as wheel_version
 from .macosx_libfile import calculate_macosx_platform_tag
