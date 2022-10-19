@@ -434,16 +434,15 @@ class bdist_wheel(Command):
         metadata = self.distribution.metadata
         files = set()
 
-        license_file = getattr(metadata, "license_file", None)
-        if license_file:
+        if metadata.license_file:
             warnings.warn(
                 'The "license_file" option is deprecated. Use '
                 '"license_files" instead.',
                 DeprecationWarning,
             )
-            files.add(license_file)
+            files.add(metadata.license_file)
 
-        license_files = getattr(metadata, "license_files", None) or []
+        license_files = metadata.license_files or []
         return sorted({*files, *license_files})
 
     def egg2dist(self, egginfo_path, distinfo_path):
