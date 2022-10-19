@@ -432,7 +432,6 @@ class bdist_wheel(Command):
     @property
     def license_paths(self):
         metadata = self.distribution.metadata
-        files = set()
 
         if metadata.license_file:
             warnings.warn(
@@ -440,10 +439,8 @@ class bdist_wheel(Command):
                 '"license_files" instead.',
                 DeprecationWarning,
             )
-            files.add(metadata.license_file)
 
-        license_files = metadata.license_files or []
-        return sorted({*files, *license_files})
+        return sorted(metadata.license_files or [])
 
     def egg2dist(self, egginfo_path, distinfo_path):
         """Convert an .egg-info directory into a .dist-info directory"""
