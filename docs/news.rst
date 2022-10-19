@@ -6,6 +6,9 @@ Release Notes
 - Dropped support for Python < 3.7
 - Updated vendored ``packaging`` to 21.3
 - Replaced all uses of ``distutils`` with ``setuptools``
+- The handling of ``license_files`` (including glob patterns and default
+  values) is now delegated to ``setuptools>=57.0.0`` (#466).
+  The package dependencies were updated to reflect this change.
 
 **0.37.1 (2021-12-22)**
 
