@@ -45,7 +45,7 @@ setup(
 """
 
 
-def lincense_files_in_old_setuptools(old_version):
+def license_files_in_old_setuptools(old_version):
     return pytest.mark.xfail(
         tuple(setuptools_version.split(".")) < tuple(old_version.split(".")),
         reason=f"setuptools < {old_version} has problems with license_files",
@@ -78,7 +78,7 @@ def test_unicode_record(wheel_paths):
     assert "åäö_日本語.py".encode() in record
 
 
-@lincense_files_in_old_setuptools("57.0")
+@license_files_in_old_setuptools("57.0")
 def test_licenses_default(dummy_dist, monkeypatch, tmpdir):
     monkeypatch.chdir(dummy_dist)
     subprocess.check_call(
@@ -91,7 +91,7 @@ def test_licenses_default(dummy_dist, monkeypatch, tmpdir):
         assert set(wf.namelist()) == DEFAULT_FILES | license_files
 
 
-@lincense_files_in_old_setuptools("56.0")
+@license_files_in_old_setuptools("56.0")
 def test_licenses_deprecated(dummy_dist, monkeypatch, tmpdir):
     dummy_dist.join("setup.cfg").write("[metadata]\nlicense_file=licenses/DUMMYFILE")
     monkeypatch.chdir(dummy_dist)
@@ -109,12 +109,12 @@ def test_licenses_deprecated(dummy_dist, monkeypatch, tmpdir):
         pytest.param(
             "setup.cfg",
             "[metadata]\nlicense_files=licenses/*\n  LICENSE",
-            marks=lincense_files_in_old_setuptools("57.0"),
+            marks=license_files_in_old_setuptools("57.0"),
         ),
         pytest.param(
             "setup.cfg",
             "[metadata]\nlicense_files=licenses/*, LICENSE",
-            marks=lincense_files_in_old_setuptools("57.0"),
+            marks=license_files_in_old_setuptools("57.0"),
         ),
         (
             "setup.py",
