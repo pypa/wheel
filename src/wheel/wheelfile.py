@@ -16,8 +16,8 @@ from wheel.util import log, urlsafe_b64decode, urlsafe_b64encode
 # Non-greedy matching of an optional build number may be too clever (more
 # invalid wheel filenames will match). Separate regex for .dist-info?
 WHEEL_INFO_RE = re.compile(
-    r"""^(?P<namever>(?P<name>.+?)-(?P<ver>.+?))(-(?P<build>\d[^-]*))?
-     -(?P<pyver>.+?)-(?P<abi>.+?)-(?P<plat>.+?)\.whl$""",
+    r"""^(?P<namever>(?P<name>[^-]+?)-(?P<ver>[^-]+?))(-(?P<build>\d[^-]*))?
+     -(?P<pyver>[^-]+?)-(?P<abi>[^-]+?)-(?P<plat>[^.]+?)\.whl$""",
     re.VERBOSE,
 )
 

@@ -9,6 +9,7 @@ Release Notes
 - The handling of ``license_files`` (including glob patterns and default
   values) is now delegated to ``setuptools>=57.0.0`` (#466).
   The package dependencies were updated to reflect this change.
+- Fixed potential DoS attack via the ``WHEEL_INFO_RE`` regular expression
 
 **0.37.1 (2021-12-22)**
 
