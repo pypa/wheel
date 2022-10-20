@@ -34,21 +34,20 @@ OTHER_IGNORED_FILES = {
     "LICENSE~",
     "AUTHORS~",
 }
+SETUPPY_EXAMPLE = """\
+from setuptools import setup
+
+setup(
+    name='dummy_dist',
+    version='1.0',
+)
+"""
 
 
 @pytest.fixture
 def dummy_dist(tmpdir_factory):
     basedir = tmpdir_factory.mktemp("dummy_dist")
-    basedir.join("setup.py").write(
-        """\
-from setuptools import setup
-
-setup(
-    name='dummy_dist',
-    version='1.0'
-)
-"""
-    )
+    basedir.join("setup.py").write(SETUPPY_EXAMPLE)
     for fname in DEFAULT_LICENSE_FILES | OTHER_IGNORED_FILES:
         basedir.join(fname).write("")
 
@@ -83,21 +82,21 @@ def test_licenses_default(dummy_dist, monkeypatch, tmpdir):
         assert set(wf.namelist()) == DEFAULT_FILES | license_files
 
 
-def test_licenses_deprecated(dummy_dist, monkeypatch, tmpdir):
-    dummy_dist.join("setup.cfg").write("[metadata]\nlicense_file=licenses/DUMMYFILE")
-    monkeypatch.chdir(dummy_dist)
-    subprocess.check_call(
-        [sys.executable, "setup.py", "bdist_wheel", "-b", str(tmpdir), "--universal"]
-    )
-    with WheelFile("dist/dummy_dist-1.0-py2.py3-none-any.whl") as wf:
-        license_files = {"dummy_dist-1.0.dist-info/DUMMYFILE"}
-        assert set(wf.namelist()) == DEFAULT_FILES | license_files
-
-
-def test_licenses_override(dummy_dist, monkeypatch, tmpdir):
-    dummy_dist.join("setup.cfg").write(
-        "[metadata]\nlicense_files=licenses/*\n  LICENSE"
-    )
+@pytest.mark.parametrize(
+    "config_file, config",
+    [
+        ("setup.cfg", "[metadata]\nlicense_files=licenses/*\n  LICENSE"),
+        ("setup.cfg", "[metadata]\nlicense_files=licenses/*, LICENSE"),
+        (
+            "setup.py",
+            SETUPPY_EXAMPLE.replace(
+                ")", "  license_files=['licenses/DUMMYFILE', 'LICENSE'])"
+            ),
+        ),
+    ],
+)
+def test_licenses_override(dummy_dist, monkeypatch, tmpdir, config_file, config):
+    dummy_dist.join(config_file).write(config)
     monkeypatch.chdir(dummy_dist)
     subprocess.check_call(
         [sys.executable, "setup.py", "bdist_wheel", "-b", str(tmpdir), "--universal"]

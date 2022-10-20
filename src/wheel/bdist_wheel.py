@@ -15,7 +15,6 @@ import sysconfig
 import warnings
 from collections import OrderedDict
 from email.generator import BytesGenerator, Generator
-from glob import iglob
 from io import BytesIO
 from shutil import rmtree
 from sysconfig import get_config_var
@@ -432,38 +431,8 @@ class bdist_wheel(Command):
 
     @property
     def license_paths(self):
-        metadata = self.distribution.get_option_dict("metadata")
-        files = set()
-        patterns = sorted(
-            {option for option in metadata.get("license_files", ("", ""))[1].split()}
-        )
-
-        if "license_file" in metadata:
-            warnings.warn(
-                'The "license_file" option is deprecated. Use '
-                '"license_files" instead.',
-                DeprecationWarning,
-            )
-            files.add(metadata["license_file"][1])
-
-        if "license_file" not in metadata and "license_files" not in metadata:
-            patterns = ("LICEN[CS]E*", "COPYING*", "NOTICE*", "AUTHORS*")
-
-        for pattern in patterns:
-            for path in iglob(pattern):
-                if path.endswith("~"):
-                    log.debug(
-                        f'ignoring license file "{path}" as it looks like a ' f"backup"
-                    )
-                    continue
-
-                if path not in files and os.path.isfile(path):
-                    log.info(
-                        f'adding license file "{path}" (matched pattern "{pattern}")'
-                    )
-                    files.add(path)
-
-        return files
+        metadata = self.distribution.metadata
+        return sorted(metadata.license_files or [])
 
     def egg2dist(self, egginfo_path, distinfo_path):
         """Convert an .egg-info directory into a .dist-info directory"""
