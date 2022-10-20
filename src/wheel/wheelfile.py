@@ -20,12 +20,14 @@ WHEEL_INFO_RE = re.compile(
      -(?P<pyver>[^-]+?)-(?P<abi>[^-]+?)-(?P<plat>[^.]+?)\.whl$""",
     re.VERBOSE,
 )
+MINIMUM_TIMESTAMP = 315532800  # 1980-01-01 00:00:00 UTC
 
 
 def get_zipinfo_datetime(timestamp=None):
     # Some applications need reproducible .whl files, but they can't do this without
     # forcing the timestamp of the individual ZipInfo objects. See issue #143.
     timestamp = int(os.environ.get("SOURCE_DATE_EPOCH", timestamp or time.time()))
+    timestamp = max(timestamp, MINIMUM_TIMESTAMP)
     return time.gmtime(timestamp)[0:6]
 
 

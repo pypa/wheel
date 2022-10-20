@@ -10,6 +10,9 @@ Release Notes
   values) is now delegated to ``setuptools>=57.0.0`` (#466).
   The package dependencies were updated to reflect this change.
 - Fixed potential DoS attack via the ``WHEEL_INFO_RE`` regular expression
+- Fixed ``ValueError: ZIP does not support timestamps before 1980`` when using
+  ``SOURCE_DATE_EPOCH=0`` or when on-disk timestamps are earlier than 1980-01-01. Such
+  timestamps are now changed to the minimum value before packaging.
 
 **0.37.1 (2021-12-22)**
 

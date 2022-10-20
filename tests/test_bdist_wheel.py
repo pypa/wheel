@@ -202,3 +202,19 @@ def test_wheelfile_line_endings(wheel_paths):
             wheelfile = next(fn for fn in wf.filelist if fn.filename.endswith("WHEEL"))
             wheelfile_contents = wf.read(wheelfile)
             assert b"\r" not in wheelfile_contents
+
+
+def test_unix_epoch_timestamps(dummy_dist, monkeypatch, tmpdir):
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "0")
+    monkeypatch.chdir(dummy_dist)
+    subprocess.check_call(
+        [
+            sys.executable,
+            "setup.py",
+            "bdist_wheel",
+            "-b",
+            str(tmpdir),
+            "--universal",
+            "--build-number=2",
+        ]
+    )
