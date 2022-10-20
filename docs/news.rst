@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.38.0 (2022-10-21)**
 
 - Dropped support for Python < 3.7
 - Updated vendored ``packaging`` to 21.3
