@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import csv
 import hashlib
 import os.path
@@ -13,22 +15,19 @@ from email.generator import Generator
 from email.message import Message
 from email.parser import Parser
 from io import StringIO
+from os import PathLike
 from pathlib import Path, PurePath
 from typing import Optional, Union, Dict, Iterable, NamedTuple, IO, Tuple, List, BinaryIO, Iterator
 from zipfile import ZIP_DEFLATED, ZipInfo, ZipFile
 
 from . import __version__ as wheel_version
 
-if sys.version_info >= (3, 6):
-    from os import PathLike
-else:
-    PathLike = Path
-
 _DIST_NAME_RE = re.compile(r'[^A-Za-z0-9.]+')
-_WHEEL_INFO_RE = re.compile(
-    r"""^(?P<namever>(?P<name>.+?)-(?P<ver>.+?))(?:-(?P<build>\d[^-]*))?
-     -(?P<pyver>.+?)-(?P<abi>.+?)-(?P<plat>.+?)\.whl$""",
-    re.VERBOSE)
+WHEEL_INFO_RE = re.compile(
+    r"""^(?P<namever>(?P<name>[^-]+?)-(?P<ver>[^-]+?))(-(?P<build>\d[^-]*))?
+     -(?P<pyver>[^-]+?)-(?P<abi>[^-]+?)-(?P<plat>[^.]+?)\.whl$""",
+    re.VERBOSE,
+)
 
 WheelMetadata = NamedTuple('WheelMetadata', [
     ('name', str),

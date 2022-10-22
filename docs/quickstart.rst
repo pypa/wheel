@@ -1,9 +1,10 @@
 Quickstart
 ==========
 
-To build a wheel for your setuptools based project::
+To build a wheel for your project::
 
-    python setup.py bdist_wheel
+    python -m pip install build
+    python -m build --wheel
 
 The wheel will go to ``dist/yourproject-<tags>.whl``.
 

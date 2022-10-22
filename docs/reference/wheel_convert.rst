@@ -44,4 +44,3 @@ Examples
     "pycharm-debug.egg" is not a valid egg name (must match at least name-version-pyX.Y.egg)
     $ echo $?
     1
-

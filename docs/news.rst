@@ -1,6 +1,29 @@
 Release Notes
 =============
 
+**0.38.0 (2022-10-21)**
+
+- Dropped support for Python < 3.7
+- Updated vendored ``packaging`` to 21.3
+- Replaced all uses of ``distutils`` with ``setuptools``
+- The handling of ``license_files`` (including glob patterns and default
+  values) is now delegated to ``setuptools>=57.0.0`` (#466).
+  The package dependencies were updated to reflect this change.
+- Fixed potential DoS attack via the ``WHEEL_INFO_RE`` regular expression
+- Fixed ``ValueError: ZIP does not support timestamps before 1980`` when using
+  ``SOURCE_DATE_EPOCH=0`` or when on-disk timestamps are earlier than 1980-01-01. Such
+  timestamps are now changed to the minimum value before packaging.
+
+**0.37.1 (2021-12-22)**
+
+- Fixed ``wheel pack`` duplicating the ``WHEEL`` contents when the build number has changed (#415)
+- Fixed parsing of file names containing commas in ``RECORD`` (PR by Hood Chatham)
+
+**0.37.0 (2021-08-09)**
+
+- Added official Python 3.10 support
+- Updated vendored ``packaging`` library to v20.9
+
 **0.36.2 (2020-12-13)**
 
 - Updated vendored ``packaging`` library to v20.8

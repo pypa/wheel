@@ -1,13 +1,11 @@
+from __future__ import annotations
+
 import sys
 from pathlib import Path
 from typing import Union
+from os import PathLike
 
 from ..wheelfile import WheelFile
-
-if sys.version_info >= (3, 6):
-    from os import PathLike
-else:
-    from pathlib import Path as PathLike
 
 
 def unpack(path: Union[str, PathLike], dest: Union[str, PathLike] = '.') -> None:

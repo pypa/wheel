@@ -4,26 +4,25 @@ Create a wheel (.whl) distribution.
 A wheel is a built archive format.
 """
 
-import distutils
+from __future__ import annotations
+
 import os
+import re
 import shutil
 import stat
 import sys
-import re
+import sysconfig
 import warnings
 from collections import OrderedDict
-from distutils.core import Command
-from distutils.sysconfig import get_config_var
-from distutils import log as logger
-from pathlib import Path
 from shutil import rmtree
-from typing import Set
 from zipfile import ZIP_DEFLATED, ZIP_STORED
 
 import pkg_resources
+from setuptools import Command
 
 from .macosx_libfile import calculate_macosx_platform_tag
 from .metadata import pkginfo_to_metadata
+from .util import log
 from .vendored.packaging import tags
 from .wheelfile import WheelFile, make_filename
 from . import __version__ as wheel_version
@@ -32,24 +31,23 @@ from . import __version__ as wheel_version
 safe_name = pkg_resources.safe_name
 safe_version = pkg_resources.safe_version
 
-PY_LIMITED_API_PATTERN = r'cp3\d'
+PY_LIMITED_API_PATTERN = r"cp3\d"
 
 
-def python_tag():
-    return 'py{}'.format(sys.version_info[0])
+def python_tag() -> str:
+    return f"py{sys.version_info[0]}"
 
 
-def get_platform(archive_root):
+def get_platform(archive_root) -> str:
     """Return our platform name 'win32', 'linux_x86_64'"""
-    # XXX remove distutils dependency
-    result = distutils.util.get_platform()
+    result = sysconfig.get_platform()
     if result.startswith("macosx") and archive_root is not None:
         result = calculate_macosx_platform_tag(archive_root, result)
-    if result == "linux_x86_64" and sys.maxsize == 2147483647:
+    elif result == "linux-x86_64" and sys.maxsize == 2147483647:
         # pip pull request #3497
-        result = "linux_i686"
+        result = "linux-i686"
 
-    return result
+    return result.replace("-", "_")
 
 
 def get_flag(var, fallback, expected=True, warn=True):
@@ -58,8 +56,8 @@ def get_flag(var, fallback, expected=True, warn=True):
     val = get_config_var(var)
     if val is None:
         if warn:
-            warnings.warn("Config variable '{0}' is unset, Python ABI tag may "
-                          "be incorrect".format(var), RuntimeWarning, 2)
+            warnings.warn(f"Config variable '{var}' is unset, Python ABI tag may "
+                          "be incorrect", RuntimeWarning, 2)
 
         return fallback
 
@@ -67,40 +65,32 @@ def get_flag(var, fallback, expected=True, warn=True):
 
 
 def get_abi_tag():
-    """Return the ABI tag based on SOABI (if available) or emulate SOABI
-    (CPython 2, PyPy)."""
-    soabi = get_config_var('SOABI')
+    """Return the ABI tag based on SOABI (if available) or emulate SOABI (PyPy)."""
+    soabi = get_config_var("SOABI")
     impl = tags.interpreter_name()
-    if not soabi and impl in ('cp', 'pp') and hasattr(sys, 'maxunicode'):
-        d = ''
-        m = ''
-        u = ''
-        if get_flag('Py_DEBUG',
-                    hasattr(sys, 'gettotalrefcount'),
-                    warn=(impl == 'cp')):
-            d = 'd'
-        if get_flag('WITH_PYMALLOC',
-                    impl == 'cp',
-                    warn=(impl == 'cp' and
-                          sys.version_info < (3, 8))) \
-                and sys.version_info < (3, 8):
-            m = 'm'
-        if get_flag('Py_UNICODE_SIZE',
-                    sys.maxunicode == 0x10ffff,
-                    expected=4,
-                    warn=(impl == 'cp' and
-                          sys.version_info < (3, 3))) \
-                and sys.version_info < (3, 3):
-            u = 'u'
-        abi = '%s%s%s%s%s' % (impl, tags.interpreter_version(), d, m, u)
-    elif soabi and soabi.startswith('cpython-'):
-        abi = 'cp' + soabi.split('-')[1]
-    elif soabi and soabi.startswith('pypy-'):
+    if not soabi and impl in ("cp", "pp") and hasattr(sys, "maxunicode"):
+        d = ""
+        m = ""
+        u = ""
+        if get_flag("Py_DEBUG", hasattr(sys, "gettotalrefcount"), warn=(impl == "cp")):
+            d = "d"
+
+        if get_flag(
+            "WITH_PYMALLOC",
+            impl == "cp",
+            warn=(impl == "cp" and sys.version_info < (3, 8)),
+        ) and sys.version_info < (3, 8):
+            m = "m"
+
+        abi = f"{impl}{tags.interpreter_version()}{d}{m}{u}"
+    elif soabi and soabi.startswith("cpython-"):
+        abi = "cp" + soabi.split("-")[1]
+    elif soabi and soabi.startswith("pypy-"):
         # we want something like pypy36-pp73
-        abi = '-'.join(soabi.split('-')[:2])
-        abi = abi.replace('.', '_').replace('-', '_')
+        abi = "-".join(soabi.split("-")[:2])
+        abi = abi.replace(".", "_").replace("-", "_")
     elif soabi:
-        abi = soabi.replace('.', '_').replace('-', '_')
+        abi = soabi.replace(".", "_").replace("-", "_")
     else:
         abi = None
 
@@ -108,11 +98,11 @@ def get_abi_tag():
 
 
 def safer_name(name):
-    return safe_name(name).replace('-', '_')
+    return safe_name(name).replace("-", "_")
 
 
 def safer_version(version):
-    return safe_version(version).replace('-', '_')
+    return safe_version(version).replace("-", "_")
 
 
 def remove_readonly(func, path, excinfo):
@@ -123,61 +113,78 @@ def remove_readonly(func, path, excinfo):
 
 class bdist_wheel(Command):
 
-    description = 'create a wheel distribution'
+    description = "create a wheel distribution"
 
-    supported_compressions = OrderedDict([
-        ('stored', ZIP_STORED),
-        ('deflated', ZIP_DEFLATED)
-    ])
+    supported_compressions = OrderedDict(
+        [("stored", ZIP_STORED), ("deflated", ZIP_DEFLATED)]
+    )
 
-    user_options = [('bdist-dir=', 'b',
-                     "temporary directory for creating the distribution"),
-                    ('plat-name=', 'p',
-                     "platform name to embed in generated filenames "
-                     "(default: %s)" % get_platform(None)),
-                    ('keep-temp', 'k',
-                     "keep the pseudo-installation tree around after " +
-                     "creating the distribution archive"),
-                    ('dist-dir=', 'd',
-                     "directory to put final built distributions in"),
-                    ('skip-build', None,
-                     "skip rebuilding everything (for testing/debugging)"),
-                    ('relative', None,
-                     "build the archive using relative paths "
-                     "(default: false)"),
-                    ('owner=', 'u',
-                     "Owner name used when creating a tar file"
-                     " [default: current user]"),
-                    ('group=', 'g',
-                     "Group name used when creating a tar file"
-                     " [default: current group]"),
-                    ('universal', None,
-                     "make a universal wheel"
-                     " (default: false)"),
-                    ('compression=', None,
-                     "zipfile compression (one of: {})"
-                     " (default: 'deflated')"
-                     .format(', '.join(supported_compressions))),
-                    ('python-tag=', None,
-                     "Python implementation compatibility tag"
-                     " (default: '%s')" % (python_tag())),
-                    ('build-number=', None,
-                     "Build number for this particular version. "
-                     "As specified in PEP-0427, this must start with a digit. "
-                     "[default: None]"),
-                    ('py-limited-api=', None,
-                     "Python tag (cp32|cp33|cpNN) for abi3 wheel tag"
-                     " (default: false)"),
-                    ]
+    user_options = [
+        ("bdist-dir=", "b", "temporary directory for creating the distribution"),
+        (
+            "plat-name=",
+            "p",
+            "platform name to embed in generated filenames "
+            "(default: %s)" % get_platform(None),
+        ),
+        (
+            "keep-temp",
+            "k",
+            "keep the pseudo-installation tree around after "
+            + "creating the distribution archive",
+        ),
+        ("dist-dir=", "d", "directory to put final built distributions in"),
+        ("skip-build", None, "skip rebuilding everything (for testing/debugging)"),
+        (
+            "relative",
+            None,
+            "build the archive using relative paths " "(default: false)",
+        ),
+        (
+            "owner=",
+            "u",
+            "Owner name used when creating a tar file" " [default: current user]",
+        ),
+        (
+            "group=",
+            "g",
+            "Group name used when creating a tar file" " [default: current group]",
+        ),
+        ("universal", None, "make a universal wheel" " (default: false)"),
+        (
+            "compression=",
+            None,
+            "zipfile compression (one of: {})"
+            " (default: 'deflated')".format(", ".join(supported_compressions)),
+        ),
+        (
+            "python-tag=",
+            None,
+            "Python implementation compatibility tag"
+            " (default: '%s')" % (python_tag()),
+        ),
+        (
+            "build-number=",
+            None,
+            "Build number for this particular version. "
+            "As specified in PEP-0427, this must start with a digit. "
+            "[default: None]",
+        ),
+        (
+            "py-limited-api=",
+            None,
+            "Python tag (cp32|cp33|cpNN) for abi3 wheel tag" " (default: false)",
+        ),
+    ]
 
-    boolean_options = ['keep-temp', 'skip-build', 'relative', 'universal']
+    boolean_options = ["keep-temp", "skip-build", "relative", "universal"]
 
     def initialize_options(self):
         self.bdist_dir = None
         self.data_dir = None
         self.plat_name = None
         self.plat_tag = None
-        self.format = 'zip'
+        self.format = "zip"
         self.keep_temp = False
         self.dist_dir = None
         self.egginfo_dir = None
@@ -187,7 +194,7 @@ class bdist_wheel(Command):
         self.owner = None
         self.group = None
         self.universal = False
-        self.compression = 'deflated'
+        self.compression = "deflated"
         self.python_tag = python_tag()
         self.build_number = None
         self.py_limited_api = False
@@ -195,35 +202,39 @@ class bdist_wheel(Command):
 
     def finalize_options(self):
         if self.bdist_dir is None:
-            bdist_base = self.get_finalized_command('bdist').bdist_base
-            self.bdist_dir = os.path.join(bdist_base, 'wheel')
+            bdist_base = self.get_finalized_command("bdist").bdist_base
+            self.bdist_dir = os.path.join(bdist_base, "wheel")
 
-        self.data_dir = self.wheel_dist_name + '.data'
+        self.data_dir = self.wheel_dist_name + ".data"
         self.plat_name_supplied = self.plat_name is not None
 
         try:
             self.compression = self.supported_compressions[self.compression]
         except KeyError:
-            raise ValueError('Unsupported compression: {}'.format(self.compression))
+            raise ValueError(f"Unsupported compression: {self.compression}")
 
-        need_options = ('dist_dir', 'plat_name', 'skip_build')
+        need_options = ("dist_dir", "plat_name", "skip_build")
 
-        self.set_undefined_options('bdist',
-                                   *zip(need_options, need_options))
+        self.set_undefined_options("bdist", *zip(need_options, need_options))
 
-        self.root_is_pure = not (self.distribution.has_ext_modules()
-                                 or self.distribution.has_c_libraries())
+        self.root_is_pure = not (
+            self.distribution.has_ext_modules() or self.distribution.has_c_libraries()
+        )
 
-        if self.py_limited_api and not re.match(PY_LIMITED_API_PATTERN, self.py_limited_api):
+        if self.py_limited_api and not re.match(
+            PY_LIMITED_API_PATTERN, self.py_limited_api
+        ):
             raise ValueError("py-limited-api must match '%s'" % PY_LIMITED_API_PATTERN)
 
         # Support legacy [wheel] section for setting universal
-        wheel = self.distribution.get_option_dict('wheel')
-        if 'universal' in wheel:
+        wheel = self.distribution.get_option_dict("wheel")
+        if "universal" in wheel:
             # please don't define this in your global configs
-            logger.warn('The [wheel] section is deprecated. Use [bdist_wheel] instead.')
-            val = wheel['universal'][1].strip()
-            if val.lower() in ('1', 'true', 'yes'):
+            log.warning(
+                "The [wheel] section is deprecated. Use [bdist_wheel] instead.",
+            )
+            val = wheel["universal"][1].strip()
+            if val.lower() in ("1", "true", "yes"):
                 self.universal = True
 
         if self.build_number is not None and not self.build_number[:1].isdigit():
@@ -232,11 +243,13 @@ class bdist_wheel(Command):
     @property
     def wheel_dist_name(self):
         """Return distribution full name with - replaced with _"""
-        components = (safer_name(self.distribution.get_name()),
-                      safer_version(self.distribution.get_version()))
+        components = (
+            safer_name(self.distribution.get_name()),
+            safer_version(self.distribution.get_version()),
+        )
         if self.build_number:
             components += (self.build_number,)
-        return '-'.join(components)
+        return "-".join(components)
 
     def get_tag(self):
         # bdist sets self.plat_name if unset, we should only use it for purepy
@@ -244,7 +257,7 @@ class bdist_wheel(Command):
         if self.plat_name_supplied:
             plat_name = self.plat_name
         elif self.root_is_pure:
-            plat_name = 'any'
+            plat_name = "any"
         else:
             # macosx contains system version in platform name so need special handle
             if self.plat_name and not self.plat_name.startswith("macosx"):
@@ -258,47 +271,52 @@ class bdist_wheel(Command):
                 # modules, use the default platform name.
                 plat_name = get_platform(self.bdist_dir)
 
-            if plat_name in ('linux-x86_64', 'linux_x86_64') and sys.maxsize == 2147483647:
-                plat_name = 'linux_i686'
+            if (
+                plat_name in ("linux-x86_64", "linux_x86_64")
+                and sys.maxsize == 2147483647
+            ):
+                plat_name = "linux_i686"
 
-        plat_name = plat_name.lower().replace('-', '_').replace('.', '_')
+        plat_name = plat_name.lower().replace("-", "_").replace(".", "_")
 
         if self.root_is_pure:
             if self.universal:
-                impl = 'py2.py3'
+                impl = "py2.py3"
             else:
                 impl = self.python_tag
-            tag = (impl, 'none', plat_name)
+            tag = (impl, "none", plat_name)
         else:
             impl_name = tags.interpreter_name()
             impl_ver = tags.interpreter_version()
             impl = impl_name + impl_ver
             # We don't work on CPython 3.1, 3.0.
-            if self.py_limited_api and (impl_name + impl_ver).startswith('cp3'):
+            if self.py_limited_api and (impl_name + impl_ver).startswith("cp3"):
                 impl = self.py_limited_api
-                abi_tag = 'abi3'
+                abi_tag = "abi3"
             else:
                 abi_tag = str(get_abi_tag()).lower()
             tag = (impl, abi_tag, plat_name)
             # issue gh-374: allow overriding plat_name
-            supported_tags = [(t.interpreter, t.abi, plat_name)
-                              for t in tags.sys_tags()]
-            assert tag in supported_tags, "would build wheel with unsupported tag {}".format(tag)
+            supported_tags = [
+                (t.interpreter, t.abi, plat_name) for t in tags.sys_tags()
+            ]
+            assert (
+                tag in supported_tags
+            ), f"would build wheel with unsupported tag {tag}"
         return tag
 
     def run(self):
-        build_scripts = self.reinitialize_command('build_scripts')
-        build_scripts.executable = 'python'
+        build_scripts = self.reinitialize_command("build_scripts")
+        build_scripts.executable = "python"
         build_scripts.force = True
 
-        build_ext = self.reinitialize_command('build_ext')
+        build_ext = self.reinitialize_command("build_ext")
         build_ext.inplace = False
 
         if not self.skip_build:
-            self.run_command('build')
+            self.run_command("build")
 
-        install = self.reinitialize_command('install',
-                                            reinit_subcommands=True)
+        install = self.reinitialize_command("install", reinit_subcommands=True)
         install.root = self.bdist_dir
         install.compile = False
         install.skip_build = self.skip_build
@@ -307,27 +325,27 @@ class bdist_wheel(Command):
         # A wheel without setuptools scripts is more cross-platform.
         # Use the (undocumented) `no_ep` option to setuptools'
         # install_scripts command to avoid creating entry point scripts.
-        install_scripts = self.reinitialize_command('install_scripts')
+        install_scripts = self.reinitialize_command("install_scripts")
         install_scripts.no_ep = True
 
         # Use a custom scheme for the archive, because we have to decide
         # at installation time which scheme to use.
-        for key in ('headers', 'scripts', 'data', 'purelib', 'platlib'):
-            setattr(install,
-                    'install_' + key,
-                    os.path.join(self.data_dir, key))
+        for key in ("headers", "scripts", "data", "purelib", "platlib"):
+            setattr(install, "install_" + key, os.path.join(self.data_dir, key))
 
-        basedir_observed = ''
+        basedir_observed = ""
 
-        if os.name == 'nt':
+        if os.name == "nt":
             # win32 barfs if any of these are ''; could be '.'?
             # (distutils.command.install:change_roots bug)
-            basedir_observed = os.path.normpath(os.path.join(self.data_dir, '..'))
+            basedir_observed = os.path.normpath(os.path.join(self.data_dir, ".."))
             self.install_libbase = self.install_lib = basedir_observed
 
-        setattr(install,
-                'install_purelib' if self.root_is_pure else 'install_platlib',
-                basedir_observed)
+        setattr(
+            install,
+            "install_purelib" if self.root_is_pure else "install_platlib",
+            basedir_observed,
+        )
 
         logger.info("installing to %s", self.bdist_dir)
         self.run_command('install')
@@ -398,7 +416,7 @@ class bdist_wheel(Command):
              str(wheel_path)))
 
         if not self.keep_temp:
-            logger.info('removing %s', self.bdist_dir)
+            log.info(f"removing {self.bdist_dir}")
             if not self.dry_run:
                 rmtree(self.bdist_dir, onerror=remove_readonly)
 

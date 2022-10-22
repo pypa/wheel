@@ -1,68 +1,74 @@
 """
 Tools for converting old- to new-style metadata.
 """
+from __future__ import annotations
 
 import textwrap
+from collections.abc import Iterator
 from pathlib import Path
 from email.parser import HeaderParser
-from typing import List, Tuple
 
-import pkg_resources
+from pkg_resources import Requirement, safe_extra
 
 
-def requires_to_requires_dist(requirement):
+def requires_to_requires_dist(requirement: Requirement) -> str:
     """Return the version specifier for a requirement in PEP 345/566 fashion."""
-    if getattr(requirement, 'url', None):
+    if getattr(requirement, "url", None):
         return " @ " + requirement.url
 
     requires_dist = []
     for op, ver in requirement.specs:
         requires_dist.append(op + ver)
-    if not requires_dist:
-        return ''
-    return " (%s)" % ','.join(sorted(requires_dist))
+
+    if requires_dist:
+        return " (" + ",".join(sorted(requires_dist)) + ")"
+    else:
+        return ""
 
 
-def convert_requirements(requirements):
+def convert_requirements(requirements: list[str]) -> Iterator[str]:
     """Yield Requires-Dist: strings for parsed requirements strings."""
     for req in requirements:
-        parsed_requirement = pkg_resources.Requirement.parse(req)
+        parsed_requirement = Requirement.parse(req)
         spec = requires_to_requires_dist(parsed_requirement)
         extras = ",".join(sorted(parsed_requirement.extras))
         if extras:
-            extras = "[%s]" % extras
-        yield (parsed_requirement.project_name + extras + spec)
+            extras = f"[{extras}]"
+
+        yield parsed_requirement.project_name + extras + spec
 
 
-def generate_requirements(extras_require):
+def generate_requirements(
+    extras_require: dict[str, list[str]]
+) -> Iterator[tuple[str, str]]:
     """
-    Convert requirements from a setup()-style dictionary to ('Requires-Dist', 'requirement')
-    and ('Provides-Extra', 'extra') tuples.
+    Convert requirements from a setup()-style dictionary to
+    ('Requires-Dist', 'requirement') and ('Provides-Extra', 'extra') tuples.
 
     extras_require is a dictionary of {extra: [requirements]} as passed to setup(),
     using the empty extra {'': [requirements]} to hold install_requires.
     """
     for extra, depends in extras_require.items():
-        condition = ''
-        extra = extra or ''
-        if ':' in extra:  # setuptools extra:condition syntax
-            extra, condition = extra.split(':', 1)
+        condition = ""
+        extra = extra or ""
+        if ":" in extra:  # setuptools extra:condition syntax
+            extra, condition = extra.split(":", 1)
 
-        extra = pkg_resources.safe_extra(extra)
+        extra = safe_extra(extra)
         if extra:
-            yield 'Provides-Extra', extra
+            yield "Provides-Extra", extra
             if condition:
                 condition = "(" + condition + ") and "
             condition += "extra == '%s'" % extra
 
         if condition:
-            condition = ' ; ' + condition
+            condition = " ; " + condition
 
         for new_req in convert_requirements(depends):
-            yield 'Requires-Dist', new_req + condition
+            yield "Requires-Dist", new_req + condition
 
 
-def pkginfo_to_metadata(pkginfo_path: Path) -> List[Tuple[str, str]]:
+def pkginfo_to_metadata(pkginfo_path: Path) -> list[tuple[str, str]]:
     """Convert an .egg-info/PKG-INFO file to the Metadata 2.1 format."""
 
     with pkginfo_path.open() as fp:
@@ -84,45 +90,3 @@ def pkginfo_to_metadata(pkginfo_path: Path) -> List[Tuple[str, str]]:
                     pkg_info[key] = value
 
     return list(pkg_info.items())
-
-
-def pkginfo_unicode(pkg_info, field):
-    """Hack to coax Unicode out of an email Message() - Python 3.3+"""
-    text = pkg_info[field]
-    field = field.lower()
-    if not isinstance(text, str):
-        for item in pkg_info.raw_items():
-            if item[0].lower() == field:
-                text = item[1].encode('ascii', 'surrogateescape') \
-                    .decode('utf-8')
-                break
-
-    return text
-
-
-def dedent_description(pkg_info):
-    """
-    Dedent and convert pkg_info['Description'] to Unicode.
-    """
-    description = pkg_info['Description']
-
-    # Python 3 Unicode handling, sorta.
-    surrogates = False
-    if not isinstance(description, str):
-        surrogates = True
-        description = pkginfo_unicode(pkg_info, 'Description')
-
-    description_lines = description.splitlines()
-    description_dedent = '\n'.join(
-        # if the first line of long_description is blank,
-        # the first line here will be indented.
-        (description_lines[0].lstrip(),
-         textwrap.dedent('\n'.join(description_lines[1:])),
-         '\n'))
-
-    if surrogates:
-        description_dedent = description_dedent \
-            .encode("utf8") \
-            .decode("ascii", "surrogateescape")
-
-    return description_dedent

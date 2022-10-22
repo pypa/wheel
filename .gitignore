@@ -1,6 +1,8 @@
 *.egg-info
 *.dist-info
 *.pyc
+*.so
+*.dll
 build
 dist
 docs/_build
@@ -12,4 +14,3 @@ __pycache__
 .idea
 .cache
 .eggs
-.pre-commit-config.yaml

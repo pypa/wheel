@@ -1,10 +1,10 @@
-from setuptools import setup, Extension
+from __future__ import annotations
 
-setup(name='extension.dist',
-      version='0.1',
-      description=u'A testing distribution \N{SNOWMAN}',
-      ext_modules=[
-          Extension(name='extension',
-                    sources=['extension.c'])
-          ],
-      )
+from setuptools import Extension, setup
+
+setup(
+    name="extension.dist",
+    version="0.1",
+    description="A testing distribution \N{SNOWMAN}",
+    ext_modules=[Extension(name="extension", sources=["extension.c"])],
+)
