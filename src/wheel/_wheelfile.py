@@ -17,7 +17,7 @@ from io import StringIO, UnsupportedOperation
 from os import PathLike
 from pathlib import Path, PurePath
 from types import TracebackType
-from typing import IO, TYPE_CHECKING, BinaryIO, NamedTuple, cast
+from typing import IO, TYPE_CHECKING, BinaryIO, NamedTuple, Tuple, cast
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile, ZipInfo
 
 from . import __version__ as wheel_version
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from .vendored.packaging.tags import Tag
     from .vendored.packaging.utils import NormalizedName, Version
 
-    WheelContentElement = tuple[tuple[PurePath, str, str], BinaryIO]
+WheelContentElement = Tuple[Tuple[PurePath, str, str], BinaryIO]
 
 _DIST_NAME_RE = re.compile(r"[^A-Za-z0-9.]+")
 _EXCLUDE_FILENAMES = ("RECORD", "RECORD.jws", "RECORD.p7s")
