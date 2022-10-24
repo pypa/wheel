@@ -8,8 +8,8 @@ from typing import Any
 
 from pytest import CaptureFixture, MonkeyPatch
 
+from wheel._bdist_wheel import get_platform
 from wheel._macosx_libfile import extract_macosx_min_system_version
-from wheel.bdist_wheel import get_platform
 
 
 def test_read_from_dylib() -> None:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from wheel.cli.unpack import unpack
+from wheel._cli.unpack import unpack
 
 
 def test_unpack(wheel_paths, tmp_path):

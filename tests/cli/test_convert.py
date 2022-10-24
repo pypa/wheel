@@ -4,7 +4,7 @@ import os.path
 import re
 from pathlib import Path
 
-from wheel.cli.convert import convert, egg_info_re
+from wheel._cli.convert import convert, egg_info_re
 
 
 def test_egg_re() -> None:
