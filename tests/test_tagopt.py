@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from _pytest.fixtures import FixtureRequest
+from pytest import FixtureRequest
 
 SETUP_PY = """\
 from setuptools import setup, Extension

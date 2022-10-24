@@ -6,8 +6,7 @@ from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
 import pytest
-from _pytest.monkeypatch import MonkeyPatch
-from _pytest.tmpdir import TempPathFactory
+from pytest import MonkeyPatch, TempPathFactory
 
 from wheel.wheelfile import WheelError, WheelReader, WheelWriter
 

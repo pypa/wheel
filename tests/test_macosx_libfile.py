@@ -6,8 +6,7 @@ import sysconfig
 from collections.abc import Callable
 from typing import Any
 
-from _pytest.capture import CaptureFixture
-from _pytest.monkeypatch import MonkeyPatch
+from pytest import CaptureFixture, MonkeyPatch
 
 from wheel.bdist_wheel import get_platform
 from wheel.macosx_libfile import extract_macosx_min_system_version

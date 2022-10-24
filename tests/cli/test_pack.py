@@ -6,7 +6,7 @@ from textwrap import dedent
 from zipfile import ZipFile
 
 import pytest
-from _pytest.tmpdir import TempPathFactory
+from pytest import TempPathFactory
 
 from wheel.cli.pack import pack
 

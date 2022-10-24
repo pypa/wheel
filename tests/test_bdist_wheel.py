@@ -10,8 +10,7 @@ from pathlib import Path, PurePath
 from zipfile import ZipFile
 
 import pytest
-from _pytest.monkeypatch import MonkeyPatch
-from _pytest.tmpdir import TempPathFactory
+from pytest import MonkeyPatch, TempPathFactory
 
 from wheel.wheelfile import WheelReader
 

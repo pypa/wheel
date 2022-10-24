@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from _pytest.tmpdir import TempPathFactory
+from pytest import TempPathFactory
 
 
 @pytest.fixture(scope="session")
