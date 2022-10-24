@@ -17,7 +17,7 @@ from io import StringIO, UnsupportedOperation
 from os import PathLike
 from pathlib import Path, PurePath
 from types import TracebackType
-from typing import IO, BinaryIO, NamedTuple, Tuple
+from typing import IO, BinaryIO, NamedTuple, Tuple, cast
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile, ZipInfo
 
 from . import __version__ as wheel_version
@@ -245,7 +245,7 @@ class WheelReader:
     def get_contents(self) -> Iterator[WheelContentElement]:
         for fname, entry in self._record_entries.items():
             with self._zip.open(fname, "r") as stream:
-                yield (fname, entry.hash_value, entry.filesize), stream
+                yield (fname, entry.hash_value, entry.filesize), cast(BinaryIO, stream)
 
     def test(self) -> None:
         """Verify the integrity of the contained files."""
