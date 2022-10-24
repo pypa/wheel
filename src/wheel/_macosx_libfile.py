@@ -259,6 +259,7 @@ def get_base_class_and_magic_number(
         lib_file.read(ctypes.sizeof(ctypes.c_uint32))
     ).value
 
+    BaseClass = ctypes.Structure
     # Handle wrong byte order
     if magic_number in [FAT_CIGAM, FAT_CIGAM_64, MH_CIGAM, MH_CIGAM_64]:
         if sys.byteorder == "little":
@@ -267,8 +268,6 @@ def get_base_class_and_magic_number(
             BaseClass = ctypes.LittleEndianStructure
 
         magic_number = swap32(magic_number)
-    else:
-        BaseClass = ctypes.Structure
 
     lib_file.seek(seek)
     return BaseClass, magic_number
