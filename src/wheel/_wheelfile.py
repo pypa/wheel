@@ -97,7 +97,7 @@ class WheelArchiveFile:
             self._hash = hashlib.new(record_entry.hash_algorithm)
             self._num_bytes_read = 0
 
-    def read(self, amount: int | None = None) -> bytes:
+    def read(self, amount: int = -1) -> bytes:
         data = self._fp.read(amount)
         if amount and self._record_entry is not None:
             if data:
