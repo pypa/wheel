@@ -83,7 +83,9 @@ def pkginfo_to_metadata(pkginfo_path: Path) -> list[tuple[str, str]]:
         requires = requires_path.read_text()
         parsed_requirements = sorted(split_sections(requires), key=lambda x: x[0] or "")
         for extra, reqs in parsed_requirements:
-            for key, value in generate_requirements({extra: reqs}):
+            # Remove assert when https://github.com/python/typeshed/pull/8975 is merged.
+            assert isinstance(reqs, list)
+            for key, value in generate_requirements({extra or "": reqs}):
                 if (key, value) not in pkg_info.items():
                     pkg_info[key] = value
 
