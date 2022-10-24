@@ -281,7 +281,7 @@ def extract_macosx_min_system_version(path_to_lib: str) -> tuple[int, int, int] 
     with open(path_to_lib, "rb") as lib_file:
         BaseClass, magic_number = get_base_class_and_magic_number(lib_file, 0)
         if magic_number not in [FAT_MAGIC, FAT_MAGIC_64, MH_MAGIC, MH_MAGIC_64]:
-            return
+            return None
 
         if magic_number in [FAT_MAGIC, FAT_CIGAM_64]:
 
@@ -384,6 +384,7 @@ def read_mach_header(
         else:
             lib_file.seek(pos + segment_base.cmdsize)
             continue
+    return None
 
 
 def parse_version(version: int) -> tuple[int, int, int]:
