@@ -431,7 +431,7 @@ class WheelWriter:
     ) -> None:
         arcname = PurePath(name).as_posix()
         gmtime = time.gmtime(timestamp.timestamp())
-        zinfo = ZipInfo(arcname, gmtime)
+        zinfo = ZipInfo(arcname, gmtime[:6])
         zinfo.compress_type = self._compress_type
         zinfo.external_attr = 0o664 << 16
         with ExitStack() as exit_stack:
