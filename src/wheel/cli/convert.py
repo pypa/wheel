@@ -10,7 +10,7 @@ from os import PathLike
 from pathlib import Path, PurePath
 from typing import IO, Any
 
-from ..wheelfile import WheelWriter, make_filename
+from .. import WheelWriter, make_filename
 from . import WheelError
 
 egg_info_re = re.compile(

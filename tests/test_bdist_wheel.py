@@ -12,7 +12,7 @@ from zipfile import ZipFile
 import pytest
 from pytest import MonkeyPatch, TempPathFactory
 
-from wheel.wheelfile import WheelReader
+from wheel import WheelReader
 
 DEFAULT_FILES = {
     PurePath("dummy-dist-1.0.dist-info/top_level.txt"),

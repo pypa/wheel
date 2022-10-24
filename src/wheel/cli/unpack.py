@@ -3,7 +3,7 @@ from __future__ import annotations
 from os import PathLike
 from pathlib import Path
 
-from ..wheelfile import WheelReader
+from .. import WheelReader
 
 
 def unpack(path: str | PathLike, dest: str | PathLike = ".") -> None:

@@ -4,8 +4,8 @@ import re
 from os import PathLike
 from pathlib import Path
 
-from wheel.cli import WheelError
-from wheel.wheelfile import WheelWriter, make_filename
+from .. import WheelWriter, make_filename
+from . import WheelError
 
 DIST_INFO_RE = re.compile(r"^(?P<namever>(?P<name>[^-]+)-(?P<ver>\d.*?))\.dist-info$")
 BUILD_NUM_RE = re.compile(rb"Build: (\d\w*)$")
