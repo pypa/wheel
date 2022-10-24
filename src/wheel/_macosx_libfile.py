@@ -285,18 +285,18 @@ def extract_macosx_min_system_version(path_to_lib: str) -> tuple[int, int, int] 
 
         if magic_number in [FAT_MAGIC, FAT_CIGAM_64]:
 
-            class FatHeader(BaseClass):
+            class FatHeader(BaseClass):  # type: ignore[valid-type,misc]
                 _fields_ = fat_header_fields
 
             fat_header = read_data(FatHeader, lib_file)
             if magic_number == FAT_MAGIC:
 
-                class FatArch(BaseClass):
+                class FatArch(BaseClass):  # type: ignore[valid-type,misc]
                     _fields_ = fat_arch_fields
 
             else:
 
-                class FatArch(BaseClass):
+                class FatArch(BaseClass):  # type: ignore[valid-type,misc,no-redef]
                     _fields_ = fat_arch_64_fields
 
             fat_arch_list = [
@@ -349,17 +349,17 @@ def read_mach_header(
     base_class, magic_number = get_base_class_and_magic_number(lib_file)
     arch = "32" if magic_number == MH_MAGIC else "64"
 
-    class SegmentBase(base_class):
+    class SegmentBase(base_class):  # type: ignore[valid-type,misc]
         _fields_ = segment_base_fields
 
     if arch == "32":
 
-        class MachHeader(base_class):
+        class MachHeader(base_class):  # type: ignore[valid-type,misc]
             _fields_ = mach_header_fields
 
     else:
 
-        class MachHeader(base_class):
+        class MachHeader(base_class):  # type: ignore[valid-type,misc,no-redef]
             _fields_ = mach_header_fields_64
 
     mach_header = read_data(MachHeader, lib_file)
@@ -369,14 +369,14 @@ def read_mach_header(
         lib_file.seek(pos)
         if segment_base.cmd == LC_VERSION_MIN_MACOSX:
 
-            class VersionMinCommand(base_class):
+            class VersionMinCommand(base_class):  # type: ignore[valid-type,misc]
                 _fields_ = version_min_command_fields
 
             version_info = read_data(VersionMinCommand, lib_file)
             return parse_version(version_info.version)
         elif segment_base.cmd == LC_BUILD_VERSION:
 
-            class VersionBuild(base_class):
+            class VersionBuild(base_class):  # type: ignore[valid-type,misc]
                 _fields_ = build_version_command_fields
 
             version_info = read_data(VersionBuild, lib_file)
