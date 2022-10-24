@@ -24,8 +24,8 @@ from . import __version__ as wheel_version
 from .vendored.packaging.utils import InvalidWheelFilename, parse_wheel_filename
 
 if TYPE_CHECKING:
-    from packaging.tags import Tag
-    from packaging.utils import NormalizedName, Version
+    from .vendored.packaging.tags import Tag
+    from .vendored.packaging.utils import NormalizedName, Version
 
     WheelContentElement = tuple[tuple[PurePath, str, str], BinaryIO]
 
