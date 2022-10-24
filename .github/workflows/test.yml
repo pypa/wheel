@@ -49,3 +49,12 @@ jobs:
       uses: codecov/codecov-action@v3
       with:
         file: coverage.xml
+
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install the project and its Mypy dependencies
+      run: pip install --no-binary=setuptools,wheel .[types]
+    - name: Test with Mypy
+      run: mypy
