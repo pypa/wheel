@@ -17,15 +17,17 @@ from io import StringIO, UnsupportedOperation
 from os import PathLike
 from pathlib import Path, PurePath
 from types import TracebackType
-from typing import IO, TYPE_CHECKING, BinaryIO, NamedTuple, Tuple, cast
+from typing import IO, BinaryIO, NamedTuple, Tuple
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile, ZipInfo
 
 from . import __version__ as wheel_version
-from .vendored.packaging.utils import InvalidWheelFilename, parse_wheel_filename
-
-if TYPE_CHECKING:
-    from .vendored.packaging.tags import Tag
-    from .vendored.packaging.utils import NormalizedName, Version
+from .vendored.packaging.tags import Tag
+from .vendored.packaging.utils import (
+    InvalidWheelFilename,
+    NormalizedName,
+    Version,
+    parse_wheel_filename,
+)
 
 WheelContentElement = Tuple[Tuple[PurePath, str, str], BinaryIO]
 
@@ -47,7 +49,7 @@ class WheelMetadata(NamedTuple):
         except InvalidWheelFilename as exc:
             raise WheelError(f"Bad wheel filename {fname!r}") from exc
 
-        return cls(cast("NormalizedName", name), version, build, tags)
+        return cls(name, version, build, tags)
 
 
 class WheelRecordEntry(NamedTuple):
@@ -151,7 +153,8 @@ class WheelReader:
                     if zinfo.is_dir() and zinfo.filename.endswith(".dist-info"):
                         match = _DIST_NAME_RE.match(zinfo.filename)
                         if match:
-                            self.name, self.version = match.groups()
+                            self.name = NormalizedName(match[1])
+                            self.version = Version(match[2])
                             break
                 else:
                     raise WheelError(
