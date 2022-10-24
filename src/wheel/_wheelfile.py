@@ -491,7 +491,7 @@ class WheelWriter:
         self,
         filename: str,
         contents: bytes | str | IO[bytes],
-        timestamp: datetime | int = DEFAULT_TIMESTAMP,
+        timestamp: datetime = DEFAULT_TIMESTAMP,
     ) -> None:
         archive_path = self._dist_info_dir + "/" + filename.strip()
         self.write_file(archive_path, contents, timestamp)
