@@ -384,6 +384,7 @@ def read_mach_header(
         else:
             lib_file.seek(pos + segment_base.cmdsize)
             continue
+
     return None
 
 
