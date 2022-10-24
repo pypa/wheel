@@ -39,10 +39,8 @@ jobs:
       with:
         path: ~/.cache/pip
         key: pip-test-${{ matrix.python-version }}-${{ matrix.os }}
-    - name: Install the project
-      run: "pip install --no-binary=:all: ."
-    - name: Install test dependencies
-      run: pip install .[test] coverage[toml]
+    - name: Install the project and its test dependencies
+      run: pip install --no-binary=setuptools,wheel .[test] coverage[toml]
     - name: Test with pytest
       run: |
         python -m coverage run -m pytest -W always
