@@ -399,8 +399,8 @@ def calculate_macosx_platform_tag(archive_root: str, platform_tag: str) -> str:
 
     Example platform tag `macosx-10.14-x86_64`
     """
-    prefix, base_version, suffix = platform_tag.split("-")
-    base_version = tuple(int(x) for x in base_version.split("."))
+    prefix, base_version_str, suffix = platform_tag.split("-")
+    base_version = tuple(int(x) for x in base_version_str.split("."))
     base_version = base_version[:2]
     if base_version[0] > 10:
         base_version = (base_version[0], 0)
@@ -431,6 +431,7 @@ def calculate_macosx_platform_tag(archive_root: str, platform_tag: str) -> str:
         for filename in filenames:
             if filename.endswith(".dylib") or filename.endswith(".so"):
                 lib_path = os.path.join(dirpath, filename)
+                min_ver: tuple[int, ...] | None
                 min_ver = extract_macosx_min_system_version(lib_path)
                 if min_ver is not None:
                     min_ver = min_ver[0:2]
@@ -445,19 +446,16 @@ def calculate_macosx_platform_tag(archive_root: str, platform_tag: str) -> str:
     fin_base_version = "_".join([str(x) for x in base_version])
     if start_version < base_version:
         problematic_files = [k for k, v in versions_dict.items() if v > start_version]
-        problematic_files = "\n".join(problematic_files)
+        problematic_files_str = "\n".join(problematic_files)
         if len(problematic_files) == 1:
             files_form = "this file"
         else:
             files_form = "these files"
         error_message = (
-            "[WARNING] This wheel needs a higher macOS version than {}  "
+            "[WARNING] This wheel needs a higher macOS version than {} "
             "To silence this warning, set MACOSX_DEPLOYMENT_TARGET to at least "
-            + fin_base_version
-            + " or recreate "
-            + files_form
-            + " with lower "
-            "MACOSX_DEPLOYMENT_TARGET:  \n" + problematic_files
+            f"{fin_base_version} or recreate {files_form} with lower "
+            f"MACOSX_DEPLOYMENT_TARGET:  \n{problematic_files_str}"
         )
 
         if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
