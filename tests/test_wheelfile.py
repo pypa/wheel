@@ -144,7 +144,7 @@ def test_write_file(wheel_path: Path) -> None:
             "hello/héllö.py,sha256=bv-QV3RciQC2v3zL8Uvhd_arp40J5A9xmyubN34OVwo,25\n"
             '"hello/h,ll,.py",sha256=bv-QV3RciQC2v3zL8Uvhd_arp40J5A9xmyubN34OVwo,25\n'
             "test-1.0.dist-info/WHEEL,"
-            "sha256=kvhmsZiU3PgVzMvq_TOoVFCHYjYJCCV7GTSzCS6nYtQ,104\n"
+            "sha256=xn45MTtJwj1QxDHLE3DKYDjLqYLb8DHEh5F6k8vFf5o,105\n"
             "test-1.0.dist-info/RECORD,,\n"
         )
 
