@@ -45,8 +45,8 @@ jobs:
       run: pip install .[test] coverage[toml]
     - name: Test with pytest
       run: |
-        coverage run -m pytest -W always
-        coverage xml
+        python -m coverage run -m pytest -W always
+        python -m coverage xml
     - name: Send coverage data to Codecov
       uses: codecov/codecov-action@v3
       with:
