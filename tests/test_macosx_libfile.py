@@ -3,12 +3,17 @@ from __future__ import annotations
 import os
 import sys
 import sysconfig
+from collections.abc import Callable
+from typing import Any
+
+from _pytest.capture import CaptureFixture
+from _pytest.monkeypatch import MonkeyPatch
 
 from wheel.bdist_wheel import get_platform
 from wheel.macosx_libfile import extract_macosx_min_system_version
 
 
-def test_read_from_dylib():
+def test_read_from_dylib() -> None:
     dirname = os.path.dirname(__file__)
     dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
     versions = [
@@ -40,15 +45,15 @@ def test_read_from_dylib():
     )
 
 
-def return_factory(return_val):
-    def fun(*args, **kwargs):
+def return_factory(return_val) -> Callable:
+    def fun(*args: Any, **kwargs: Any):
         return return_val
 
     return fun
 
 
 class TestGetPlatformMacosx:
-    def test_simple(self, monkeypatch):
+    def test_simple(self, monkeypatch: MonkeyPatch) -> None:
         dirname = os.path.dirname(__file__)
         dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
         monkeypatch.setattr(
@@ -56,7 +61,9 @@ class TestGetPlatformMacosx:
         )
         assert get_platform(dylib_dir) == "macosx_11_0_x86_64"
 
-    def test_version_bump(self, monkeypatch, capsys):
+    def test_version_bump(
+        self, monkeypatch: MonkeyPatch, capsys: CaptureFixture
+    ) -> None:
         dirname = os.path.dirname(__file__)
         dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
         monkeypatch.setattr(
@@ -67,8 +74,8 @@ class TestGetPlatformMacosx:
         assert "[WARNING] This wheel needs a higher macOS version than" in captured.err
 
     def test_information_about_problematic_files_python_version(
-        self, monkeypatch, capsys
-    ):
+        self, monkeypatch: MonkeyPatch, capsys: CaptureFixture
+    ) -> None:
         dirname = os.path.dirname(__file__)
         dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
         monkeypatch.setattr(
@@ -90,8 +97,8 @@ class TestGetPlatformMacosx:
         assert "test_lib_10_10_fat.dylib" in captured.err
 
     def test_information_about_problematic_files_env_variable(
-        self, monkeypatch, capsys
-    ):
+        self, monkeypatch: MonkeyPatch, capsys: CaptureFixture
+    ) -> None:
         dirname = os.path.dirname(__file__)
         dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
         monkeypatch.setattr(
@@ -111,7 +118,9 @@ class TestGetPlatformMacosx:
         assert "is set in MACOSX_DEPLOYMENT_TARGET variable." in captured.err
         assert "test_lib_10_10_fat.dylib" in captured.err
 
-    def test_bump_platform_tag_by_env_variable(self, monkeypatch, capsys):
+    def test_bump_platform_tag_by_env_variable(
+        self, monkeypatch: MonkeyPatch, capsys: CaptureFixture
+    ) -> None:
         dirname = os.path.dirname(__file__)
         dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
         monkeypatch.setattr(
@@ -130,7 +139,9 @@ class TestGetPlatformMacosx:
         captured = capsys.readouterr()
         assert captured.err == ""
 
-    def test_bugfix_release_platform_tag(self, monkeypatch, capsys):
+    def test_bugfix_release_platform_tag(
+        self, monkeypatch: MonkeyPatch, capsys: CaptureFixture
+    ) -> None:
         dirname = os.path.dirname(__file__)
         dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
         monkeypatch.setattr(
@@ -161,7 +172,9 @@ class TestGetPlatformMacosx:
         captured = capsys.readouterr()
         assert "This wheel needs a higher macOS version than" in captured.err
 
-    def test_warning_on_to_low_env_variable(self, monkeypatch, capsys):
+    def test_warning_on_to_low_env_variable(
+        self, monkeypatch: MonkeyPatch, capsys: CaptureFixture
+    ) -> None:
         dirname = os.path.dirname(__file__)
         dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
         monkeypatch.setattr(
@@ -182,7 +195,7 @@ class TestGetPlatformMacosx:
             in captured.err
         )
 
-    def test_get_platform_bigsur_env(self, monkeypatch):
+    def test_get_platform_bigsur_env(self, monkeypatch: MonkeyPatch) -> None:
         dirname = os.path.dirname(__file__)
         dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
         monkeypatch.setattr(
@@ -198,7 +211,7 @@ class TestGetPlatformMacosx:
         )
         assert get_platform(dylib_dir) == "macosx_11_0_x86_64"
 
-    def test_get_platform_bigsur_platform(self, monkeypatch):
+    def test_get_platform_bigsur_platform(self, monkeypatch: MonkeyPatch) -> None:
         dirname = os.path.dirname(__file__)
         dylib_dir = os.path.join(dirname, "testdata", "macosx_minimal_system_version")
         monkeypatch.setattr(
@@ -214,7 +227,7 @@ class TestGetPlatformMacosx:
         assert get_platform(dylib_dir) == "macosx_11_0_x86_64"
 
 
-def test_get_platform_linux(monkeypatch):
+def test_get_platform_linux(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(sysconfig, "get_platform", return_factory("linux-x86_64"))
     monkeypatch.setattr(sys, "maxsize", 2147483647)
     assert get_platform(None) == "linux_i686"

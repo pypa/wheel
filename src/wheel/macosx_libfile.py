@@ -249,8 +249,7 @@ def swap32(x: int) -> int:
 
 
 def get_base_class_and_magic_number(
-    lib_file: BinaryIO,
-    seek: int | None = None
+    lib_file: BinaryIO, seek: int | None = None
 ) -> tuple[type[ctypes.Structure], int]:
     if seek is None:
         seek = lib_file.tell()
@@ -276,9 +275,7 @@ def get_base_class_and_magic_number(
 
 
 def read_data(struct_class: type[ctypes.Structure], lib_file: BinaryIO):
-    return struct_class.from_buffer_copy(
-        lib_file.read(ctypes.sizeof(struct_class))
-    )
+    return struct_class.from_buffer_copy(lib_file.read(ctypes.sizeof(struct_class)))
 
 
 def extract_macosx_min_system_version(path_to_lib: str) -> tuple[int, int, int] | None:
@@ -340,8 +337,7 @@ def extract_macosx_min_system_version(path_to_lib: str) -> tuple[int, int, int] 
 
 
 def read_mach_header(
-    lib_file: BinaryIO,
-    seek: int | None = None
+    lib_file: BinaryIO, seek: int | None = None
 ) -> tuple[int, int, int] | None:
     """
     This funcition parse mach-O header and extract

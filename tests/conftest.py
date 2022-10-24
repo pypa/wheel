@@ -10,10 +10,11 @@ import sys
 from pathlib import Path
 
 import pytest
+from _pytest.tmpdir import TempPathFactory
 
 
 @pytest.fixture(scope="session")
-def wheels_and_eggs(tmp_path_factory):
+def wheels_and_eggs(tmp_path_factory: TempPathFactory) -> list[Path]:
     """Build wheels and eggs from test distributions."""
     test_distributions = (
         "complex-dist",
@@ -50,15 +51,15 @@ def wheels_and_eggs(tmp_path_factory):
         )
 
     return sorted(
-        str(fname) for fname in dist_dir.listdir() if fname.ext in (".whl", ".egg")
+        path for path in dist_dir.iterdir() if path.suffix in (".whl", ".egg")
     )
 
 
 @pytest.fixture(scope="session")
-def wheel_paths(wheels_and_eggs):
-    return [path for path in wheels_and_eggs if path.suffix == '.whl']
+def wheel_paths(wheels_and_eggs: list[Path]) -> list[Path]:
+    return [path for path in wheels_and_eggs if path.suffix == ".whl"]
 
 
 @pytest.fixture(scope="session")
-def egg_paths(wheels_and_eggs):
-    return [path for path in wheels_and_eggs if path.suffix == '.egg']
+def egg_paths(wheels_and_eggs: list[Path]) -> list[Path]:
+    return [path for path in wheels_and_eggs if path.suffix == ".egg"]

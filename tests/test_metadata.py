@@ -31,7 +31,8 @@ def test_pkginfo_to_metadata(tmp_path):
     ]
 
     pkg_info_path = tmp_path / "PKG-INFO"
-    pkg_info_path.write_text("""\
+    pkg_info_path.write_text(
+        """\
 Metadata-Version: 0.0
 Name: spam
 Version: 0.1
@@ -43,8 +44,9 @@ Provides-Extra: Signatures
 Provides-Extra: faster-signatures"""
     )
 
-    requires_txt_path = tmp_path / 'requires.txt'
-    requires_txt_path.write_text("""\
+    requires_txt_path = tmp_path / "requires.txt"
+    requires_txt_path.write_text(
+        """\
 pip@https://github.com/pypa/pip/archive/1.3.1.zip
 
 [extra]

@@ -5,37 +5,37 @@ import shutil
 import stat
 import subprocess
 import sys
-from pathlib import Path
+import zipfile
+from pathlib import Path, PurePath
 from zipfile import ZipFile
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from _pytest.tmpdir import TempPathFactory
 
-from wheel.bdist_wheel import bdist_wheel
-from wheel.wheelfile import WheelFile
+from wheel.wheelfile import WheelReader
 
 DEFAULT_FILES = {
-    "dummy_dist-1.0.dist-info/top_level.txt",
-    "dummy_dist-1.0.dist-info/METADATA",
-    "dummy_dist-1.0.dist-info/WHEEL",
-    "dummy_dist-1.0.dist-info/RECORD",
+    PurePath("dummy-dist-1.0.dist-info/top_level.txt"),
+    PurePath("dummy-dist-1.0.dist-info/METADATA"),
+    PurePath("dummy-dist-1.0.dist-info/WHEEL"),
+    PurePath("dummy-dist-1.0.dist-info/RECORD"),
 }
 DEFAULT_LICENSE_FILES = {
-    "LICENSE",
-    "LICENSE.txt",
-    "LICENCE",
-    "LICENCE.txt",
-    "COPYING",
-    "COPYING.md",
-    "NOTICE",
-    "NOTICE.rst",
-    "AUTHORS",
-    "AUTHORS.txt",
+    PurePath("LICENSE"),
+    PurePath("LICENSE.txt"),
+    PurePath("LICENCE"),
+    PurePath("LICENCE.txt"),
+    PurePath("COPYING"),
+    PurePath("COPYING.md"),
+    PurePath("NOTICE"),
+    PurePath("NOTICE.rst"),
+    PurePath("AUTHORS"),
+    PurePath("AUTHORS.txt"),
 }
 OTHER_IGNORED_FILES = {
-    "LICENSE~",
-    "AUTHORS~",
+    PurePath("LICENSE~"),
+    PurePath("AUTHORS~"),
 }
 SETUPPY_EXAMPLE = """\
 from setuptools import setup
@@ -49,8 +49,8 @@ setup(
 
 @pytest.fixture
 def dummy_dist(tmp_path_factory: TempPathFactory) -> Path:
-    basedir = tmp_path_factory.mktemp('dummy_dist')
-    basedir.joinpath('setup.py').write_text(SETUPPY_EXAMPLE)
+    basedir = tmp_path_factory.mktemp("dummy_dist")
+    basedir.joinpath("setup.py").write_text(SETUPPY_EXAMPLE)
     for fname in DEFAULT_LICENSE_FILES | OTHER_IGNORED_FILES:
         basedir.joinpath(fname).write_text("")
 
@@ -60,58 +60,69 @@ def dummy_dist(tmp_path_factory: TempPathFactory) -> Path:
     return basedir
 
 
-def test_no_scripts(wheel_paths):
+def test_no_scripts(wheel_paths: list[Path]) -> None:
     """Make sure entry point scripts are not generated."""
     path = next(path for path in wheel_paths if "complex_dist" in path.name)
-    with WheelFile(path) as wf:
+    with WheelReader(path) as wf:
         filenames = set(wf.filenames)
 
     for filename in filenames:
-        assert ".data/scripts/" not in filename
+        assert ".data/scripts/" not in filename.name
 
 
-def test_unicode_record(wheel_paths):
-    path = next(path for path in wheel_paths if "unicode.dist" in path)
-    with ZipFile(path) as zf:
-        record = zf.read("unicode.dist-0.1.dist-info/RECORD")
+def test_unicode_record(wheel_paths: list[Path]) -> None:
+    path = next(path for path in wheel_paths if "unicode.dist" in path.name)
+    with WheelReader(path) as wf:
+        record = wf.read_dist_info("RECORD")
 
-    assert "åäö_日本語.py".encode() in record
+    assert "åäö_日本語.py" in record
 
 
-def test_licenses_default(dummy_dist, monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+def test_licenses_default(
+    dummy_dist: Path, monkeypatch: MonkeyPatch, tmp_path: Path
+) -> None:
     monkeypatch.chdir(dummy_dist)
     subprocess.check_call(
         [sys.executable, "setup.py", "bdist_wheel", "-b", str(tmp_path), "--universal"]
     )
-    with WheelFile('dist/dummy_dist-1.0-py2.py3-none-any.whl') as wf:
+    with WheelReader("dist/dummy_dist-1.0-py2.py3-none-any.whl") as wf:
         license_files = {
-            "dummy_dist-1.0.dist-info/" + fname for fname in DEFAULT_LICENSE_FILES
+            PurePath("dummy-dist-1.0.dist-info/") / fname
+            for fname in DEFAULT_LICENSE_FILES
         }
         assert set(wf.filenames) == DEFAULT_FILES | license_files
 
 
-def test_licenses_deprecated(dummy_dist, monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
-    dummy_dist.joinpath('setup.cfg').write_text('[metadata]\nlicense_file=licenses/DUMMYFILE')
+def test_licenses_deprecated(
+    dummy_dist: Path, monkeypatch: MonkeyPatch, tmp_path: Path
+) -> None:
+    dummy_dist.joinpath("setup.cfg").write_text(
+        "[metadata]\nlicense_file=licenses/DUMMYFILE"
+    )
     monkeypatch.chdir(dummy_dist)
     subprocess.check_call(
         [sys.executable, "setup.py", "bdist_wheel", "-b", str(tmp_path), "--universal"]
     )
-    with WheelFile("dist/dummy_dist-1.0-py2.py3-none-any.whl") as wf:
-        license_files = {'dummy_dist-1.0.dist-info/DUMMYFILE'}
+    with WheelReader("dist/dummy_dist-1.0-py2.py3-none-any.whl") as wf:
+        license_files = {PurePath("dummy-dist-1.0.dist-info/DUMMYFILE")}
         assert set(wf.filenames) == DEFAULT_FILES | license_files
 
 
-def test_licenses_disabled(dummy_dist, monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+def test_licenses_disabled(
+    dummy_dist: Path, monkeypatch: MonkeyPatch, tmp_path: Path
+) -> None:
     dummy_dist.joinpath("setup.cfg").write_text("[metadata]\nlicense_files=\n")
     monkeypatch.chdir(dummy_dist)
     subprocess.check_call(
         [sys.executable, "setup.py", "bdist_wheel", "-b", str(tmp_path), "--universal"]
     )
-    with WheelFile("dist/dummy_dist-1.0-py2.py3-none-any.whl") as wf:
+    with WheelReader("dist/dummy_dist-1.0-py2.py3-none-any.whl") as wf:
         assert set(wf.filenames) == DEFAULT_FILES
 
 
-def test_build_number(dummy_dist, monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+def test_build_number(
+    dummy_dist: Path, monkeypatch: MonkeyPatch, tmp_path: Path
+) -> None:
     monkeypatch.chdir(dummy_dist)
     subprocess.check_call(
         [
@@ -124,18 +135,18 @@ def test_build_number(dummy_dist, monkeypatch: MonkeyPatch, tmp_path: Path) -> N
             "--build-number=2",
         ]
     )
-    with WheelFile("dist/dummy_dist-1.0-2-py2.py3-none-any.whl") as wf:
+    with WheelReader("dist/dummy_dist-1.0-2-py2.py3-none-any.whl") as wf:
         filenames = set(wf.filenames)
-        assert "dummy_dist-1.0.dist-info/RECORD" in filenames
-        assert "dummy_dist-1.0.dist-info/METADATA" in filenames
+        assert PurePath("dummy-dist-1.0.dist-info/RECORD") in filenames
+        assert PurePath("dummy-dist-1.0.dist-info/METADATA") in filenames
 
 
 def test_limited_abi(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     """Test that building a binary wheel with the limited ABI works."""
     this_dir = os.path.dirname(__file__)
-    source_dir = os.path.join(this_dir, 'testdata', 'extension.dist')
-    build_dir = tmp_path / 'build'
-    dist_dir = tmp_path / 'dist'
+    source_dir = os.path.join(this_dir, "testdata", "extension.dist")
+    build_dir = tmp_path / "build"
+    dist_dir = tmp_path / "dist"
     monkeypatch.chdir(source_dir)
     subprocess.check_call(
         [
@@ -150,8 +161,10 @@ def test_limited_abi(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     )
 
 
-def test_build_from_readonly_tree(dummy_dist, monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
-    basedir = str(tmp_path / 'dummy')
+def test_build_from_readonly_tree(
+    dummy_dist: Path, monkeypatch: MonkeyPatch, tmp_path: Path
+) -> None:
+    basedir = str(tmp_path / "dummy")
     shutil.copytree(str(dummy_dist), basedir)
     monkeypatch.chdir(basedir)
 
@@ -165,10 +178,18 @@ def test_build_from_readonly_tree(dummy_dist, monkeypatch: MonkeyPatch, tmp_path
 
 @pytest.mark.parametrize(
     "option, compress_type",
-    list(bdist_wheel.supported_compressions.items()),
-    ids=list(bdist_wheel.supported_compressions),
+    [
+        pytest.param("stored", zipfile.ZIP_STORED, id="stored"),
+        pytest.param("deflated", zipfile.ZIP_DEFLATED, id="deflated"),
+    ],
 )
-def test_compression(dummy_dist, monkeypatch: MonkeyPatch, tmp_path: Path, option, compress_type):
+def test_compression(
+    dummy_dist: Path,
+    monkeypatch: MonkeyPatch,
+    tmp_path: Path,
+    option: str,
+    compress_type: int,
+) -> None:
     monkeypatch.chdir(dummy_dist)
     subprocess.check_call(
         [
@@ -182,22 +203,20 @@ def test_compression(dummy_dist, monkeypatch: MonkeyPatch, tmp_path: Path, optio
         ]
     )
     with ZipFile("dist/dummy_dist-1.0-py2.py3-none-any.whl") as zf:
-        filenames = set(zf.namelist())
-        assert "dummy_dist-1.0.dist-info/RECORD" in filenames
-        assert "dummy_dist-1.0.dist-info/METADATA" in filenames
         for zinfo in zf.infolist():
             assert zinfo.compress_type == compress_type
 
 
-def test_wheelfile_line_endings(wheel_paths):
+def test_wheelfile_line_endings(wheel_paths: list[Path]) -> None:
     for path in wheel_paths:
-        with WheelFile(path) as wf:
-            wheelfile = next(fn for fn in wf.filelist if fn.filename.endswith("WHEEL"))
-            wheelfile_contents = wf.read(wheelfile)
-            assert b"\r" not in wheelfile_contents
+        with WheelReader(path) as wf:
+            wheelfile_contents = wf.read_dist_info("WHEEL")
+            assert "\r" not in wheelfile_contents
 
 
-def test_unix_epoch_timestamps(dummy_dist, monkeypatch, tmpdir):
+def test_unix_epoch_timestamps(
+    dummy_dist: Path, monkeypatch: MonkeyPatch, tmp_path: Path
+) -> None:
     monkeypatch.setenv("SOURCE_DATE_EPOCH", "0")
     monkeypatch.chdir(dummy_dist)
     subprocess.check_call(
@@ -206,7 +225,7 @@ def test_unix_epoch_timestamps(dummy_dist, monkeypatch, tmpdir):
             "setup.py",
             "bdist_wheel",
             "-b",
-            str(tmpdir),
+            str(tmp_path),
             "--universal",
             "--build-number=2",
         ]

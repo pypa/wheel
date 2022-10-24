@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-from typing import Union
 from os import PathLike
+from pathlib import Path
 
-from ..wheelfile import WheelFile
+from ..wheelfile import WheelReader
 
 
-def unpack(path: Union[str, PathLike], dest: Union[str, PathLike] = '.') -> None:
+def unpack(path: str | PathLike, dest: str | PathLike = ".") -> None:
     """Unpack a wheel.
 
     Wheel content will be unpacked to {dest}/{name}-{ver}, where {name}
@@ -17,12 +15,11 @@ def unpack(path: Union[str, PathLike], dest: Union[str, PathLike] = '.') -> None
     :param path: The path to the wheel.
     :param dest: Destination directory (default to current directory).
     """
-    with WheelFile(path) as wf:
-        namever = wf.metadata.name + '.' + wf.metadata.version
+    with WheelReader(path) as wf:
+        namever = f"{wf.name}.{wf.version}"
         destination = Path(dest) / namever
         destination.mkdir(exist_ok=True)
-        print("Unpacking to: {}...".format(destination), end='')
-        sys.stdout.flush()
-        wf.unpack(destination)
+        print(f"Unpacking to: {destination}...", end="", flush=True)
+        wf.extractall(destination)
 
-    print('OK')
+    print("OK")

@@ -3,12 +3,11 @@ Tools for converting old- to new-style metadata.
 """
 from __future__ import annotations
 
-import textwrap
 from collections.abc import Iterator
-from pathlib import Path
 from email.parser import HeaderParser
+from pathlib import Path
 
-from pkg_resources import Requirement, safe_extra
+from pkg_resources import Requirement, safe_extra, split_sections
 
 
 def requires_to_requires_dist(requirement: Requirement) -> str:
@@ -74,16 +73,15 @@ def pkginfo_to_metadata(pkginfo_path: Path) -> list[tuple[str, str]]:
     with pkginfo_path.open() as fp:
         pkg_info = HeaderParser().parse(fp)
 
-    pkg_info.replace_header('Metadata-Version', '2.1')
+    pkg_info.replace_header("Metadata-Version", "2.1")
 
     # Those will be regenerated from `requires.txt`.
-    del pkg_info['Provides-Extra']
-    del pkg_info['Requires-Dist']
-    requires_path = pkginfo_path.parent / 'requires.txt'
+    del pkg_info["Provides-Extra"]
+    del pkg_info["Requires-Dist"]
+    requires_path = pkginfo_path.parent / "requires.txt"
     if requires_path.exists():
         requires = requires_path.read_text()
-        parsed_requirements = sorted(pkg_resources.split_sections(requires),
-                                     key=lambda x: x[0] or '')
+        parsed_requirements = sorted(split_sections(requires), key=lambda x: x[0] or "")
         for extra, reqs in parsed_requirements:
             for key, value in generate_requirements({extra: reqs}):
                 if (key, value) not in pkg_info.items():

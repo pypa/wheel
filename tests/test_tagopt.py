@@ -43,8 +43,7 @@ def temp_pkg(request: FixtureRequest, tmp_path: Path) -> Path:
     if ext[0]:
         try:
             subprocess.check_call(
-                [sys.executable, "setup.py", "build_ext"],
-                cwd=str(tmp_path)
+                [sys.executable, "setup.py", "build_ext"], cwd=str(tmp_path)
             )
         except subprocess.CalledProcessError:
             pytest.skip("Cannot compile C extensions")
@@ -74,12 +73,12 @@ def test_build_number(temp_pkg: Path) -> None:
         [sys.executable, "setup.py", "bdist_wheel", "--build-number=1"],
         cwd=str(temp_pkg),
     )
-    dist_dir = temp_pkg / 'dist'
+    dist_dir = temp_pkg / "dist"
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
     assert wheels[0].name == f"Test-1.0-1-py{sys.version_info[0]}-none-any.whl"
-    assert wheels[0].suffix == '.whl'
+    assert wheels[0].suffix == ".whl"
 
 
 def test_explicit_tag(temp_pkg: Path) -> None:
@@ -87,121 +86,116 @@ def test_explicit_tag(temp_pkg: Path) -> None:
         [sys.executable, "setup.py", "bdist_wheel", "--python-tag=py32"],
         cwd=str(temp_pkg),
     )
-    dist_dir = temp_pkg / 'dist'
+    dist_dir = temp_pkg / "dist"
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name.startswith('Test-1.0-py32-')
-    assert wheels[0].suffix == '.whl'
+    assert wheels[0].name.startswith("Test-1.0-py32-")
+    assert wheels[0].suffix == ".whl"
 
 
 def test_universal_tag(temp_pkg: Path) -> None:
     subprocess.check_call(
-        [sys.executable, 'setup.py', 'bdist_wheel', '--universal'],
-        cwd=str(temp_pkg)
+        [sys.executable, "setup.py", "bdist_wheel", "--universal"], cwd=str(temp_pkg)
     )
-    dist_dir = temp_pkg / 'dist'
+    dist_dir = temp_pkg / "dist"
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name.startswith('Test-1.0-py2.py3-')
-    assert wheels[0].suffix == '.whl'
+    assert wheels[0].name.startswith("Test-1.0-py2.py3-")
+    assert wheels[0].suffix == ".whl"
 
 
 def test_universal_beats_explicit_tag(temp_pkg: Path) -> None:
     subprocess.check_call(
-        [sys.executable, 'setup.py', 'bdist_wheel', '--universal', '--python-tag=py32'],
-        cwd=str(temp_pkg)
+        [sys.executable, "setup.py", "bdist_wheel", "--universal", "--python-tag=py32"],
+        cwd=str(temp_pkg),
     )
-    dist_dir = temp_pkg / 'dist'
+    dist_dir = temp_pkg / "dist"
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name.startswith('Test-1.0-py2.py3-')
-    assert wheels[0].suffix == '.whl'
+    assert wheels[0].name.startswith("Test-1.0-py2.py3-")
+    assert wheels[0].suffix == ".whl"
 
 
 def test_universal_in_setup_cfg(temp_pkg: Path) -> None:
-    temp_pkg.joinpath('setup.cfg').write_text('[bdist_wheel]\nuniversal=1')
+    temp_pkg.joinpath("setup.cfg").write_text("[bdist_wheel]\nuniversal=1")
     subprocess.check_call(
-        [sys.executable, 'setup.py', 'bdist_wheel'],
-        cwd=str(temp_pkg)
+        [sys.executable, "setup.py", "bdist_wheel"], cwd=str(temp_pkg)
     )
-    dist_dir = temp_pkg / 'dist'
+    dist_dir = temp_pkg / "dist"
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name.startswith('Test-1.0-py2.py3-')
-    assert wheels[0].suffix == '.whl'
+    assert wheels[0].name.startswith("Test-1.0-py2.py3-")
+    assert wheels[0].suffix == ".whl"
 
 
 def test_pythontag_in_setup_cfg(temp_pkg: Path) -> None:
-    temp_pkg.joinpath('setup.cfg').write_text('[bdist_wheel]\npython_tag=py32')
+    temp_pkg.joinpath("setup.cfg").write_text("[bdist_wheel]\npython_tag=py32")
     subprocess.check_call(
-        [sys.executable, 'setup.py', 'bdist_wheel'],
-        cwd=str(temp_pkg)
+        [sys.executable, "setup.py", "bdist_wheel"], cwd=str(temp_pkg)
     )
-    dist_dir = temp_pkg / 'dist'
+    dist_dir = temp_pkg / "dist"
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name.startswith('Test-1.0-py32-')
-    assert wheels[0].suffix == '.whl'
+    assert wheels[0].name.startswith("Test-1.0-py32-")
+    assert wheels[0].suffix == ".whl"
 
 
 def test_legacy_wheel_section_in_setup_cfg(temp_pkg: Path) -> None:
-    temp_pkg.joinpath('setup.cfg').write_text('[wheel]\nuniversal=1')
+    temp_pkg.joinpath("setup.cfg").write_text("[wheel]\nuniversal=1")
     subprocess.check_call(
-        [sys.executable, 'setup.py', 'bdist_wheel'],
-        cwd=str(temp_pkg)
+        [sys.executable, "setup.py", "bdist_wheel"], cwd=str(temp_pkg)
     )
-    dist_dir = temp_pkg / 'dist'
+    dist_dir = temp_pkg / "dist"
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name.startswith('Test-1.0-py2.py3-')
-    assert wheels[0].suffix == '.whl'
+    assert wheels[0].name.startswith("Test-1.0-py2.py3-")
+    assert wheels[0].suffix == ".whl"
 
 
 def test_plat_name_purepy(temp_pkg: Path) -> None:
     subprocess.check_call(
-        [sys.executable, 'setup.py', 'bdist_wheel', '--plat-name=testplat.pure'],
-        cwd=str(temp_pkg)
+        [sys.executable, "setup.py", "bdist_wheel", "--plat-name=testplat.pure"],
+        cwd=str(temp_pkg),
     )
-    dist_dir = temp_pkg / 'dist'
+    dist_dir = temp_pkg / "dist"
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name.endswith('-testplat_pure.whl')
-    assert wheels[0].suffix == '.whl'
+    assert wheels[0].name.endswith("-testplat_pure.whl")
+    assert wheels[0].suffix == ".whl"
 
 
-@pytest.mark.parametrize('temp_pkg', [[True, '']], indirect=['temp_pkg'])
+@pytest.mark.parametrize("temp_pkg", [[True, ""]], indirect=["temp_pkg"])
 def test_plat_name_ext(temp_pkg: Path) -> None:
     subprocess.check_call(
-        [sys.executable, 'setup.py', 'bdist_wheel', '--plat-name=testplat.arch'],
-        cwd=str(temp_pkg)
+        [sys.executable, "setup.py", "bdist_wheel", "--plat-name=testplat.arch"],
+        cwd=str(temp_pkg),
     )
-    dist_dir = temp_pkg / 'dist'
+    dist_dir = temp_pkg / "dist"
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name.endswith('-testplat_arch.whl')
-    assert wheels[0].suffix == '.whl'
+    assert wheels[0].name.endswith("-testplat_arch.whl")
+    assert wheels[0].suffix == ".whl"
 
 
 def test_plat_name_purepy_in_setupcfg(temp_pkg: Path) -> None:
-    temp_pkg.joinpath('setup.cfg').write_text('[bdist_wheel]\nplat_name=testplat.pure')
+    temp_pkg.joinpath("setup.cfg").write_text("[bdist_wheel]\nplat_name=testplat.pure")
     subprocess.check_call(
-        [sys.executable, 'setup.py', 'bdist_wheel'],
-        cwd=str(temp_pkg)
+        [sys.executable, "setup.py", "bdist_wheel"], cwd=str(temp_pkg)
     )
-    dist_dir = temp_pkg / 'dist'
+    dist_dir = temp_pkg / "dist"
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name.endswith('-testplat_pure.whl')
-    assert wheels[0].suffix == '.whl'
+    assert wheels[0].name.endswith("-testplat_pure.whl")
+    assert wheels[0].suffix == ".whl"
 
 
 @pytest.mark.parametrize("temp_pkg", [[True, ""]], indirect=["temp_pkg"])

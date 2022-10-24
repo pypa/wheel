@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Added a public API
+- Dropped support for converting ``bdist_wininst`` based installers into wheels
+
 **0.38.0 (2022-10-21)**
 
 - Dropped support for Python < 3.7

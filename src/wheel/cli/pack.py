@@ -1,22 +1,18 @@
 from __future__ import annotations
 
-import os.path
 import re
-import sys
 from os import PathLike
 from pathlib import Path
 
 from wheel.cli import WheelError
-from wheel.wheelfile import WheelFile, make_filename
+from wheel.wheelfile import WheelWriter, make_filename
 
 DIST_INFO_RE = re.compile(r"^(?P<namever>(?P<name>[^-]+)-(?P<ver>\d.*?))\.dist-info$")
-BUILD_NUM_RE = re.compile(br'Build: (\d\w*)$')
+BUILD_NUM_RE = re.compile(rb"Build: (\d\w*)$")
 
 
 def pack(
-    directory: str | PathLike,
-    dest_dir: str | PathLike,
-    build_number: str | None = None
+    directory: str | PathLike, dest_dir: str | PathLike, build_number: str | None = None
 ) -> None:
     """Repack a previously unpacked wheel directory into a new wheel file.
 
@@ -30,8 +26,11 @@ def pack(
     """
     # Find the .dist-info directory
     directory = Path(directory)
-    dist_info_dirs = [path for path in directory.iterdir()
-                      if path.is_dir() and DIST_INFO_RE.match(path.name)]
+    dist_info_dirs = [
+        path
+        for path in directory.iterdir()
+        if path.is_dir() and DIST_INFO_RE.match(path.name)
+    ]
     if len(dist_info_dirs) > 1:
         raise WheelError(f"Multiple .dist-info directories found in {directory}")
     elif not dist_info_dirs:
@@ -39,11 +38,11 @@ def pack(
 
     # Determine the target wheel filename
     dist_info_dir = dist_info_dirs[0]
-    name, version = DIST_INFO_RE.match(dist_info_dir.name).groups()
+    name, version = DIST_INFO_RE.match(dist_info_dir.name).groups()[1:]
 
     # Read the tags and the existing build number from .dist-info/WHEEL
     existing_build_number = None
-    wheel_file_path = dist_info_dir / 'WHEEL'
+    wheel_file_path = dist_info_dir / "WHEEL"
     with wheel_file_path.open() as f:
         tags = []
         for line in f:
@@ -61,8 +60,10 @@ def pack(
     # Set the wheel file name and add/replace/remove the Build tag in .dist-info/WHEEL
     build_number = build_number if build_number is not None else existing_build_number
     if build_number is not None and build_number != existing_build_number:
-        replacement = ('Build: %s\r\n' % build_number).encode('ascii') if build_number else b''
-        with wheel_file_path.open('rb+') as f:
+        replacement = (
+            f"Build: {build_number}\r\n".encode("ascii") if build_number else b""
+        )
+        with wheel_file_path.open("rb+") as f:
             wheel_file_content = f.read()
             if not BUILD_NUM_RE.subn(replacement, wheel_file_content)[1]:
                 wheel_file_content += replacement
@@ -77,12 +78,17 @@ def pack(
     platforms = sorted({tag.split("-")[2] for tag in tags})
 
     # Repack the wheel
-    filename = make_filename(name, version, build_number, '.'.join(impls), '.'.join(abivers),
-                             '.'.join(platforms))
+    filename = make_filename(
+        name,
+        version,
+        build_number,
+        ".".join(impls),
+        ".".join(abivers),
+        ".".join(platforms),
+    )
     wheel_path = Path(dest_dir) / filename
-    with WheelFile(wheel_path, 'w') as wf:
-        print("Repacking wheel as {}...".format(wheel_path), end='')
-        sys.stdout.flush()
-        wf.write_files(directory)
+    with WheelWriter(wheel_path) as wf:
+        print(f"Repacking wheel as {wheel_path}...", end="", flush=True)
+        wf.write_files_from_directory(directory)
 
     print("OK")
