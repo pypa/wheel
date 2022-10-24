@@ -13,7 +13,7 @@ from pkg_resources import Requirement, safe_extra, split_sections
 def requires_to_requires_dist(requirement: Requirement) -> str:
     """Return the version specifier for a requirement in PEP 345/566 fashion."""
     if getattr(requirement, "url", None):
-        return " @ " + requirement.url
+        return f" @ {requirement.url}"  # type: ignore[attr-defined]
 
     requires_dist = []
     for op, ver in requirement.specs:
