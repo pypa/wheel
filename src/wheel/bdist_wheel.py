@@ -375,18 +375,18 @@ class bdist_wheel(Command):
             root_is_purelib=self.root_is_pure,
         ) as wf:
             deferred = []
-            for root, dirnames, filenames in os.walk(str(archive_root)):
+            for root, dirnames, filenames in os.walk(archive_root):
                 # Sort the directory names so that `os.walk` will walk them in a
                 # defined order on the next iteration.
                 dirnames.sort()
-                root_path = archive_root / root
+                root_path = Path(root)
                 if root_path.name.endswith(".egg-info"):
                     continue
 
                 for name in sorted(filenames):
                     path = root_path / name
                     if path.is_file():
-                        archive_name = str(path.relative_to(archive_root))
+                        archive_name = path.relative_to(archive_root).as_posix()
                         if root.endswith(".dist-info"):
                             deferred.append((path, archive_name))
                         else:
