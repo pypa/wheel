@@ -6,7 +6,7 @@ from pathlib import Path
 from .. import WheelReader
 
 
-def unpack(path: str | PathLike, dest: str | PathLike = ".") -> None:
+def unpack(path: str | PathLike[str], dest: str | PathLike[str] = ".") -> None:
     """Unpack a wheel.
 
     Wheel content will be unpacked to {dest}/{name}-{ver}, where {name}

@@ -140,7 +140,7 @@ class WheelReader:
     _zip: ZipFile
     _record_entries: OrderedDict[str, WheelRecordEntry]
 
-    def __init__(self, path_or_fd: str | PathLike | IO[bytes]):
+    def __init__(self, path_or_fd: str | PathLike[str] | IO[bytes]):
         self.path_or_fd = path_or_fd
 
         if isinstance(path_or_fd, (str, PathLike)):
@@ -274,7 +274,7 @@ class WheelReader:
             if hash_.digest() != record.hash_value:
                 raise WheelError(f"Hash mismatch for file {zinfo.filename!r}")
 
-    def extractall(self, base_path: str | PathLike) -> None:
+    def extractall(self, base_path: str | PathLike[str]) -> None:
         basedir = Path(base_path)
         if not basedir.exists():
             raise WheelError(f"{basedir} does not exist")
@@ -322,7 +322,7 @@ class WheelReader:
 class WheelWriter:
     def __init__(
         self,
-        path_or_fd: str | PathLike | IO[bytes],
+        path_or_fd: str | PathLike[str] | IO[bytes],
         metadata: WheelMetadata | None = None,
         *,
         generator: str | None = None,
@@ -431,7 +431,7 @@ class WheelWriter:
     def write_file(
         self,
         name: str | PurePath,
-        contents: bytes | str | PathLike | IO[bytes],
+        contents: bytes | str | PathLike[str] | IO[bytes],
         timestamp: datetime = DEFAULT_TIMESTAMP,
     ) -> None:
         arcname = PurePath(name).as_posix()
@@ -474,7 +474,7 @@ class WheelWriter:
             self.hash_algorithm, hash_.digest(), file_size
         )
 
-    def write_files_from_directory(self, directory: str | PathLike) -> None:
+    def write_files_from_directory(self, directory: str | PathLike[str]) -> None:
         basedir = Path(directory)
         if not basedir.exists():
             raise WheelError(f"{basedir} does not exist")
@@ -491,7 +491,7 @@ class WheelWriter:
     def write_data_file(
         self,
         filename: str,
-        contents: bytes | str | PathLike | IO[bytes],
+        contents: bytes | str | PathLike[str] | IO[bytes],
         timestamp: datetime = DEFAULT_TIMESTAMP,
     ) -> None:
         archive_path = self._data_dir + "/" + filename.strip("/")

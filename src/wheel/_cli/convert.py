@@ -102,7 +102,7 @@ def egg2wheel(egg_path: Path, dest_dir: Path) -> None:
 
 
 def convert(
-    files: Iterable[str | PathLike], dest_dir: str | PathLike, verbose: bool
+    files: Iterable[str | PathLike[str]], dest_dir: str | PathLike[str], verbose: bool
 ) -> None:
     dest_path = Path(dest_dir)
     paths: list[Path] = []
