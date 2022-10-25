@@ -34,7 +34,7 @@ def convert_f(args):
 def version_f(args):
     from .. import __version__
 
-    print("wheel %s" % __version__)
+    print(f"wheel {__version__}")
 
 
 def parser():
@@ -61,8 +61,10 @@ def parser():
     )
     repack_parser.set_defaults(func=pack_f)
 
-    convert_parser = s.add_parser("convert", help="Convert egg or wininst to wheel")
-    convert_parser.add_argument("files", nargs="*", help="Files to convert")
+    convert_parser = s.add_parser("convert", help="Convert eggs to wheels")
+    convert_parser.add_argument(
+        "files", nargs="*", help=".egg files or directories to convert"
+    )
     convert_parser.add_argument(
         "--dest-dir",
         "-d",
@@ -81,7 +83,7 @@ def parser():
     return p
 
 
-def main():
+def main() -> int:
     p = parser()
     args = p.parse_args()
     if not hasattr(args, "func"):
