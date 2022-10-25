@@ -204,7 +204,9 @@ class bdist_wheel(Command):
 
     def finalize_options(self) -> None:
         if self.bdist_dir is None:
-            bdist_base = self.get_finalized_command("bdist").bdist_base
+            bdist_base = self.get_finalized_command(
+                "bdist"
+            ).bdist_base  # type: ignore[attr-defined]
             self.bdist_dir = os.path.join(bdist_base, "wheel")
 
         self.data_dir = self.wheel_dist_name + ".data"
@@ -218,7 +220,8 @@ class bdist_wheel(Command):
         self.set_undefined_options("bdist", *zip(need_options, need_options))
 
         self.root_is_pure = not (
-            self.distribution.has_ext_modules() or self.distribution.has_c_libraries()
+            self.distribution.has_ext_modules()  # type: ignore[attr-defined]
+            or self.distribution.has_c_libraries()  # type: ignore[attr-defined]
         )
 
         if self.py_limited_api and not re.match(
@@ -227,7 +230,7 @@ class bdist_wheel(Command):
             raise ValueError(f"py-limited-api must match {PY_LIMITED_API_PATTERN!r}")
 
         # Support legacy [wheel] section for setting universal
-        wheel = self.distribution.get_option_dict("wheel")
+        wheel = self.distribution.get_option_dict("wheel")  # type: ignore[attr-defined]
         if "universal" in wheel:
             # please don't define this in your global configs
             logger.warning(
@@ -243,9 +246,11 @@ class bdist_wheel(Command):
     @property
     def wheel_dist_name(self) -> str:
         """Return distribution full name with - replaced with _"""
-        components = (
-            safer_name(self.distribution.get_name()),
-            safer_version(self.distribution.get_version()),
+        components: tuple[str, ...] = (
+            safer_name(self.distribution.get_name()),  # type: ignore[attr-defined]
+            safer_version(
+                self.distribution.get_version()  # type: ignore[attr-defined]
+            )
         )
         if self.build_number:
             components += (self.build_number,)
@@ -307,26 +312,26 @@ class bdist_wheel(Command):
 
     def run(self) -> None:
         build_scripts = self.reinitialize_command("build_scripts")
-        build_scripts.executable = "python"
-        build_scripts.force = True
+        build_scripts.executable = "python"  # type: ignore[attr-defined]
+        build_scripts.force = True  # type: ignore[attr-defined]
 
         build_ext = self.reinitialize_command("build_ext")
-        build_ext.inplace = False
+        build_ext.inplace = False  # type: ignore[attr-defined]
 
         if not self.skip_build:
             self.run_command("build")
 
         install = self.reinitialize_command("install", reinit_subcommands=True)
-        install.root = self.bdist_dir
-        install.compile = False
-        install.skip_build = self.skip_build
-        install.warn_dir = False
+        install.root = self.bdist_dir  # type: ignore[attr-defined]
+        install.compile = False  # type: ignore[attr-defined]
+        install.skip_build = self.skip_build  # type: ignore[attr-defined]
+        install.warn_dir = False  # type: ignore[attr-defined]
 
         # A wheel without setuptools scripts is more cross-platform.
         # Use the (undocumented) `no_ep` option to setuptools'
         # install_scripts command to avoid creating entry point scripts.
         install_scripts = self.reinitialize_command("install_scripts")
-        install_scripts.no_ep = True
+        install_scripts.no_ep = True  # type: ignore[attr-defined]
 
         # Use a custom scheme for the archive, because we have to decide
         # at installation time which scheme to use.
@@ -352,8 +357,8 @@ class bdist_wheel(Command):
 
         impl_tag, abi_tag, plat_tag = self.get_tag()
         archive_basename = make_filename(
-            self.distribution.get_name(),
-            self.distribution.get_version(),
+            self.distribution.get_name(),  # type: ignore[attr-defined]
+            self.distribution.get_version(),  # type: ignore[attr-defined]
             self.build_number,
             impl_tag,
             abi_tag,
@@ -361,7 +366,9 @@ class bdist_wheel(Command):
         )
         archive_root = Path(self.bdist_dir)
         if self.relative:
-            archive_root /= self._ensure_relative(install.install_base)
+            archive_root /= self._ensure_relative(
+                install.install_base  # type: ignore[attr-defined]
+            )
 
         # Make the archive
         if not os.path.exists(self.dist_dir):
@@ -421,7 +428,9 @@ class bdist_wheel(Command):
         shutil.rmtree(self.egginfo_dir)
 
         # Add to 'Distribution.dist_files' so that the "upload" command works
-        getattr(self.distribution, "dist_files", []).append(
+        getattr(
+            self.distribution, "dist_files", []  # type: ignore[attr-defined]
+        ).append(
             (
                 "bdist_wheel",
                 "{}.{}".format(*sys.version_info[:2]),  # like 3.7
@@ -431,7 +440,7 @@ class bdist_wheel(Command):
 
         if not self.keep_temp:
             logger.info(f"removing {self.bdist_dir}")
-            if not self.dry_run:
+            if not self.dry_run:  # type: ignore[attr-defined]
                 rmtree(self.bdist_dir, onerror=remove_readonly)
 
     def _ensure_relative(self, path: str) -> str:
@@ -443,6 +452,6 @@ class bdist_wheel(Command):
 
     @property
     def license_paths(self) -> list[Path]:
-        metadata = self.distribution.metadata
+        metadata = self.distribution.metadata  # type: ignore[attr-defined]
         files = sorted(metadata.license_files or [])
         return [Path(path) for path in files]

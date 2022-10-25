@@ -17,17 +17,19 @@ from io import StringIO, UnsupportedOperation
 from os import PathLike
 from pathlib import Path, PurePath
 from types import TracebackType
-from typing import IO, TYPE_CHECKING, BinaryIO, NamedTuple, cast
+from typing import IO, BinaryIO, NamedTuple, Tuple, cast
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile, ZipInfo
 
 from . import __version__ as wheel_version
-from .vendored.packaging.utils import InvalidWheelFilename, parse_wheel_filename
+from .vendored.packaging.tags import Tag
+from .vendored.packaging.utils import (
+    InvalidWheelFilename,
+    NormalizedName,
+    Version,
+    parse_wheel_filename,
+)
 
-if TYPE_CHECKING:
-    from packaging.tags import Tag
-    from packaging.utils import NormalizedName, Version
-
-    WheelContentElement = tuple[tuple[PurePath, str, str], BinaryIO]
+WheelContentElement = Tuple[Tuple[PurePath, bytes, int], BinaryIO]
 
 _DIST_NAME_RE = re.compile(r"[^A-Za-z0-9.]+")
 _EXCLUDE_FILENAMES = ("RECORD", "RECORD.jws", "RECORD.p7s")
@@ -47,7 +49,7 @@ class WheelMetadata(NamedTuple):
         except InvalidWheelFilename as exc:
             raise WheelError(f"Bad wheel filename {fname!r}") from exc
 
-        return cls(cast("NormalizedName", name), version, build, tags)
+        return cls(name, version, build, tags)
 
 
 class WheelRecordEntry(NamedTuple):
@@ -151,7 +153,8 @@ class WheelReader:
                     if zinfo.is_dir() and zinfo.filename.endswith(".dist-info"):
                         match = _DIST_NAME_RE.match(zinfo.filename)
                         if match:
-                            self.name, self.version = match.groups()
+                            self.name = NormalizedName(match[1])
+                            self.version = Version(match[2])
                             break
                 else:
                     raise WheelError(
@@ -242,7 +245,9 @@ class WheelReader:
     def get_contents(self) -> Iterator[WheelContentElement]:
         for fname, entry in self._record_entries.items():
             with self._zip.open(fname, "r") as stream:
-                yield (fname, entry.hash_value, entry.filesize), stream
+                yield (PurePath(fname), entry.hash_value, entry.filesize), cast(
+                    BinaryIO, stream
+                )
 
     def test(self) -> None:
         """Verify the integrity of the contained files."""
@@ -426,7 +431,7 @@ class WheelWriter:
     ) -> None:
         arcname = PurePath(name).as_posix()
         gmtime = time.gmtime(timestamp.timestamp())
-        zinfo = ZipInfo(arcname, gmtime)
+        zinfo = ZipInfo(arcname, gmtime[:6])
         zinfo.compress_type = self._compress_type
         zinfo.external_attr = 0o664 << 16
         with ExitStack() as exit_stack:
@@ -491,7 +496,7 @@ class WheelWriter:
         self,
         filename: str,
         contents: bytes | str | IO[bytes],
-        timestamp: datetime | int = DEFAULT_TIMESTAMP,
+        timestamp: datetime = DEFAULT_TIMESTAMP,
     ) -> None:
         archive_path = self._dist_info_dir + "/" + filename.strip()
         self.write_file(archive_path, contents, timestamp)

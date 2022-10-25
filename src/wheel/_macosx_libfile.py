@@ -259,6 +259,7 @@ def get_base_class_and_magic_number(
         lib_file.read(ctypes.sizeof(ctypes.c_uint32))
     ).value
 
+    BaseClass = ctypes.Structure
     # Handle wrong byte order
     if magic_number in [FAT_CIGAM, FAT_CIGAM_64, MH_CIGAM, MH_CIGAM_64]:
         if sys.byteorder == "little":
@@ -267,8 +268,6 @@ def get_base_class_and_magic_number(
             BaseClass = ctypes.LittleEndianStructure
 
         magic_number = swap32(magic_number)
-    else:
-        BaseClass = ctypes.Structure
 
     lib_file.seek(seek)
     return BaseClass, magic_number
@@ -282,22 +281,22 @@ def extract_macosx_min_system_version(path_to_lib: str) -> tuple[int, int, int] 
     with open(path_to_lib, "rb") as lib_file:
         BaseClass, magic_number = get_base_class_and_magic_number(lib_file, 0)
         if magic_number not in [FAT_MAGIC, FAT_MAGIC_64, MH_MAGIC, MH_MAGIC_64]:
-            return
+            return None
 
         if magic_number in [FAT_MAGIC, FAT_CIGAM_64]:
 
-            class FatHeader(BaseClass):
+            class FatHeader(BaseClass):  # type: ignore[valid-type,misc]
                 _fields_ = fat_header_fields
 
             fat_header = read_data(FatHeader, lib_file)
             if magic_number == FAT_MAGIC:
 
-                class FatArch(BaseClass):
+                class FatArch(BaseClass):  # type: ignore[valid-type,misc]
                     _fields_ = fat_arch_fields
 
             else:
 
-                class FatArch(BaseClass):
+                class FatArch(BaseClass):  # type: ignore[valid-type,misc,no-redef]
                     _fields_ = fat_arch_64_fields
 
             fat_arch_list = [
@@ -350,17 +349,17 @@ def read_mach_header(
     base_class, magic_number = get_base_class_and_magic_number(lib_file)
     arch = "32" if magic_number == MH_MAGIC else "64"
 
-    class SegmentBase(base_class):
+    class SegmentBase(base_class):  # type: ignore[valid-type,misc]
         _fields_ = segment_base_fields
 
     if arch == "32":
 
-        class MachHeader(base_class):
+        class MachHeader(base_class):  # type: ignore[valid-type,misc]
             _fields_ = mach_header_fields
 
     else:
 
-        class MachHeader(base_class):
+        class MachHeader(base_class):  # type: ignore[valid-type,misc,no-redef]
             _fields_ = mach_header_fields_64
 
     mach_header = read_data(MachHeader, lib_file)
@@ -370,14 +369,14 @@ def read_mach_header(
         lib_file.seek(pos)
         if segment_base.cmd == LC_VERSION_MIN_MACOSX:
 
-            class VersionMinCommand(base_class):
+            class VersionMinCommand(base_class):  # type: ignore[valid-type,misc]
                 _fields_ = version_min_command_fields
 
             version_info = read_data(VersionMinCommand, lib_file)
             return parse_version(version_info.version)
         elif segment_base.cmd == LC_BUILD_VERSION:
 
-            class VersionBuild(base_class):
+            class VersionBuild(base_class):  # type: ignore[valid-type,misc]
                 _fields_ = build_version_command_fields
 
             version_info = read_data(VersionBuild, lib_file)
@@ -385,6 +384,8 @@ def read_mach_header(
         else:
             lib_file.seek(pos + segment_base.cmdsize)
             continue
+
+    return None
 
 
 def parse_version(version: int) -> tuple[int, int, int]:
@@ -400,8 +401,8 @@ def calculate_macosx_platform_tag(archive_root: str, platform_tag: str) -> str:
 
     Example platform tag `macosx-10.14-x86_64`
     """
-    prefix, base_version, suffix = platform_tag.split("-")
-    base_version = tuple(int(x) for x in base_version.split("."))
+    prefix, base_version_str, suffix = platform_tag.split("-")
+    base_version = tuple(int(x) for x in base_version_str.split("."))
     base_version = base_version[:2]
     if base_version[0] > 10:
         base_version = (base_version[0], 0)
@@ -432,6 +433,7 @@ def calculate_macosx_platform_tag(archive_root: str, platform_tag: str) -> str:
         for filename in filenames:
             if filename.endswith(".dylib") or filename.endswith(".so"):
                 lib_path = os.path.join(dirpath, filename)
+                min_ver: tuple[int, ...] | None
                 min_ver = extract_macosx_min_system_version(lib_path)
                 if min_ver is not None:
                     min_ver = min_ver[0:2]
@@ -446,19 +448,16 @@ def calculate_macosx_platform_tag(archive_root: str, platform_tag: str) -> str:
     fin_base_version = "_".join([str(x) for x in base_version])
     if start_version < base_version:
         problematic_files = [k for k, v in versions_dict.items() if v > start_version]
-        problematic_files = "\n".join(problematic_files)
+        problematic_files_str = "\n".join(problematic_files)
         if len(problematic_files) == 1:
             files_form = "this file"
         else:
             files_form = "these files"
         error_message = (
-            "[WARNING] This wheel needs a higher macOS version than {}  "
+            "[WARNING] This wheel needs a higher macOS version than {} "
             "To silence this warning, set MACOSX_DEPLOYMENT_TARGET to at least "
-            + fin_base_version
-            + " or recreate "
-            + files_form
-            + " with lower "
-            "MACOSX_DEPLOYMENT_TARGET:  \n" + problematic_files
+            f"{fin_base_version} or recreate {files_form} with lower "
+            f"MACOSX_DEPLOYMENT_TARGET:  \n{problematic_files_str}"
         )
 
         if "MACOSX_DEPLOYMENT_TARGET" in os.environ:

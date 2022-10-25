@@ -38,7 +38,9 @@ def pack(
 
     # Determine the target wheel filename
     dist_info_dir = dist_info_dirs[0]
-    name, version = DIST_INFO_RE.match(dist_info_dir.name).groups()[1:]
+    match = DIST_INFO_RE.match(dist_info_dir.name)
+    assert match
+    name, version = match.groups()[1:]
 
     # Read the tags and the existing build number from .dist-info/WHEEL
     existing_build_number = None
