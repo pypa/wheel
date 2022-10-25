@@ -248,7 +248,9 @@ class bdist_wheel(Command):
         """Return distribution full name with - replaced with _"""
         components: tuple[str, ...] = (
             safer_name(self.distribution.get_name()),  # type: ignore[attr-defined]
-            safer_version(self.distribution.get_version()),  # type: ignore[attr-defined]
+            safer_version(
+                self.distribution.get_version()  # type: ignore[attr-defined]
+            ),
         )
         if self.build_number:
             components += (self.build_number,)
@@ -426,7 +428,9 @@ class bdist_wheel(Command):
         shutil.rmtree(self.egginfo_dir)
 
         # Add to 'Distribution.dist_files' so that the "upload" command works
-        getattr(self.distribution, "dist_files", []).append(  # type: ignore[attr-defined]
+        getattr(
+            self.distribution, "dist_files", []  # type: ignore[attr-defined]
+        ).append(
             (
                 "bdist_wheel",
                 "{}.{}".format(*sys.version_info[:2]),  # like 3.7
