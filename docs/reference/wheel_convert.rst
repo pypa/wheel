@@ -12,14 +12,15 @@ Usage
 Description
 -----------
 
-Convert one or more eggs (``.egg``; made with ``bdist_egg``) or Windows
-installers (``.exe``; made with ``bdist_wininst``) into wheels.
+Convert one or more eggs (``.egg``; made with ``bdist_egg``) into wheels.
 
 Egg names must match the standard format:
 
 * ``<project>-<version>-pyX.Y`` for pure Python wheels
 * ``<project>-<version>-pyX.Y-<arch>`` for binary wheels
 
+Each argument can be either an ``.egg`` file, an unpacked egg directory or a directory
+containing eggs (packed or unpacked).
 
 Options
 -------
