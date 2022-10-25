@@ -34,6 +34,7 @@ def test_read_from_dylib() -> None:
         extracted = extract_macosx_min_system_version(
             os.path.join(dylib_dir, file_name)
         )
+        assert extracted
         str_ver = ".".join([str(x) for x in extracted])
         assert str_ver == ver
     assert (
