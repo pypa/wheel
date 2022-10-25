@@ -251,6 +251,7 @@ class bdist_wheel(Command):
             safer_version(
                 self.distribution.get_version()  # type: ignore[attr-defined]
             )
+        )
         if self.build_number:
             components += (self.build_number,)
         return "-".join(components)
