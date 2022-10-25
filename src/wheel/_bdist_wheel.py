@@ -191,9 +191,9 @@ class bdist_wheel(Command):
 
     def finalize_options(self) -> None:
         if self.bdist_dir is None:
-            bdist_base = self.get_finalized_command(
+            bdist_base = self.get_finalized_command(  # type: ignore[attr-defined]
                 "bdist"
-            ).bdist_base  # type: ignore[attr-defined]
+            ).bdist_base
             self.bdist_dir = os.path.join(bdist_base, "wheel")
 
         self.data_dir = self.wheel_dist_name + ".data"
