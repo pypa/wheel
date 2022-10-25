@@ -398,11 +398,12 @@ class bdist_wheel(Command):
                 wf.write_file(archive_name, path.read_bytes())
 
             # Write the license files
-            for license_path in self.license_paths:
-                logger.info("adding '%s'", license_path)
-                wf.write_distinfo_file(
-                    os.path.basename(license_path), license_path.read_bytes()
-                )
+            metadata = self.distribution.metadata  # type: ignore[attr-defined]
+            files = sorted(metadata.license_files or [])
+            license_paths = [Path(path) for path in files]
+            for license_path in license_paths:
+                logger.info("adding '%s'", license_path.name)
+                wf.write_distinfo_file(license_path.name, license_path.read_bytes())
 
             # Write the metadata files from the .egg-info directory
             self.set_undefined_options("install_egg_info", ("target", "egginfo_dir"))
@@ -442,9 +443,3 @@ class bdist_wheel(Command):
         if path[0:1] == os.sep:
             path = drive + path[1:]
         return path
-
-    @property
-    def license_paths(self) -> list[Path]:
-        metadata = self.distribution.metadata  # type: ignore[attr-defined]
-        files = sorted(metadata.license_files or [])
-        return [Path(path) for path in files]
