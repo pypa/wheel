@@ -250,7 +250,7 @@ class bdist_wheel(Command):
             safer_name(self.distribution.get_name()),  # type: ignore[attr-defined]
             safer_version(
                 self.distribution.get_version()  # type: ignore[attr-defined]
-            )
+            ),
         )
         if self.build_number:
             components += (self.build_number,)
