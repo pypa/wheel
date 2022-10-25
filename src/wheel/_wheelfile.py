@@ -17,7 +17,7 @@ from io import StringIO, UnsupportedOperation
 from os import PathLike
 from pathlib import Path, PurePath
 from types import TracebackType
-from typing import IO, BinaryIO, NamedTuple, Tuple, cast
+from typing import IO, NamedTuple
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile, ZipInfo
 
 from . import __version__ as wheel_version
@@ -28,8 +28,6 @@ from .vendored.packaging.utils import (
     Version,
     parse_wheel_filename,
 )
-
-WheelContentElement = Tuple[Tuple[PurePath, bytes, int], BinaryIO]
 
 _DIST_NAME_RE = re.compile(r"[^A-Za-z0-9.]+")
 _EXCLUDE_FILENAMES = ("RECORD", "RECORD.jws", "RECORD.p7s")
@@ -56,6 +54,13 @@ class WheelRecordEntry(NamedTuple):
     hash_algorithm: str
     hash_value: bytes
     filesize: int
+
+
+class WheelContentElement(NamedTuple):
+    path: PurePath
+    hash_value: bytes
+    size: int
+    stream: IO[bytes]
 
 
 def _encode_hash_value(hash_value: bytes) -> str:
@@ -245,8 +250,8 @@ class WheelReader:
     def get_contents(self) -> Iterator[WheelContentElement]:
         for fname, entry in self._record_entries.items():
             with self._zip.open(fname, "r") as stream:
-                yield (PurePath(fname), entry.hash_value, entry.filesize), cast(
-                    BinaryIO, stream
+                yield WheelContentElement(
+                    PurePath(fname), entry.hash_value, entry.filesize, stream
                 )
 
     def test(self) -> None:
