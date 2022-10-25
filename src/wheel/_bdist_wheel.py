@@ -17,6 +17,8 @@ from logging import getLogger
 from pathlib import Path
 from shutil import rmtree
 from sysconfig import get_config_var
+from types import TracebackType
+from typing import Any, Callable
 
 import pkg_resources
 from setuptools import Command
@@ -109,7 +111,11 @@ def safer_version(version: str) -> str:
     return safe_version(version).replace("-", "_")
 
 
-def remove_readonly(func, path, excinfo) -> None:
+def remove_readonly(
+    func: Callable[..., Any],
+    path: Any,
+    excinfo: tuple[type[BaseException], BaseException, TracebackType],
+) -> None:
     print(str(excinfo[1]))
     os.chmod(path, stat.S_IWRITE)
     func(path)
@@ -171,22 +177,22 @@ class bdist_wheel(Command):
 
     boolean_options = ["keep-temp", "skip-build", "relative", "universal"]
 
-    def initialize_options(self):
-        self.bdist_dir = None
-        self.data_dir = None
-        self.plat_name = None
-        self.plat_tag = None
+    def initialize_options(self) -> None:
+        self.bdist_dir: Any = None
+        self.data_dir: Any = None
+        self.plat_name: Any = None
+        self.plat_tag: Any = None
         self.keep_temp = False
-        self.dist_dir = None
-        self.egginfo_dir = None
-        self.root_is_pure = None
-        self.skip_build = None
+        self.dist_dir: Any = None
+        self.egginfo_dir: Any = None
+        self.root_is_pure: Any = None
+        self.skip_build: None | bool = None
         self.relative = False
         self.universal = False
         self.compression = "deflated"
         self.python_tag = python_tag()
         self.build_number = None
-        self.py_limited_api = False
+        self.py_limited_api: Any = False
         self.plat_name_supplied = False
 
     def finalize_options(self) -> None:
