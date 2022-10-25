@@ -142,16 +142,6 @@ class bdist_wheel(Command):
             None,
             "build the archive using relative paths " "(default: false)",
         ),
-        (
-            "owner=",
-            "u",
-            "Owner name used when creating a tar file" " [default: current user]",
-        ),
-        (
-            "group=",
-            "g",
-            "Group name used when creating a tar file" " [default: current group]",
-        ),
         ("universal", None, "make a universal wheel" " (default: false)"),
         (
             "compression=",
@@ -186,15 +176,12 @@ class bdist_wheel(Command):
         self.data_dir = None
         self.plat_name = None
         self.plat_tag = None
-        self.format = "zip"
         self.keep_temp = False
         self.dist_dir = None
         self.egginfo_dir = None
         self.root_is_pure = None
         self.skip_build = None
         self.relative = False
-        self.owner = None
-        self.group = None
         self.universal = False
         self.compression = "deflated"
         self.python_tag = python_tag()
