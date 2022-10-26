@@ -19,7 +19,6 @@ jobs:
     - name: Create packages
       run: python -m build -n -s -w .
     - name: Upload packages
-      uses: pypa/gh-action-pypi-publish@master
+      uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        user: __token__
         password: ${{ secrets.pypi_password }}
