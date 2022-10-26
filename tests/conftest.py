@@ -16,17 +16,17 @@ from pytest import TempPathFactory
 @pytest.fixture(scope="session")
 def wheels_and_eggs(tmp_path_factory: TempPathFactory) -> list[Path]:
     """Build wheels and eggs from test distributions."""
-    test_distributions = (
+    test_distributions = [
         "complex-dist",
         "simple.dist",
         "headers.dist",
         "commasinfilenames.dist",
         "unicode.dist",
-    )
+    ]
 
     if sys.platform != "win32":
         # ABI3 extensions don't really work on Windows
-        test_distributions += ("abi3extension.dist",)
+        test_distributions.append("abi3extension.dist")
 
     this_dir = Path(__file__).parent
     build_dir = tmp_path_factory.mktemp("build")
