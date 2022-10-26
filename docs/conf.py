@@ -52,7 +52,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(
     os.path.join(here, "..", "src", "wheel", "__init__.py"), encoding="utf8"
 ) as version_file:
-    match = re.search(r"__version__ = '((\d+\.\d+\.\d+).*)'", version_file.read())
+    match = re.search(r'__version__ = "((\d+\.\d+\.\d+).*)"', version_file.read())
     # The short X.Y version.
     version = match.group(2)
 
