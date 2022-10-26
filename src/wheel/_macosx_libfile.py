@@ -273,7 +273,9 @@ def get_base_class_and_magic_number(
     return BaseClass, magic_number
 
 
-def read_data(struct_class: type[ctypes.Structure], lib_file: BinaryIO):
+def read_data(
+    struct_class: type[ctypes.Structure], lib_file: BinaryIO
+) -> ctypes.Structure:
     return struct_class.from_buffer_copy(lib_file.read(ctypes.sizeof(struct_class)))
 
 

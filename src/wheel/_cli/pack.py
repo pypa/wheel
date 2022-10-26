@@ -12,7 +12,9 @@ BUILD_NUM_RE = re.compile(rb"Build: (\d\w*)$")
 
 
 def pack(
-    directory: str | PathLike, dest_dir: str | PathLike, build_number: str | None = None
+    directory: str | PathLike[str],
+    dest_dir: str | PathLike[str],
+    build_number: str | None = None,
 ) -> None:
     """Repack a previously unpacked wheel directory into a new wheel file.
 

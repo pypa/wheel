@@ -81,5 +81,5 @@ def test_pack(
     if expected_build_num:
         expected_wheel_content += "Build: %s\r\n" % expected_build_num
 
-    expected_wheel_content = expected_wheel_content.encode("ascii")
-    assert new_wheel_file_content == expected_wheel_content
+    expected_wheel_content_bytes = expected_wheel_content.encode("ascii")
+    assert new_wheel_file_content == expected_wheel_content_bytes

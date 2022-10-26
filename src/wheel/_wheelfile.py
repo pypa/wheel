@@ -25,9 +25,9 @@ from .vendored.packaging.tags import Tag
 from .vendored.packaging.utils import (
     InvalidWheelFilename,
     NormalizedName,
-    Version,
     parse_wheel_filename,
 )
+from .vendored.packaging.version import Version
 
 _DIST_NAME_RE = re.compile(r"[^A-Za-z0-9.]+")
 _EXCLUDE_FILENAMES = ("RECORD", "RECORD.jws", "RECORD.p7s")
@@ -124,10 +124,15 @@ class WheelArchiveFile:
 
         return data
 
-    def __enter__(self):
+    def __enter__(self) -> WheelArchiveFile:
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: type[BaseException],
+        exc_val: BaseException,
+        exc_tb: TracebackType,
+    ) -> None:
         self._fp.close()
 
     def __repr__(self) -> str:
@@ -140,7 +145,7 @@ class WheelReader:
     _zip: ZipFile
     _record_entries: OrderedDict[str, WheelRecordEntry]
 
-    def __init__(self, path_or_fd: str | PathLike | IO[bytes]):
+    def __init__(self, path_or_fd: str | PathLike[str] | IO[bytes]):
         self.path_or_fd = path_or_fd
 
         if isinstance(path_or_fd, (str, PathLike)):
@@ -219,11 +224,11 @@ class WheelReader:
         return entries
 
     @property
-    def dist_info_dir(self):
+    def dist_info_dir(self) -> str:
         return self._dist_info_dir
 
     @property
-    def data_dir(self):
+    def data_dir(self) -> str:
         return self._data_dir
 
     @property
@@ -274,7 +279,7 @@ class WheelReader:
             if hash_.digest() != record.hash_value:
                 raise WheelError(f"Hash mismatch for file {zinfo.filename!r}")
 
-    def extractall(self, base_path: str | PathLike) -> None:
+    def extractall(self, base_path: str | PathLike[str]) -> None:
         basedir = Path(base_path)
         if not basedir.exists():
             raise WheelError(f"{basedir} does not exist")
@@ -315,14 +320,14 @@ class WheelReader:
         archive_path = self._dist_info_dir + "/" + filename.strip("/")
         return self._read_file(archive_path)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.path_or_fd})"
 
 
 class WheelWriter:
     def __init__(
         self,
-        path_or_fd: str | PathLike | IO[bytes],
+        path_or_fd: str | PathLike[str] | IO[bytes],
         metadata: WheelMetadata | None = None,
         *,
         generator: str | None = None,
@@ -431,7 +436,7 @@ class WheelWriter:
     def write_file(
         self,
         name: str | PurePath,
-        contents: bytes | str | PathLike | IO[bytes],
+        contents: bytes | str | PathLike[str] | IO[bytes],
         timestamp: datetime = DEFAULT_TIMESTAMP,
     ) -> None:
         arcname = PurePath(name).as_posix()
@@ -474,7 +479,7 @@ class WheelWriter:
             self.hash_algorithm, hash_.digest(), file_size
         )
 
-    def write_files_from_directory(self, directory: str | PathLike) -> None:
+    def write_files_from_directory(self, directory: str | PathLike[str]) -> None:
         basedir = Path(directory)
         if not basedir.exists():
             raise WheelError(f"{basedir} does not exist")
@@ -491,7 +496,7 @@ class WheelWriter:
     def write_data_file(
         self,
         filename: str,
-        contents: bytes | str | PathLike | IO[bytes],
+        contents: bytes | str | PathLike[str] | IO[bytes],
         timestamp: datetime = DEFAULT_TIMESTAMP,
     ) -> None:
         archive_path = self._data_dir + "/" + filename.strip("/")
@@ -506,5 +511,5 @@ class WheelWriter:
         archive_path = self._dist_info_dir + "/" + filename.strip()
         self.write_file(archive_path, contents, timestamp)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.path_or_fd!r})"
