@@ -92,6 +92,39 @@ def test_licenses_default(
         assert set(wf.filenames) == DEFAULT_FILES | license_files
 
 
+@pytest.mark.parametrize(
+    "config_file, config",
+    [
+        ("setup.cfg", "[metadata]\nlicense_files=licenses/*\n  LICENSE"),
+        ("setup.cfg", "[metadata]\nlicense_files=licenses/*, LICENSE"),
+        (
+            "setup.py",
+            SETUPPY_EXAMPLE.replace(
+                ")", "  license_files=['licenses/DUMMYFILE', 'LICENSE'])"
+            ),
+        ),
+    ],
+)
+def test_licenses_override(
+    dummy_dist: Path,
+    monkeypatch: MonkeyPatch,
+    tmp_path: Path,
+    config_file: str,
+    config: str,
+) -> None:
+    dummy_dist.joinpath(config_file).write_text(config)
+    monkeypatch.chdir(dummy_dist)
+    subprocess.check_call(
+        [sys.executable, "setup.py", "bdist_wheel", "-b", str(tmp_path), "--universal"]
+    )
+    with WheelReader("dist/dummy_dist-1.0-py2.py3-none-any.whl") as wf:
+        license_files = {
+            PurePath("dummy-dist-1.0.dist-info") / fname
+            for fname in {"DUMMYFILE", "LICENSE"}
+        }
+        assert set(wf.filenames) == DEFAULT_FILES | license_files
+
+
 def test_licenses_disabled(
     dummy_dist: Path, monkeypatch: MonkeyPatch, tmp_path: Path
 ) -> None:
