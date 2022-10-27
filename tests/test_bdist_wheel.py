@@ -92,21 +92,6 @@ def test_licenses_default(
         assert set(wf.filenames) == DEFAULT_FILES | license_files
 
 
-def test_licenses_deprecated(
-    dummy_dist: Path, monkeypatch: MonkeyPatch, tmp_path: Path
-) -> None:
-    dummy_dist.joinpath("setup.cfg").write_text(
-        "[metadata]\nlicense_file=licenses/DUMMYFILE"
-    )
-    monkeypatch.chdir(dummy_dist)
-    subprocess.check_call(
-        [sys.executable, "setup.py", "bdist_wheel", "-b", str(tmp_path), "--universal"]
-    )
-    with WheelReader("dist/dummy_dist-1.0-py2.py3-none-any.whl") as wf:
-        license_files = {PurePath("dummy-dist-1.0.dist-info/DUMMYFILE")}
-        assert set(wf.filenames) == DEFAULT_FILES | license_files
-
-
 def test_licenses_disabled(
     dummy_dist: Path, monkeypatch: MonkeyPatch, tmp_path: Path
 ) -> None:
