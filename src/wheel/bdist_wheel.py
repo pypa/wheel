@@ -17,7 +17,6 @@ from collections import OrderedDict
 from email.generator import BytesGenerator, Generator
 from io import BytesIO
 from shutil import rmtree
-from sysconfig import get_config_var
 from zipfile import ZIP_DEFLATED, ZIP_STORED
 
 import pkg_resources
@@ -55,7 +54,7 @@ def get_platform(archive_root):
 def get_flag(var, fallback, expected=True, warn=True):
     """Use a fallback value for determining SOABI flags if the needed config
     var is unset or unavailable."""
-    val = get_config_var(var)
+    val = sysconfig.get_config_var(var)
     if val is None:
         if warn:
             warnings.warn(
@@ -70,7 +69,7 @@ def get_flag(var, fallback, expected=True, warn=True):
 
 def get_abi_tag():
     """Return the ABI tag based on SOABI (if available) or emulate SOABI (PyPy2)."""
-    soabi = get_config_var("SOABI")
+    soabi = sysconfig.get_config_var("SOABI")
     impl = tags.interpreter_name()
     if not soabi and impl in ("cp", "pp") and hasattr(sys, "maxunicode"):
         d = ""
