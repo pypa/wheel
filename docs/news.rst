@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Removed install dependency on setuptools
+
 **0.38.0 (2022-10-21)**
 
 - Dropped support for Python < 3.7
