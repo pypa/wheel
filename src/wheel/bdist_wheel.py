@@ -87,9 +87,9 @@ def get_abi_tag():
             m = "m"
 
         abi = f"{impl}{tags.interpreter_version()}{d}{m}{u}"
-    elif soabi and impl == 'cp':
+    elif soabi and impl == "cp":
         abi = "cp" + soabi.split("-")[1]
-    elif soabi and impl == 'pp':
+    elif soabi and impl == "pp":
         # we want something like pypy36-pp73
         abi = "-".join(soabi.split("-")[:2])
         abi = abi.replace(".", "_").replace("-", "_")
