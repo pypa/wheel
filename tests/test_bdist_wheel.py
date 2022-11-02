@@ -6,12 +6,12 @@ import stat
 import subprocess
 import sys
 import sysconfig
-from wheel.vendored.packaging import tags
 from zipfile import ZipFile
 
 import pytest
 
 from wheel.bdist_wheel import bdist_wheel, get_abi_tag
+from wheel.vendored.packaging import tags
 from wheel.wheelfile import WheelFile
 
 DEFAULT_FILES = {
@@ -221,21 +221,14 @@ def test_unix_epoch_timestamps(dummy_dist, monkeypatch, tmpdir):
         ]
     )
 
+
 def test_get_abi_tag_old(monkeypatch):
-    monkeypatch.setattr(
-        tags, "interpreter_name", lambda: "pp"
-    )
-    monkeypatch.setattr(
-        sysconfig, "get_config_var", lambda x: "pypy36-pp73"
-    )
+    monkeypatch.setattr(tags, "interpreter_name", lambda: "pp")
+    monkeypatch.setattr(sysconfig, "get_config_var", lambda x: "pypy36-pp73")
     assert get_abi_tag() == "pypy36_pp73"
 
-def test_get_abi_tag_new(monkeypatch):
-    monkeypatch.setattr(
-        sysconfig, "get_config_var", lambda x: "pypy37-pp73-darwin"
-    )
-    monkeypatch.setattr(
-        tags, "interpreter_name", lambda: "pp"
-    )
-    assert get_abi_tag() == "pypy37_pp73"
 
+def test_get_abi_tag_new(monkeypatch):
+    monkeypatch.setattr(sysconfig, "get_config_var", lambda x: "pypy37-pp73-darwin")
+    monkeypatch.setattr(tags, "interpreter_name", lambda: "pp")
+    assert get_abi_tag() == "pypy37_pp73"
