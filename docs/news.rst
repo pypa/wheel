@@ -13,6 +13,8 @@ Release Notes
 - Fixed ``ValueError: ZIP does not support timestamps before 1980`` when using
   ``SOURCE_DATE_EPOCH=0`` or when on-disk timestamps are earlier than 1980-01-01. Such
   timestamps are now changed to the minimum value before packaging.
+- The future-proof fix in 0.36.0 for converting PyPy's SOABI into a abi tag was
+  faulty. Fixed so that future changes in the SOABI will not change the tag.
 
 **0.37.1 (2021-12-22)**
 
