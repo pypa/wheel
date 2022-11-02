@@ -15,6 +15,7 @@ import sysconfig
 import warnings
 from collections import OrderedDict
 from email.generator import BytesGenerator, Generator
+from glob import iglob
 from io import BytesIO
 from shutil import rmtree
 from sysconfig import get_config_var
@@ -32,6 +33,7 @@ from .wheelfile import WheelFile
 
 safe_name = pkg_resources.safe_name
 safe_version = pkg_resources.safe_version
+setuptools_version = pkg_resources.get_distribution("setuptools").parsed_version
 
 PY_LIMITED_API_PATTERN = r"cp3\d"
 
@@ -431,8 +433,31 @@ class bdist_wheel(Command):
 
     @property
     def license_paths(self):
-        metadata = self.distribution.metadata
-        return sorted(metadata.license_files or [])
+        patterns = self.distribution.metadata.license_files
+        if setuptools_version.major >= 57:
+            # Setuptools has resolved any patterns to actual file names
+            return patterns or ()
+
+        # Fallback for older setuptools versions
+        if not patterns and not isinstance(patterns, list):
+            patterns = ("LICEN[CS]E*", "COPYING*", "NOTICE*", "AUTHORS*")
+
+        files = set()
+        for pattern in patterns:
+            for path in iglob(pattern):
+                if path.endswith("~"):
+                    log.debug(
+                        f'ignoring license file "{path}" as it looks like a backup'
+                    )
+                    continue
+
+                if path not in files and os.path.isfile(path):
+                    log.info(
+                        f'adding license file "{path}" (matched pattern "{pattern}")'
+                    )
+                    files.add(path)
+
+        return files
 
     def egg2dist(self, egginfo_path, distinfo_path):
         """Convert an .egg-info directory into a .dist-info directory"""
