@@ -439,12 +439,28 @@ class bdist_wheel(Command):
             # Setuptools has resolved any patterns to actual file names
             return self.distribution.metadata.license_files or ()
 
-        # Fallback for older setuptools versions
-        patterns = self.distribution.metadata.license_files
-        if not patterns and not isinstance(patterns, list):
+        files = set()
+        metadata = self.distribution.get_option_dict("metadata")
+        if setuptools_major_version >= 42:
+            # Setuptools recognizes the license_files option but does not do globbing
+            patterns = self.distribution.metadata.license_files
+        else:
+            # Prior to those, wheel is entirely responsible for handling license files
+            if "license_files" in metadata:
+                patterns = metadata["license_files"][1].split()
+            else:
+                patterns = ()
+
+        if "license_file" in metadata:
+            warnings.warn(
+                'The "license_file" option is deprecated. Use "license_files" instead.',
+                DeprecationWarning,
+            )
+            files.add(metadata["license_file"][1])
+
+        if not files and not patterns and not isinstance(patterns, list):
             patterns = ("LICEN[CS]E*", "COPYING*", "NOTICE*", "AUTHORS*")
 
-        files = set()
         for pattern in patterns:
             for path in iglob(pattern):
                 if path.endswith("~"):
