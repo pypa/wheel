@@ -33,7 +33,9 @@ from .wheelfile import WheelFile
 
 safe_name = pkg_resources.safe_name
 safe_version = pkg_resources.safe_version
-setuptools_version = pkg_resources.get_distribution("setuptools").parsed_version
+setuptools_major_version = int(
+    pkg_resources.get_distribution("setuptools").version.split(".")[0]
+)
 
 PY_LIMITED_API_PATTERN = r"cp3\d"
 
@@ -433,12 +435,12 @@ class bdist_wheel(Command):
 
     @property
     def license_paths(self):
-        patterns = self.distribution.metadata.license_files
-        if setuptools_version.major >= 57:
+        if setuptools_major_version >= 57:
             # Setuptools has resolved any patterns to actual file names
-            return patterns or ()
+            return self.distribution.metadata.license_files or ()
 
         # Fallback for older setuptools versions
+        patterns = self.distribution.metadata.license_files
         if not patterns and not isinstance(patterns, list):
             patterns = ("LICEN[CS]E*", "COPYING*", "NOTICE*", "AUTHORS*")
 
