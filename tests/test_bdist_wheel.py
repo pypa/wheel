@@ -84,6 +84,17 @@ def test_licenses_default(dummy_dist, monkeypatch, tmpdir):
         assert set(wf.namelist()) == DEFAULT_FILES | license_files
 
 
+def test_licenses_deprecated(dummy_dist, monkeypatch, tmpdir):
+    dummy_dist.join("setup.cfg").write("[metadata]\nlicense_file=licenses/DUMMYFILE")
+    monkeypatch.chdir(dummy_dist)
+    subprocess.check_call(
+        [sys.executable, "setup.py", "bdist_wheel", "-b", str(tmpdir), "--universal"]
+    )
+    with WheelFile("dist/dummy_dist-1.0-py2.py3-none-any.whl") as wf:
+        license_files = {"dummy_dist-1.0.dist-info/DUMMYFILE"}
+        assert set(wf.namelist()) == DEFAULT_FILES | license_files
+
+
 @pytest.mark.parametrize(
     "config_file, config",
     [

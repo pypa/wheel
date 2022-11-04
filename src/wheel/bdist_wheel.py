@@ -15,6 +15,7 @@ import sysconfig
 import warnings
 from collections import OrderedDict
 from email.generator import BytesGenerator, Generator
+from glob import iglob
 from io import BytesIO
 from shutil import rmtree
 from zipfile import ZIP_DEFLATED, ZIP_STORED
@@ -31,6 +32,9 @@ from .wheelfile import WheelFile
 
 safe_name = pkg_resources.safe_name
 safe_version = pkg_resources.safe_version
+setuptools_major_version = int(
+    pkg_resources.get_distribution("setuptools").version.split(".")[0]
+)
 
 PY_LIMITED_API_PATTERN = r"cp3\d"
 
@@ -430,8 +434,47 @@ class bdist_wheel(Command):
 
     @property
     def license_paths(self):
-        metadata = self.distribution.metadata
-        return sorted(metadata.license_files or [])
+        if setuptools_major_version >= 57:
+            # Setuptools has resolved any patterns to actual file names
+            return self.distribution.metadata.license_files or ()
+
+        files = set()
+        metadata = self.distribution.get_option_dict("metadata")
+        if setuptools_major_version >= 42:
+            # Setuptools recognizes the license_files option but does not do globbing
+            patterns = self.distribution.metadata.license_files
+        else:
+            # Prior to those, wheel is entirely responsible for handling license files
+            if "license_files" in metadata:
+                patterns = metadata["license_files"][1].split()
+            else:
+                patterns = ()
+
+        if "license_file" in metadata:
+            warnings.warn(
+                'The "license_file" option is deprecated. Use "license_files" instead.',
+                DeprecationWarning,
+            )
+            files.add(metadata["license_file"][1])
+
+        if not files and not patterns and not isinstance(patterns, list):
+            patterns = ("LICEN[CS]E*", "COPYING*", "NOTICE*", "AUTHORS*")
+
+        for pattern in patterns:
+            for path in iglob(pattern):
+                if path.endswith("~"):
+                    log.debug(
+                        f'ignoring license file "{path}" as it looks like a backup'
+                    )
+                    continue
+
+                if path not in files and os.path.isfile(path):
+                    log.info(
+                        f'adding license file "{path}" (matched pattern "{pattern}")'
+                    )
+                    files.add(path)
+
+        return files
 
     def egg2dist(self, egginfo_path, distinfo_path):
         """Convert an .egg-info directory into a .dist-info directory"""
