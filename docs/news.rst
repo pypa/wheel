@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.38.1 (2022-11-04)**
 
 - Removed install dependency on setuptools
 - The future-proof fix in 0.36.0 for converting PyPy's SOABI into a abi tag was
