@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**0.38.2 (2022-11-05)**
+
+- Fixed regression introduced in v0.38.1 which broke parsing of wheel file names with
+  multiple platform tags
+
 **0.38.1 (2022-11-04)**
 
 - Removed install dependency on setuptools

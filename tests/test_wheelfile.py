@@ -14,9 +14,16 @@ def wheel_path(tmpdir):
     return str(tmpdir.join("test-1.0-py2.py3-none-any.whl"))
 
 
-def test_wheelfile_re(tmpdir):
-    # Regression test for #208
-    path = tmpdir.join("foo-2-py3-none-any.whl")
+@pytest.mark.parametrize(
+    "filename",
+    [
+        "foo-2-py3-none-any.whl",
+        "foo-2-py2.py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    ],
+)
+def test_wheelfile_re(filename, tmpdir):
+    # Regression test for #208 and #485
+    path = tmpdir.join(filename)
     with WheelFile(str(path), "w") as wf:
         assert wf.parsed_filename.group("namever") == "foo-2"
 
@@ -29,6 +36,7 @@ def test_wheelfile_re(tmpdir):
         "test-1.0-py2.whl",
         "test-1.0-py2-none.whl",
         "test-1.0-py2-none-any",
+        "test-1.0-py 2-none-any.whl",
     ],
 )
 def test_bad_wheel_filename(filename):
