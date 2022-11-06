@@ -24,6 +24,11 @@ def wheel_path(tmp_path: Path) -> Path:
         pytest.param("test-1.0-py2.whl", "wrong number of parts"),
         pytest.param("test-1.0-py2-none.whl", "wrong number of parts"),
         pytest.param("test-1.0-py2-none-any", "extension must be '.whl'"),
+        pytest.param(
+            "test-1.0-py 2-none-any.whl",
+            "bad file name",
+            marks=[pytest.mark.xfail(reason="packaging does not fail this yet")],
+        ),
     ],
 )
 def test_bad_wheel_filename(filename: str, reason: str) -> None:

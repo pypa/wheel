@@ -16,7 +16,6 @@ import warnings
 from logging import getLogger
 from pathlib import Path
 from shutil import rmtree
-from sysconfig import get_config_var
 from types import TracebackType
 from typing import Any, Callable
 
@@ -56,7 +55,7 @@ def get_flag(
 ) -> bool:
     """Use a fallback value for determining SOABI flags if the needed config
     var is unset or unavailable."""
-    val = get_config_var(var)
+    val = sysconfig.get_config_var(var)
     if val is None:
         if warn:
             warnings.warn(
@@ -71,8 +70,8 @@ def get_flag(
 
 
 def get_abi_tag() -> str | None:
-    """Return the ABI tag based on SOABI (if available) or emulate SOABI (PyPy)."""
-    soabi = get_config_var("SOABI")
+    """Return the ABI tag based on SOABI (if available) or emulate SOABI (PyPy2)."""
+    soabi = sysconfig.get_config_var("SOABI")
     impl = tags.interpreter_name()
     if not soabi and impl in ("cp", "pp") and hasattr(sys, "maxunicode"):
         d = ""
@@ -89,9 +88,9 @@ def get_abi_tag() -> str | None:
             m = "m"
 
         abi = f"{impl}{tags.interpreter_version()}{d}{m}{u}"
-    elif soabi and soabi.startswith("cpython-"):
+    elif soabi and impl == "cp":
         abi = "cp" + soabi.split("-")[1]
-    elif soabi and soabi.startswith("pypy-"):
+    elif soabi and impl == "pp":
         # we want something like pypy36-pp73
         abi = "-".join(soabi.split("-")[:2])
         abi = abi.replace(".", "_").replace("-", "_")

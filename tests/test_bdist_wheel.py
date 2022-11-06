@@ -5,6 +5,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import sysconfig
 import zipfile
 from pathlib import Path, PurePath
 from zipfile import ZipFile
@@ -13,6 +14,8 @@ import pytest
 from pytest import MonkeyPatch, TempPathFactory
 
 from wheel import WheelReader
+from wheel._bdist_wheel import get_abi_tag
+from wheel.vendored.packaging import tags
 
 DEFAULT_FILES = {
     PurePath("dummy-dist-1.0.dist-info/top_level.txt"),
@@ -247,3 +250,15 @@ def test_unix_epoch_timestamps(
             "--build-number=2",
         ]
     )
+
+
+def test_get_abi_tag_old(monkeypatch):
+    monkeypatch.setattr(tags, "interpreter_name", lambda: "pp")
+    monkeypatch.setattr(sysconfig, "get_config_var", lambda x: "pypy36-pp73")
+    assert get_abi_tag() == "pypy36_pp73"
+
+
+def test_get_abi_tag_new(monkeypatch):
+    monkeypatch.setattr(sysconfig, "get_config_var", lambda x: "pypy37-pp73-darwin")
+    monkeypatch.setattr(tags, "interpreter_name", lambda: "pp")
+    assert get_abi_tag() == "pypy37_pp73"
