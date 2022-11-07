@@ -14,7 +14,7 @@ import pytest
 from pytest import MonkeyPatch, TempPathFactory
 
 from wheel import WheelReader
-from wheel._bdist_wheel import get_abi_tag
+from wheel.bdist_wheel import get_abi_tag
 from wheel.vendored.packaging import tags
 
 DEFAULT_FILES = {
