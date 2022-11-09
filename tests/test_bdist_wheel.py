@@ -6,7 +6,6 @@ import stat
 import subprocess
 import sys
 import sysconfig
-from unittest.mock import Mock, patch
 from zipfile import ZipFile
 
 import pytest
@@ -84,7 +83,6 @@ UTF-8 描述 説明
 """
 
 
-@patch("distutils.dist.Distribution", new=Mock)
 def test_preserve_unicode_metadata(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
     egginfo = tmp_path / "dummy_dist.egg-info"
@@ -94,9 +92,17 @@ def test_preserve_unicode_metadata(monkeypatch, tmp_path):
     (egginfo / "PKG-INFO").write_text(UTF8_PKG_INFO, encoding="utf-8")
     (egginfo / "dependency_links.txt").touch()
 
-    metadata = Mock(license_files=[], get_option_dict=lambda: {})
-    dist = Mock(metadata=metadata)
-    cmd_obj = bdist_wheel(dist)
+    class simpler_bdist_wheel(bdist_wheel):
+        """Avoid messing with setuptools/distutils internals"""
+
+        def __init__(self):
+            pass
+
+        @property
+        def license_paths(self):
+            return []
+
+    cmd_obj = simpler_bdist_wheel()
     cmd_obj.egg2dist(egginfo, distinfo)
 
     metadata = (distinfo / "METADATA").read_text(encoding="utf-8")
