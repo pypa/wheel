@@ -76,7 +76,7 @@ UTF8_PKG_INFO = """\
 Metadata-Version: 2.1
 Name: helloworld
 Version: 42
-Author-email: John X. Ãørçeč" <john@utf8.org>, Γαμα קּ 東 <gama@utf8.org>
+Author-email: "John X. Ãørçeč" <john@utf8.org>, Γαμα קּ 東 <gama@utf8.org>
 
 
 UTF-8 描述 説明
@@ -106,7 +106,7 @@ def test_preserve_unicode_metadata(monkeypatch, tmp_path):
     cmd_obj.egg2dist(egginfo, distinfo)
 
     metadata = (distinfo / "METADATA").read_text(encoding="utf-8")
-    assert "John X. Ãørçeč" in metadata
+    assert 'Author-email: "John X. Ãørçeč"' in metadata
     assert "Γαμα קּ 東 " in metadata
     assert "UTF-8 描述 説明" in metadata
 
