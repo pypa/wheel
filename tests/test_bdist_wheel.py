@@ -6,6 +6,7 @@ import stat
 import subprocess
 import sys
 import sysconfig
+from unittest.mock import Mock, patch
 from zipfile import ZipFile
 
 import pytest
@@ -70,6 +71,38 @@ def test_unicode_record(wheel_paths):
         record = zf.read("unicode.dist-0.1.dist-info/RECORD")
 
     assert "åäö_日本語.py".encode() in record
+
+
+UTF8_PKG_INFO = """\
+Metadata-Version: 2.1
+Name: helloworld
+Version: 42
+Author-email: John X. Ãørçeč" <john@utf8.org>, Γαμα קּ 東 <gama@utf8.org>
+
+
+UTF-8 描述 説明
+"""
+
+
+@patch("distutils.dist.Distribution", new=Mock)
+def test_preserve_unicode_metadata(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    egginfo = tmp_path / "dummy_dist.egg-info"
+    distinfo = tmp_path / "dummy_dist.dist-info"
+
+    egginfo.mkdir()
+    (egginfo / "PKG-INFO").write_text(UTF8_PKG_INFO, encoding="utf-8")
+    (egginfo / "dependency_links.txt").touch()
+
+    metadata = Mock(license_files=[], get_option_dict=lambda: {})
+    dist = Mock(metadata=metadata)
+    cmd_obj = bdist_wheel(dist)
+    cmd_obj.egg2dist(egginfo, distinfo)
+
+    metadata = (distinfo / "METADATA").read_text(encoding="utf-8")
+    assert "John X. Ãørçeč" in metadata
+    assert "Γαμα קּ 東 " in metadata
+    assert "UTF-8 描述 説明" in metadata
 
 
 def test_licenses_default(dummy_dist, monkeypatch, tmpdir):
