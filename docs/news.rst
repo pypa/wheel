@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed ``PKG-INFO`` conversion in ``bdist_wheel`` mangling UTF-8 header values in
+  ``METADATA`` (PR by Anderson Bravalheri)
+
 **0.38.3 (2022-11-08)**
 
 - Fixed install failure when used with ``--no-binary``, reported on Ubuntu 20.04, by
