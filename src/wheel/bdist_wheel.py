@@ -15,6 +15,7 @@ import sysconfig
 import warnings
 from collections import OrderedDict
 from email.generator import BytesGenerator, Generator
+from email.policy import EmailPolicy
 from glob import iglob
 from io import BytesIO
 from shutil import rmtree
@@ -534,8 +535,13 @@ class bdist_wheel(Command):
                 adios(dependency_links_path)
 
         pkg_info_path = os.path.join(distinfo_path, "METADATA")
+        serialization_policy = EmailPolicy(
+            utf8=True,
+            mangle_from_=False,
+            max_line_length=0,
+        )
         with open(pkg_info_path, "w", encoding="utf-8") as out:
-            Generator(out, mangle_from_=False, maxheaderlen=0).flatten(pkg_info)
+            Generator(out, policy=serialization_policy).flatten(pkg_info)
 
         for license_path in self.license_paths:
             filename = os.path.basename(license_path)
