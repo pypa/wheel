@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.38.4 (2022-11-09)**
 
 - Fixed ``PKG-INFO`` conversion in ``bdist_wheel`` mangling UTF-8 header values in
   ``METADATA`` (PR by Anderson Bravalheri)
