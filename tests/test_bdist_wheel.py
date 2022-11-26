@@ -79,6 +79,7 @@ def test_unicode_record(wheel_paths: list[Path]) -> None:
 
     assert "åäö_日本語.py" in record
 
+
 UTF8_PKG_INFO = """\
 Metadata-Version: 2.1
 Name: helloworld
