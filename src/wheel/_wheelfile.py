@@ -259,7 +259,7 @@ class WheelReader:
                     PurePath(fname), entry.hash_value, entry.filesize, stream
                 )
 
-    def test(self) -> None:
+    def validate_record(self) -> None:
         """Verify the integrity of the contained files."""
         for zinfo in self._zip.infolist():
             # Ignore signature files
