@@ -13,6 +13,7 @@ from contextlib import ExitStack
 from datetime import datetime, timezone
 from email.generator import Generator
 from email.message import Message
+from email.policy import EmailPolicy
 from io import StringIO, UnsupportedOperation
 from os import PathLike
 from pathlib import Path, PurePath
@@ -32,6 +33,7 @@ from .vendored.packaging.version import Version
 _DIST_NAME_RE = re.compile(r"[^A-Za-z0-9.]+")
 _EXCLUDE_FILENAMES = ("RECORD", "RECORD.jws", "RECORD.p7s")
 DEFAULT_TIMESTAMP = datetime(1980, 1, 1, tzinfo=timezone.utc)
+EMAIL_POLICY = EmailPolicy(max_line_length=0, mangle_from_=False, utf8=True)
 
 
 class WheelMetadata(NamedTuple):
@@ -410,7 +412,7 @@ class WheelWriter:
             msg["Tag"] = f"{tag.interpreter}-{tag.abi}-{tag.platform}"
 
         buffer = StringIO()
-        Generator(buffer, maxheaderlen=0).flatten(msg)
+        Generator(buffer, maxheaderlen=0, policy=EMAIL_POLICY).flatten(msg)
         self.write_distinfo_file("WHEEL", buffer.getvalue())
 
     def write_metadata(self, items: Iterable[tuple[str, str]]) -> None:
@@ -430,7 +432,7 @@ class WheelWriter:
             msg["Version"] = str(self.metadata.version)
 
         buffer = StringIO()
-        Generator(buffer, maxheaderlen=0).flatten(msg)
+        Generator(buffer, maxheaderlen=0, policy=EMAIL_POLICY).flatten(msg)
         self.write_distinfo_file("METADATA", buffer.getvalue())
 
     def write_file(

@@ -95,14 +95,14 @@ def test_weak_hash_algorithm(wheel_path: Path, algorithm: str, digest: str) -> N
     ],
     ids=["sha256", "sha384", "sha512"],
 )
-def test_test(wheel_path: Path, algorithm: str, digest: str) -> None:
+def test_validate_record(wheel_path: Path, algorithm: str, digest: str) -> None:
     hash_string = f"{algorithm}={digest}"
     with ZipFile(wheel_path, "w") as zf:
         zf.writestr("hello/héllö.py", 'print("Héllö, world!")\n')
         zf.writestr("test-1.0.dist-info/RECORD", f"hello/héllö.py,{hash_string},25")
 
     with WheelReader(wheel_path) as wf:
-        wf.test()
+        wf.validate_record()
 
 
 def test_testzip_missing_hash(wheel_path: Path) -> None:
@@ -111,11 +111,11 @@ def test_testzip_missing_hash(wheel_path: Path) -> None:
         zf.writestr("test-1.0.dist-info/RECORD", "")
 
     with WheelReader(wheel_path) as wf:
-        exc = pytest.raises(WheelError, wf.test)
+        exc = pytest.raises(WheelError, wf.validate_record)
         exc.match("^No hash found for file 'hello/héllö.py'$")
 
 
-def test_testzip_bad_hash(wheel_path: Path) -> None:
+def test_validate_record_bad_hash(wheel_path: Path) -> None:
     with ZipFile(wheel_path, "w") as zf:
         zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
         zf.writestr(
@@ -124,7 +124,7 @@ def test_testzip_bad_hash(wheel_path: Path) -> None:
         )
 
     with WheelReader(wheel_path) as wf:
-        exc = pytest.raises(WheelError, wf.test)
+        exc = pytest.raises(WheelError, wf.validate_record)
         exc.match("^Hash mismatch for file 'hello/héllö.py'$")
 
 
