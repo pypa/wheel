@@ -6,6 +6,16 @@ Release Notes
 - Added a public API
 - Dropped support for converting ``bdist_wininst`` based installers into wheels
 
+**0.38.4 (2022-11-09)**
+
+- Fixed ``PKG-INFO`` conversion in ``bdist_wheel`` mangling UTF-8 header values in
+  ``METADATA`` (PR by Anderson Bravalheri)
+
+**0.38.3 (2022-11-08)**
+
+- Fixed install failure when used with ``--no-binary``, reported on Ubuntu 20.04, by
+  removing ``setup_requires`` from ``setup.cfg``
+
 **0.38.2 (2022-11-05)**
 
 - Fixed regression introduced in v0.38.1 which broke parsing of wheel file names with
