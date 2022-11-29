@@ -285,7 +285,9 @@ class bdist_wheel(Command):
             ):
                 plat_name = "linux_i686"
 
-        plat_name = plat_name.lower().replace("-", "_").replace(".", "_")
+        plat_name = (
+            plat_name.lower().replace("-", "_").replace(".", "_").replace(" ", "_")
+        )
 
         if self.root_is_pure:
             if self.universal:

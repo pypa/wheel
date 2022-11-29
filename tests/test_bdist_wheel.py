@@ -282,3 +282,11 @@ def test_get_abi_tag_new(monkeypatch):
     monkeypatch.setattr(sysconfig, "get_config_var", lambda x: "pypy37-pp73-darwin")
     monkeypatch.setattr(tags, "interpreter_name", lambda: "pp")
     assert get_abi_tag() == "pypy37_pp73"
+
+
+def test_platform_with_space(dummy_dist, monkeypatch):
+    """Ensure building on platforms with a space in the name succeed."""
+    monkeypatch.chdir(dummy_dist)
+    subprocess.check_call(
+        [sys.executable, "setup.py", "bdist_wheel", "--plat-name", "isilon onefs"]
+    )
