@@ -22,7 +22,7 @@ error if it encounters a mismatch.
 Options
 -------
 
-.. option:: -d, --dest-dir <dir>
+.. option:: -d, --dest <dir>
 
     Directory to unpack the wheel into.
 
