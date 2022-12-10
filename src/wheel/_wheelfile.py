@@ -193,7 +193,11 @@ class WheelReader:
 
     def _read_record(self) -> OrderedDict[str, WheelRecordEntry]:
         entries = OrderedDict()
-        contents = self.read_dist_info("RECORD")
+        try:
+            contents = self.read_dist_info("RECORD")
+        except WheelError:
+            raise WheelError(f"Missing {self._dist_info_dir}/RECORD file") from None
+
         reader = csv.reader(
             contents.strip().split("\n"),
             delimiter=",",
@@ -310,17 +314,17 @@ class WheelReader:
             self._zip.open(archive_name), archive_name, record_entry
         )
 
-    def _read_file(self, archive_name: str) -> bytes:
+    def read_file(self, archive_name: str) -> bytes:
         with self._open_file(archive_name) as fp:
             return fp.read()
 
     def read_data_file(self, filename: str) -> bytes:
         archive_path = self._data_dir + "/" + filename.strip("/")
-        return self._read_file(archive_path)
+        return self.read_file(archive_path)
 
     def read_distinfo_file(self, filename: str) -> bytes:
         archive_path = self._dist_info_dir + "/" + filename.strip("/")
-        return self._read_file(archive_path)
+        return self.read_file(archive_path)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.path_or_fd})"

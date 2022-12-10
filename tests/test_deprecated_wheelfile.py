@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os.path
 import sys
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -8,7 +7,8 @@ from zipfile import ZIP_DEFLATED, ZipFile
 import pytest
 from pytest import MonkeyPatch, TempPathFactory
 
-from wheel import WheelError, WheelReader, WheelWriter
+from wheel import WheelError
+from wheel.wheelfile import WheelFile
 
 
 @pytest.fixture
@@ -17,24 +17,17 @@ def wheel_path(tmp_path: Path) -> Path:
 
 
 @pytest.mark.parametrize(
-    "filename, reason",
+    "filename",
     [
-        pytest.param("test.whl", "wrong number of parts"),
-        pytest.param("test-1.0.whl", "wrong number of parts"),
-        pytest.param("test-1.0-py2.whl", "wrong number of parts"),
-        pytest.param("test-1.0-py2-none.whl", "wrong number of parts"),
-        pytest.param("test-1.0-py2-none-any", "extension must be '.whl'"),
-        pytest.param(
-            "test-1.0-py 2-none-any.whl",
-            "bad file name",
-            marks=[pytest.mark.xfail(reason="packaging does not fail this yet")],
-        ),
+        "foo-2-py3-none-any.whl",
+        "foo-2-py2.py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
     ],
 )
-def test_bad_wheel_filename(filename: str, reason: str) -> None:
-    basename = os.path.splitext(filename)[0] if filename.endswith(".whl") else filename
-    exc = pytest.raises(WheelError, WheelReader, filename)
-    exc.match(rf"^Invalid wheel filename \({reason}\): {basename}$")
+def test_wheelfile_re(filename: str, tmp_path: Path) -> None:
+    # Regression test for #208 and #485
+    path = tmp_path / filename
+    with WheelFile(path, "w") as wf:
+        assert wf.parsed_filename.group("namever") == "foo-2"
 
 
 def test_missing_record(wheel_path: Path) -> None:
@@ -42,7 +35,7 @@ def test_missing_record(wheel_path: Path) -> None:
         zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
 
     with pytest.raises(WheelError, match="^Missing test-1.0.dist-info/RECORD file$"):
-        with WheelReader(wheel_path):
+        with WheelFile(wheel_path):
             pass
 
 
@@ -55,7 +48,7 @@ def test_unsupported_hash_algorithm(wheel_path: Path) -> None:
         )
 
     with pytest.raises(WheelError, match="^Unsupported hash algorithm: sha000$"):
-        with WheelReader(wheel_path):
+        with WheelFile(wheel_path):
             pass
 
 
@@ -76,60 +69,14 @@ def test_weak_hash_algorithm(wheel_path: Path, algorithm: str, digest: str) -> N
         WheelError,
         match=rf"^Weak hash algorithm \({algorithm}\) is not permitted by PEP 427$",
     ):
-        with WheelReader(wheel_path):
+        with WheelFile(wheel_path):
             pass
 
 
-@pytest.mark.parametrize(
-    "algorithm, digest",
-    [
-        ("sha256", "bv-QV3RciQC2v3zL8Uvhd_arp40J5A9xmyubN34OVwo"),
-        ("sha384", "cDXriAy_7i02kBeDkN0m2RIDz85w6pwuHkt2PZ4VmT2PQc1TZs8Ebvf6eKDFcD_S"),
-        (
-            "sha512",
-            "kdX9CQlwNt4FfOpOKO_X0pn_v1opQuksE40SrWtMyP1NqooWVWpzCE3myZTfpy8g2azZON_"
-            "iLNpWVxTwuDWqBQ",
-        ),
-    ],
-    ids=["sha256", "sha384", "sha512"],
-)
-def test_validate_record(wheel_path: Path, algorithm: str, digest: str) -> None:
-    hash_string = f"{algorithm}={digest}"
-    with ZipFile(wheel_path, "w") as zf:
-        zf.writestr("hello/héllö.py", 'print("Héllö, world!")\n')
-        zf.writestr("test-1.0.dist-info/RECORD", f"hello/héllö.py,{hash_string},25")
-
-    with WheelReader(wheel_path) as wf:
-        wf.validate_record()
-
-
-def test_testzip_missing_hash(wheel_path: Path) -> None:
-    with ZipFile(wheel_path, "w") as zf:
-        zf.writestr("hello/héllö.py", 'print("Héllö, world!")\n')
-        zf.writestr("test-1.0.dist-info/RECORD", "")
-
-    with WheelReader(wheel_path) as wf:
-        exc = pytest.raises(WheelError, wf.validate_record)
-        exc.match("^No hash found for file 'hello/héllö.py'$")
-
-
-def test_validate_record_bad_hash(wheel_path: Path) -> None:
-    with ZipFile(wheel_path, "w") as zf:
-        zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
-        zf.writestr(
-            "test-1.0.dist-info/RECORD",
-            "hello/héllö.py,sha256=bv-QV3RciQC2v3zL8Uvhd_arp40J5A9xmyubN34OVwo,25",
-        )
-
-    with WheelReader(wheel_path) as wf:
-        exc = pytest.raises(WheelError, wf.validate_record)
-        exc.match("^Hash mismatch for file 'hello/héllö.py'$")
-
-
-def test_write_file(wheel_path: Path) -> None:
-    with WheelWriter(wheel_path) as wf:
-        wf.write_file("hello/héllö.py", 'print("Héllö, world!")\n')
-        wf.write_file("hello/h,ll,.py", 'print("Héllö, world!")\n')
+def test_write_str(wheel_path: Path) -> None:
+    with WheelFile(wheel_path, "w") as wf:
+        wf.writestr("hello/héllö.py", 'print("Héllö, world!")\n')
+        wf.writestr("hello/h,ll,.py", 'print("Héllö, world!")\n')
 
     with ZipFile(wheel_path, "r") as zf:
         infolist = zf.infolist()
@@ -163,30 +110,30 @@ def test_timestamp(
     # The earliest date representable in TarInfos, 1980-01-01
     monkeypatch.setenv("SOURCE_DATE_EPOCH", "315576060")
 
-    with WheelWriter(wheel_path) as wf:
-        wf.write_files_from_directory(build_dir)
+    with WheelFile(wheel_path, "w") as wf:
+        wf.write_files(str(build_dir))
 
     with ZipFile(wheel_path, "r") as zf:
         for info in zf.infolist():
-            assert info.date_time == (1980, 1, 1, 0, 0, 0)
+            assert info.date_time[:3] == (1980, 1, 1)
             assert info.compress_type == ZIP_DEFLATED
 
 
 @pytest.mark.skipif(
     sys.platform == "win32", reason="Windows does not support UNIX-like permissions"
 )
-def test_attributes(tmp_path_factory: TempPathFactory, wheel_path: Path) -> None:
+def test_attributes(tmpdir_factory: TempPathFactory, wheel_path: Path) -> None:
     # With the change from ZipFile.write() to .writestr(), we need to manually
     # set member attributes.
-    build_dir = tmp_path_factory.mktemp("build")
+    build_dir = tmpdir_factory.mktemp("build")
     files = (("foo", 0o644), ("bar", 0o755))
     for filename, mode in files:
-        path = build_dir / filename
-        path.write_text(filename + "\n")
+        path = build_dir.join(filename)
+        path.write(filename + "\n")
         path.chmod(mode)
 
-    with WheelWriter(wheel_path) as wf:
-        wf.write_files_from_directory(build_dir)
+    with WheelFile(wheel_path, "w") as wf:
+        wf.write_files(str(build_dir))
 
     with ZipFile(wheel_path, "r") as zf:
         for filename, mode in files:
