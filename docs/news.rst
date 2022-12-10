@@ -5,6 +5,7 @@ Release Notes
 
 - Added a public API
 - Dropped support for converting ``bdist_wininst`` based installers into wheels
+- Updated vendored ``packaging`` to 22.0
 
 **0.38.4 (2022-11-09)**
 
