@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Updated vendored ``packaging`` to 22.0
+
 **0.38.4 (2022-11-09)**
 
 - Fixed ``PKG-INFO`` conversion in ``bdist_wheel`` mangling UTF-8 header values in
