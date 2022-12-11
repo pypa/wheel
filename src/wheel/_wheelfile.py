@@ -11,10 +11,9 @@ from collections import OrderedDict
 from collections.abc import Iterable, Iterator
 from contextlib import ExitStack
 from datetime import datetime, timezone
-from email.generator import Generator
 from email.message import Message
 from email.policy import EmailPolicy
-from io import StringIO, UnsupportedOperation
+from io import BytesIO, StringIO, UnsupportedOperation
 from os import PathLike
 from pathlib import Path, PurePath
 from types import TracebackType
@@ -355,6 +354,22 @@ class WheelReader:
         return f"{self.__class__.__name__}({self.path_or_fd})"
 
 
+def write_wheelfile(
+    fp: IO[bytes], metadata: WheelMetadata, generator: str, root_is_purelib: bool
+) -> None:
+    msg = Message(policy=EMAIL_POLICY)
+    msg["Wheel-Version"] = "1.0"  # of the spec
+    msg["Generator"] = generator
+    msg["Root-Is-Purelib"] = str(root_is_purelib).lower()
+    if metadata.build_tag:
+        msg["Build"] = str(metadata.build_tag[0]) + metadata.build_tag[1]
+
+    for tag in sorted(metadata.tags, key=lambda t: (t.interpreter, t.abi, t.platform)):
+        msg["Tag"] = f"{tag.interpreter}-{tag.abi}-{tag.platform}"
+
+    fp.write(msg.as_bytes())
+
+
 class WheelWriter:
     def __init__(
         self,
@@ -428,24 +443,12 @@ class WheelWriter:
         self.write_distinfo_file("RECORD", data.getvalue())
 
     def _write_wheelfile(self) -> None:
-        msg = Message()
-        msg["Wheel-Version"] = "1.0"  # of the spec
-        msg["Generator"] = self.generator
-        msg["Root-Is-Purelib"] = str(self.root_is_purelib).lower()
-        if self.metadata.build_tag:
-            msg["Build"] = str(self.metadata.build_tag[0]) + self.metadata.build_tag[1]
-
-        for tag in sorted(
-            self.metadata.tags, key=lambda t: (t.interpreter, t.abi, t.platform)
-        ):
-            msg["Tag"] = f"{tag.interpreter}-{tag.abi}-{tag.platform}"
-
-        buffer = StringIO()
-        Generator(buffer, maxheaderlen=0, policy=EMAIL_POLICY).flatten(msg)
+        buffer = BytesIO()
+        write_wheelfile(buffer, self.metadata, self.generator, self.root_is_purelib)
         self.write_distinfo_file("WHEEL", buffer.getvalue())
 
     def write_metadata(self, items: Iterable[tuple[str, str]]) -> None:
-        msg = Message()
+        msg = Message(policy=EMAIL_POLICY)
         for key, value in items:
             key = key.title()
             if key == "Description":
@@ -460,9 +463,7 @@ class WheelWriter:
         if "Version" not in msg:
             msg["Version"] = str(self.metadata.version)
 
-        buffer = StringIO()
-        Generator(buffer, maxheaderlen=0, policy=EMAIL_POLICY).flatten(msg)
-        self.write_distinfo_file("METADATA", buffer.getvalue())
+        self.write_distinfo_file("METADATA", msg.as_bytes())
 
     def write_file(
         self,
