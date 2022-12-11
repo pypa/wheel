@@ -12,7 +12,7 @@ from warnings import warn
 from zipfile import ZipInfo
 
 from . import WheelWriter
-from ._wheelfile import DEFAULT_TIMESTAMP, WheelReader
+from ._wheelfile import DEFAULT_TIMESTAMP, WheelError, WheelReader
 
 if TYPE_CHECKING:
     from typing import Literal
@@ -55,7 +55,11 @@ class WheelFile:
             raise ValueError(f"Invalid mode: {mode}")
 
         self.filename = str(path)
-        self.parsed_filename = WHEEL_INFO_RE.match(os.path.basename(self.filename))
+        parsed_filename = WHEEL_INFO_RE.match(os.path.basename(self.filename))
+        if parsed_filename is None:
+            raise WheelError("Cannot parse wheel file name")
+
+        self.parsed_filename = parsed_filename
 
     @property
     def dist_info_path(self) -> str:
