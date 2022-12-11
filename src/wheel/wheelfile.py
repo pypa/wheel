@@ -3,7 +3,9 @@ from __future__ import annotations
 import os.path
 import re
 import time
+from datetime import datetime
 from os import PathLike
+from pathlib import Path, PurePath
 from types import TracebackType
 from typing import TYPE_CHECKING
 from warnings import warn
@@ -54,7 +56,13 @@ class WheelFile:
 
         self.filename = str(path)
         self.parsed_filename = WHEEL_INFO_RE.match(os.path.basename(self.filename))
-        self.dist_info_path = f"{self.parsed_filename.group('namever')}.dist-info"
+
+    @property
+    def dist_info_path(self) -> str:
+        if hasattr(self, "_reader"):
+            return self._reader._dist_info_dir
+        else:
+            return self._writer._dist_info_dir
 
     def __enter__(self) -> WheelFile:
         if hasattr(self, "_reader"):
@@ -79,7 +87,7 @@ class WheelFile:
         return self._reader.read_file(name)
 
     def extractall(self, base_path: str | PathLike[str] | None = None) -> None:
-        self._reader.extractall(base_path)
+        self._reader.extractall(base_path or os.getcwd())
 
     def write_files(self, base_dir: PathLike[str] | str) -> None:
         self._writer.write_files_from_directory(base_dir)
@@ -90,8 +98,8 @@ class WheelFile:
         arcname: str | None = None,
         compress_type: int | None = None,
     ):
-        arcname = arcname or filename
-        self._writer.write_file(arcname, filename)
+        fname = PurePath(arcname or filename)
+        self._writer.write_file(fname, Path(filename))
 
     def writestr(
         self,
@@ -104,7 +112,7 @@ class WheelFile:
 
         if isinstance(zinfo_or_arcname, ZipInfo):
             arcname = zinfo_or_arcname.filename
-            timestamp = zinfo_or_arcname.date_time
+            timestamp = datetime(*zinfo_or_arcname.date_time[:6])
         elif isinstance(zinfo_or_arcname, str):
             arcname = zinfo_or_arcname
             timestamp = DEFAULT_TIMESTAMP

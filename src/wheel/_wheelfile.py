@@ -214,6 +214,7 @@ class WheelReader:
     ) -> None:
         self._zip.close()
         self._record_entries.clear()
+        del self._zip
 
     def _read_record(self) -> OrderedDict[str, WheelRecordEntry]:
         entries = OrderedDict()
