@@ -145,6 +145,8 @@ class WheelReader:
     name: NormalizedName
     version: Version
     _zip: ZipFile
+    _dist_info_dir: str
+    _data_dir: str
     _record_entries: OrderedDict[str, WheelRecordEntry]
 
     def __init__(self, path_or_fd: str | PathLike[str] | IO[bytes]):
@@ -159,26 +161,48 @@ class WheelReader:
 
     def __enter__(self) -> WheelReader:
         self._zip = ZipFile(self.path_or_fd, "r")
-        try:
-            if not hasattr(self, "name"):
+
+        # See if the expected .dist-info directory is in place by searching for RECORD
+        # in the expected directory. Wheels made with older versions of "wheel" did not
+        # properly normalize the names, so the name of the .dist-info directory does not
+        # match the expectation there.
+        dist_info_dir: str | None = None
+        if hasattr(self, "name"):
+            dist_info_dir = f"{self.name}-{self.version}.dist-info"
+            try:
+                self._zip.getinfo(f"{dist_info_dir}/RECORD")
+            except KeyError:
+                dist_info_dir = None
+            else:
+                self._dist_info_dir = dist_info_dir
+                self._data_dir = f"{self.name}-{self.version}.data"
+
+        # If no .dist-info directory could not be found yet, resort to scanning the
+        # archive's file names for any .dist-info directory containing a RECORD file.
+        if dist_info_dir is None:
+            try:
                 for zinfo in reversed(self._zip.infolist()):
-                    if zinfo.is_dir() and zinfo.filename.endswith(".dist-info"):
-                        match = _DIST_NAME_RE.match(zinfo.filename)
-                        if match:
-                            self.name = NormalizedName(match[1])
-                            self.version = Version(match[2])
+                    if zinfo.filename.endswith(".dist-info/RECORD"):
+                        dist_info_dir = zinfo.filename.rsplit("/", 1)[0]
+                        namever = dist_info_dir.rsplit(".", 1)[0]
+                        name, version = namever.rpartition("-")[::2]
+                        if name and version:
+                            self.name = NormalizedName(name)
+                            self.version = Version(version)
+                            self._dist_info_dir = dist_info_dir
+                            self._data_dir = dist_info_dir.replace(
+                                ".dist-info", ".data"
+                            )
                             break
                 else:
                     raise WheelError(
-                        "Cannot find a .dist-info directory. Is this really a wheel "
-                        "file?"
+                        "Cannot find a valid .dist-info directory. "
+                        "Is this really a wheel file?"
                     )
-        except BaseException:
-            self._zip.close()
-            raise
+            except BaseException:
+                self._zip.close()
+                raise
 
-        self._dist_info_dir = f"{self.name}-{self.version}.dist-info"
-        self._data_dir = f"{self.name}-{self.version}.data"
         self._record_entries = self._read_record()
         return self
 

@@ -34,7 +34,12 @@ def test_missing_record(wheel_path: Path) -> None:
     with ZipFile(wheel_path, "w") as zf:
         zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
 
-    with pytest.raises(WheelError, match="^Missing test-1.0.dist-info/RECORD file$"):
+    with pytest.raises(
+        WheelError,
+        match=(
+            "^Cannot find a valid .dist-info directory. Is this really a wheel file\\?$"
+        ),
+    ):
         with WheelFile(wheel_path):
             pass
 
@@ -122,14 +127,14 @@ def test_timestamp(
 @pytest.mark.skipif(
     sys.platform == "win32", reason="Windows does not support UNIX-like permissions"
 )
-def test_attributes(tmpdir_factory: TempPathFactory, wheel_path: Path) -> None:
+def test_attributes(tmp_path_factory: TempPathFactory, wheel_path: Path) -> None:
     # With the change from ZipFile.write() to .writestr(), we need to manually
     # set member attributes.
-    build_dir = tmpdir_factory.mktemp("build")
+    build_dir = tmp_path_factory.mktemp("build")
     files = (("foo", 0o644), ("bar", 0o755))
     for filename, mode in files:
-        path = build_dir.join(filename)
-        path.write(filename + "\n")
+        path = build_dir / filename
+        path.write_text(filename + "\n")
         path.chmod(mode)
 
     with WheelFile(wheel_path, "w") as wf:

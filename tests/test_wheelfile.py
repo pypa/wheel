@@ -41,7 +41,12 @@ def test_missing_record(wheel_path: Path) -> None:
     with ZipFile(wheel_path, "w") as zf:
         zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
 
-    with pytest.raises(WheelError, match="^Missing test-1.0.dist-info/RECORD file$"):
+    with pytest.raises(
+        WheelError,
+        match=(
+            "^Cannot find a valid .dist-info directory. Is this really a wheel file\\?$"
+        ),
+    ):
         with WheelReader(wheel_path):
             pass
 
@@ -197,3 +202,17 @@ def test_attributes(tmp_path_factory: TempPathFactory, wheel_path: Path) -> None
         info = zf.getinfo("test-1.0.dist-info/RECORD")
         permissions = (info.external_attr >> 16) & 0o777
         assert permissions == 0o664
+
+
+def test_unnormalized_wheel(tmp_path: Path) -> None:
+    # Previous versions of "wheel" did not correctly normalize the names; test that we
+    # can still read such wheels
+    wheel_path = tmp_path / "Test_foo_bar-1.0.0-py3-none-any.whl"
+    with ZipFile(wheel_path, "w") as zf:
+        zf.writestr(
+            "Test_foo_bar-1.0.0.dist-info/RECORD",
+            "Test_foo_bar-1.0.0.dist-info/RECORD,,\n",
+        )
+
+    with WheelReader(wheel_path):
+        pass
