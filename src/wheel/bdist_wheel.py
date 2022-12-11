@@ -19,7 +19,7 @@ from shutil import rmtree
 from types import TracebackType
 from typing import Any, Callable
 
-import pkg_resources
+from pkg_resources import safe_name, safe_version
 from setuptools import Command
 
 from ._macosx_libfile import calculate_macosx_platform_tag
@@ -27,8 +27,6 @@ from ._metadata import pkginfo_to_metadata
 from ._wheelfile import WheelWriter, make_filename
 from .vendored.packaging import tags
 
-safe_name = pkg_resources.safe_name
-safe_version = pkg_resources.safe_version
 logger = getLogger("wheel")
 
 PY_LIMITED_API_PATTERN = r"cp3\d"
