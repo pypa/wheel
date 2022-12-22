@@ -1,24 +1,27 @@
 from __future__ import annotations
 
-import os
+import shutil
+from pathlib import Path
 from zipfile import ZipFile
 
-import py
 import pytest
 
 from wheel.cli import parser
 from wheel.cli.tags import tags
 from wheel.wheelfile import WheelFile
 
-THISDIR = os.path.dirname(__file__)
+TESTDIR = Path(__file__).parent.parent
 TESTWHEEL_NAME = "test-1.0-py2.py3-none-any.whl"
-TESTWHEEL_PATH = os.path.join(THISDIR, "..", "testdata", TESTWHEEL_NAME)
+TESTWHEEL_PATH = TESTDIR / "testdata" / TESTWHEEL_NAME
 
 
 @pytest.fixture
-def wheelpath(tmpdir):
-    fn = tmpdir.mkdir("wheels").join(TESTWHEEL_NAME)
-    py.path.local(TESTWHEEL_PATH).copy(fn)
+def wheelpath(tmp_path):
+    wheels_dir = tmp_path / "wheels"
+    wheels_dir.mkdir()
+    fn = wheels_dir / TESTWHEEL_NAME
+    # The str calls can be removed for Python 3.8+
+    shutil.copy(str(TESTWHEEL_PATH), str(fn))
     return fn
 
 
@@ -31,14 +34,14 @@ def test_tags_no_args(wheelpath):
 def test_python_tags(wheelpath):
     newname = tags(str(wheelpath), python_tags=["py3"])
     assert TESTWHEEL_NAME.replace("py2.py3", "py3") == newname
-    output_file = wheelpath.dirpath(newname)
+    output_file = wheelpath.parent / newname
     with WheelFile(str(output_file)) as f:
         output = f.read(f.dist_info_path + "/WHEEL")
     assert (
         output == b"Wheel-Version: 1.0\r\nGenerator: bdist_wheel (0.30.0)"
         b"\r\nRoot-Is-Purelib: false\r\nTag: py3-none-any\r\n"
     )
-    output_file.remove()
+    output_file.unlink()
 
     newname = tags(str(wheelpath), python_tags=["py2.py3"])
     assert TESTWHEEL_NAME == newname
@@ -46,20 +49,20 @@ def test_python_tags(wheelpath):
     newname = tags(str(wheelpath), python_tags=["", "py4"], remove=True)
     assert not wheelpath.exists()
     assert TESTWHEEL_NAME.replace("py2.py3", "py2.py3.py4") == newname
-    output_file = wheelpath.dirpath(newname)
-    output_file.remove()
+    output_file = wheelpath.parent / newname
+    output_file.unlink()
 
 
 def test_abi_tags(wheelpath):
     newname = tags(str(wheelpath), abi_tags=["cp33m"])
     assert TESTWHEEL_NAME.replace("none", "cp33m") == newname
-    output_file = wheelpath.dirpath(newname)
-    output_file.remove()
+    output_file = wheelpath.parent / newname
+    output_file.unlink()
 
     newname = tags(str(wheelpath), abi_tags=["abi3", "cp33m"])
     assert TESTWHEEL_NAME.replace("none", "abi3.cp33m") == newname
-    output_file = wheelpath.dirpath(newname)
-    output_file.remove()
+    output_file = wheelpath.parent / newname
+    output_file.unlink()
 
     newname = tags(str(wheelpath), abi_tags=["none"])
     assert TESTWHEEL_NAME == newname
@@ -67,28 +70,28 @@ def test_abi_tags(wheelpath):
     newname = tags(str(wheelpath), abi_tags=["", "abi3", "cp33m"], remove=True)
     assert not wheelpath.exists()
     assert TESTWHEEL_NAME.replace("none", "abi3.cp33m.none") == newname
-    output_file = wheelpath.dirpath(newname)
-    output_file.remove()
+    output_file = wheelpath.parent / newname
+    output_file.unlink()
 
 
 def test_plat_tags(wheelpath):
     newname = tags(str(wheelpath), platform_tags=["linux_x86_64"])
     assert TESTWHEEL_NAME.replace("any", "linux_x86_64") == newname
-    output_file = wheelpath.dirpath(newname)
+    output_file = wheelpath.parent / newname
     assert output_file.exists()
-    output_file.remove()
+    output_file.unlink()
 
     newname = tags(str(wheelpath), platform_tags=["linux_x86_64", "win32"])
     assert TESTWHEEL_NAME.replace("any", "linux_x86_64.win32") == newname
-    output_file = wheelpath.dirpath(newname)
+    output_file = wheelpath.parent / newname
     assert output_file.exists()
-    output_file.remove()
+    output_file.unlink()
 
     newname = tags(str(wheelpath), platform_tags=["", "linux_x86_64", "win32"])
     assert TESTWHEEL_NAME.replace("any", "any.linux_x86_64.win32") == newname
-    output_file = wheelpath.dirpath(newname)
+    output_file = wheelpath.parent / newname
     assert output_file.exists()
-    output_file.remove()
+    output_file.unlink()
 
     newname = tags(str(wheelpath), platform_tags=["any"])
     assert TESTWHEEL_NAME == newname
@@ -97,9 +100,9 @@ def test_plat_tags(wheelpath):
 def test_build_number(wheelpath):
     newname = tags(str(wheelpath), build_number=1)
     assert TESTWHEEL_NAME.replace("-py2", "-1-py2") == newname
-    output_file = wheelpath.dirpath(newname)
+    output_file = wheelpath.parent / newname
     assert output_file.exists()
-    output_file.remove()
+    output_file.unlink()
 
 
 def test_multi_tags(wheelpath):
@@ -111,7 +114,7 @@ def test_multi_tags(wheelpath):
     )
     assert "test-1.0-1-py2.py3.py4-none-linux_x86_64.whl" == newname
 
-    output_file = wheelpath.dirpath(newname)
+    output_file = wheelpath.parent / newname
     assert output_file.exists()
     with WheelFile(str(output_file)) as f:
         output = f.read(f.dist_info_path + "/WHEEL")
@@ -121,7 +124,7 @@ def test_multi_tags(wheelpath):
         b" false\r\nTag: py2-none-linux_x86_64\r\nTag: py3-none-linux_x86_64\r\nTag:"
         b" py4-none-linux_x86_64\r\nBuild: 1\r\n"
     )
-    output_file.remove()
+    output_file.unlink()
 
 
 def test_tags_command(capsys, wheelpath):
@@ -144,8 +147,8 @@ def test_tags_command(capsys, wheelpath):
 
     newname = capsys.readouterr().out.strip()
     assert "test-1.0-7-py3-cp33m-linux_x86_64.whl" == newname
-    output_file = wheelpath.dirpath(newname)
-    output_file.remove()
+    output_file = wheelpath.parent / newname
+    output_file.unlink()
 
 
 def test_tags_command_del(capsys, wheelpath):
@@ -167,8 +170,8 @@ def test_tags_command_del(capsys, wheelpath):
 
     newname = capsys.readouterr().out.strip()
     assert "test-1.0-py2.py3.py4-cp33m-linux_x86_64.whl" == newname
-    output_file = wheelpath.dirpath(newname)
-    output_file.remove()
+    output_file = wheelpath.parent / newname
+    output_file.unlink()
 
 
 def test_permission_bits(capsys, wheelpath):
@@ -184,7 +187,7 @@ def test_permission_bits(capsys, wheelpath):
 
     newname = capsys.readouterr().out.strip()
     assert "test-1.0-py2.py3.py4-none-any.whl" == newname
-    output_file = wheelpath.dirpath(newname)
+    output_file = wheelpath.parent / newname
 
     with ZipFile(str(output_file), "r") as outf:
         with ZipFile(str(wheelpath), "r") as inf:
@@ -196,4 +199,4 @@ def test_permission_bits(capsys, wheelpath):
                         out_attr == inf_attr
                     ), f"{member} 0x{out_attr:012o} != 0x{inf_attr:012o}"
 
-    output_file.remove()
+    output_file.unlink()

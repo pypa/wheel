@@ -32,12 +32,12 @@ def tags(
     The tags are left unchanged if they are not specified. To specify "none",
     use ["none"]. To append to the previous tags, use ["", ...].
 
-    :param wheels: The paths to the wheels.
-    :param python_tags: The Python tags to set.
-    :param abi_tags: The ABI tags to set.
-    :param platform_tags: The platform tags to set.
-    :param build_number: The build number to set.
-    :param remove: Remove the original wheel.
+    :param wheel: The paths to the wheels
+    :param python_tags: The Python tags to set
+    :param abi_tags: The ABI tags to set
+    :param platform_tags: The platform tags to set
+    :param build_number: The build number to set
+    :param remove: Remove the original wheel
     """
     with WheelFile(wheel, "r") as f:
         wheel_info = f.read(f.dist_info_path + "/WHEEL")
@@ -47,7 +47,7 @@ def tags(
         build = f.parsed_filename.group("build")
         original_python_tags = f.parsed_filename.group("pyver").split(".")
         original_abi_tags = f.parsed_filename.group("abi").split(".")
-        orignial_plat_tags = f.parsed_filename.group("plat").split(".")
+        original_plat_tags = f.parsed_filename.group("plat").split(".")
 
     tags, existing_build_number = read_tags(wheel_info)
 
@@ -56,19 +56,25 @@ def tags(
     platforms = {tag.split("-")[2] for tag in tags}
 
     if impls != set(original_python_tags):
-        raise AssertionError(f"{impls} != {original_python_tags}")
+        msg = f"Wheel internal tags {impls!r} != filename tags {original_python_tags!r}"
+        raise AssertionError(msg)
 
     if abivers != set(original_abi_tags):
-        raise AssertionError(f"{abivers} != {original_abi_tags}")
+        msg = f"Wheel internal tags {abivers!r} != filename tags {original_abi_tags!r}"
+        raise AssertionError(msg)
 
-    if platforms != set(orignial_plat_tags):
-        raise AssertionError(f"{platforms} != {orignial_plat_tags}")
+    if platforms != set(original_plat_tags):
+        msg = (
+            f"Wheel internal tags {platforms!r} != filename tags {original_plat_tags!r}"
+        )
+        raise AssertionError(msg)
 
     if existing_build_number != build:
-        raise AssertionError(
-            f"Incorrect filename '{build}' & "
-            f"*.dist-info/WHEEL '{existing_build_number}' build numbers"
+        msg = (
+            f"Incorrect filename '{build}' "
+            "& *.dist-info/WHEEL '{existing_build_number}' build numbers"
         )
+        raise AssertionError(msg)
 
     # Start changing as needed
     if build_number is not None:
@@ -76,17 +82,16 @@ def tags(
 
     final_python_tags = compute_tags(original_python_tags, python_tags)
     final_abi_tags = compute_tags(original_abi_tags, abi_tags)
-    final_plat_tags = compute_tags(orignial_plat_tags, platform_tags)
+    final_plat_tags = compute_tags(original_plat_tags, platform_tags)
 
     final_tags = [
+        namever,
         ".".join(sorted(final_python_tags)),
         ".".join(sorted(final_abi_tags)),
         ".".join(sorted(final_plat_tags)),
     ]
-
     if build:
-        final_tags.insert(0, build)
-    final_tags.insert(0, namever)
+        final_tags.insert(1, build)
 
     final_wheel_name = "-".join(final_tags) + ".whl"
 
