@@ -1,5 +1,5 @@
 recursive-include src *.py
-recursive-include tests *.py *.h *.txt *.c *.dynlib
+recursive-include tests *.py *.h *.txt *.c *.dylib
 recursive-include docs *.py *.rst make.bat Makefile
 include tests/testdata/test-1.0-py2.py3-none-any.whl
 include tox.ini
