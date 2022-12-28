@@ -35,19 +35,24 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    - uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: pip-test-${{ matrix.python-version }}-${{ matrix.os }}
-    - name: Install the project
-      run: "pip install --no-binary=:all: ."
-    - name: Install test dependencies
-      run: pip install .[test] coverage[toml]
+        cache: pip
+        cache-dependency-path: setup.cfg
+    - name: Install the project and its test dependencies
+      run: pip install --no-binary=setuptools,wheel .[test] coverage[toml]
     - name: Test with pytest
       run: |
-        coverage run -m pytest -W always
-        coverage xml
+        python -m coverage run -m pytest -W always
+        python -m coverage xml
     - name: Send coverage data to Codecov
       uses: codecov/codecov-action@v3
       with:
         file: coverage.xml
+
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install the project and its Mypy dependencies
+      run: pip install --no-binary=setuptools,wheel .[types]
+    - name: Test with Mypy
+      run: mypy

@@ -1,3 +1,18 @@
 from __future__ import annotations
 
-__version__ = "0.38.4"
+__all__ = [
+    "WheelError",
+    "WheelReader",
+    "WheelWriter",
+    "make_filename",
+    "write_wheelfile",
+]
+__version__ = "1.0.0a1"
+
+from ._wheelfile import (
+    WheelError,
+    WheelReader,
+    WheelWriter,
+    make_filename,
+    write_wheelfile,
+)
