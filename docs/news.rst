@@ -3,7 +3,7 @@ Release Notes
 
 **UNRELEASED**
 
-- Updated vendored ``packaging`` to 22.0
+- Updated vendored ``packaging`` to 23.0
 
 **0.38.4 (2022-11-09)**
 
