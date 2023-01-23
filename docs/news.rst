@@ -4,6 +4,7 @@ Release Notes
 **UNRELEASED**
 
 - Updated vendored ``packaging`` to 23.0
+- Fixed spaces in platform names not being converted to underscores (PR by David Tucker)
 
 **0.38.4 (2022-11-09)**
 
