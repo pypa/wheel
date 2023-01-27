@@ -59,11 +59,6 @@ extend-exclude = '''
 ^/src/wheel/vendored/
 '''
 
-[tool.isort]
-src_paths = ["src"]
-profile = "black"
-skip_gitignore = true
-
 [tool.flake8]
 max-line-length = 88
 
@@ -76,3 +71,15 @@ omit = ["*/vendored/*"]
 
 [tool.coverage.report]
 show_missing = true
+
+[tool.ruff]
+line-length = 88
+select = [
+    "E", "F", "W",  # default flake-8
+    "I",            # isort
+    "PGH",          # pygrep-hooks
+    "UP",           # pyupgrade
+    "B0",           # flake8-bugbear
+]
+target-version = "py37"
+src = ["src"]

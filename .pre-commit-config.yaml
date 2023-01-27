@@ -17,28 +17,17 @@ repos:
   - id: requirements-txt-fixer
   - id: trailing-whitespace
 
-- repo: https://github.com/pycqa/isort
-  rev: 5.12.0
+- repo: https://github.com/charliermarsh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.0.191
   hooks:
-  - id: isort
-    args: ["-a", "from __future__ import annotations"]
-
-- repo: https://github.com/asottile/pyupgrade
-  rev: v3.3.1
-  hooks:
-  - id: pyupgrade
-    args: ["--py37-plus"]
+    - id: ruff
+      args: [--fix]
 
 - repo: https://github.com/psf/black
   rev: 23.1.0
   hooks:
   - id: black
-
-- repo: https://github.com/PyCQA/flake8
-  rev: 6.0.0
-  hooks:
-  - id: pyproject-flake8
-    additional_dependencies: [flake8-bugbear]
 
 - repo: https://github.com/codespell-project/codespell
   rev: v2.2.2
@@ -48,10 +37,6 @@ repos:
 - repo: https://github.com/pre-commit/pygrep-hooks
   rev: v1.10.0
   hooks:
-  - id: python-check-blanket-noqa
-  - id: python-check-blanket-type-ignore
-  - id: python-no-eval
-  - id: python-use-type-annotations
   - id: rst-backticks
   - id: rst-directive-colons
   - id: rst-inline-touching-normal
