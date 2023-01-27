@@ -45,12 +45,48 @@ test = [
 ]
 
 [tool.flit.sdist]
+include = [
+    "LICENSE*",
+    "docs/*.py",
+    "docs/*.rst",
+    "docs/*/*.rst",
+    "docs/Makefile",
+    "docs/make.bat",
+    "manpages/*.rst",
+    "tests/*.py",
+    "tests/cli/*.py",
+    "tests/cli/*.txt",
+    "tests/testdata/*.dist/*.py",
+    "tests/testdata/*.py",
+    "tests/testdata/abi3extension.dist/extension.c",
+    "tests/testdata/abi3extension.dist/setup.cfg",
+    "tests/testdata/commasinfilenames.dist/mypackage/*.py",
+    "tests/testdata/commasinfilenames.dist/mypackage/data/*.py",
+    "tests/testdata/commasinfilenames.dist/mypackage/data/*.txt",
+    "tests/testdata/commasinfilenames.dist/testrepo-0.1.0/mypackage/*.py",
+    "tests/testdata/complex-dist/*.py",
+    "tests/testdata/complex-dist/complexdist/*.py",
+    "tests/testdata/extension.dist/*.c",
+    "tests/testdata/headers.dist/header.h",
+    "tests/testdata/headers.dist/setup.cfg",
+    "tests/testdata/macosx_minimal_system_version/*.c",
+    "tests/testdata/macosx_minimal_system_version/*.dylib",
+    "tests/testdata/simple.dist/simpledist/*.py",
+    "tests/testdata/test-1.0-py2.py3-none-any.whl",
+    "tests/testdata/unicode.dist/unicodedist/*.py",
+    "tox.ini",
+]
 exclude = [
     ".cirrus.yml",
     ".github/*",
+    ".github/*/*",
     ".gitignore",
     ".pre-commit-config.yaml",
-    ".readthedocs.yml"
+    ".readthedocs.yml",
+    "__pycache__",
+    "*/__pycache__",
+    "*/*/__pycache__",
+    "*/*/*/__pycache__",
 ]
 
 [tool.black]
@@ -80,6 +116,9 @@ select = [
     "PGH",          # pygrep-hooks
     "UP",           # pyupgrade
     "B0",           # flake8-bugbear
+]
+ignore = [
+    "E501",  # Line too long
 ]
 target-version = "py37"
 src = ["src"]
