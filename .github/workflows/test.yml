@@ -42,7 +42,7 @@ jobs:
     - name: Install the project
       run: pip install --no-binary=wheel .
     - name: Install test dependencies
-      run: pip install .[test] coverage[toml]
+      run: pip install .[test] coverage[toml] build flit
     - name: Test with pytest
       run: |
         coverage run -m pytest -W always
