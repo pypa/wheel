@@ -37,9 +37,9 @@ def tags_f(args):
     names = (
         tags(
             wheel,
-            args.python_tag and args.python_tag.split("."),
-            args.abi_tag and args.abi_tag.split("."),
-            args.platform_tag and args.platform_tag.split("."),
+            args.python_tag,
+            args.abi_tag,
+            args.platform_tag,
             args.build,
             args.remove,
         )
@@ -58,9 +58,9 @@ def version_f(args):
 
 TAGS_HELP = """\
 Make a new wheel with given tags. Any tags unspecified will remain the same.
-Separate multiple tags with a dot. Starting with a dot will append to the
-existing tags. The original file will remain unless --remove is given. The
-output file(s) will be displayed on stdout.
+Starting with a "+" will append to the existing tags. Starting with a "-" will
+remove a tag. The original file will remain unless --remove is given. The
+output filename(s) will be displayed on stdout for further processing.
 """
 
 
@@ -109,11 +109,13 @@ def parser():
         help="Remove the original files, keeping only the renamed ones",
     )
     tags_parser.add_argument(
-        "--python-tag", metavar="TAG", help="Specify an interpreter tag(s)"
+        "--python-tag", metavar="TAG", nargs="+", help="Specify an interpreter tag(s)"
     )
-    tags_parser.add_argument("--abi-tag", metavar="TAG", help="Specify an ABI tag(s)")
     tags_parser.add_argument(
-        "--platform-tag", metavar="TAG", help="Specify a platform tag(s)"
+        "--abi-tag", metavar="TAG", nargs="+", help="Specify an ABI tag(s)"
+    )
+    tags_parser.add_argument(
+        "--platform-tag", metavar="TAG", nargs="+", help="Specify a platform tag(s)"
     )
     tags_parser.add_argument(
         "--build", type=int, metavar="NUMBER", help="Specify a build number"

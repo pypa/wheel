@@ -43,10 +43,10 @@ def test_python_tags(wheelpath):
     )
     output_file.unlink()
 
-    newname = tags(str(wheelpath), python_tags=["py2.py3"])
+    newname = tags(str(wheelpath), python_tags=["py2", "+py3"])
     assert TESTWHEEL_NAME == newname
 
-    newname = tags(str(wheelpath), python_tags=["", "py4"], remove=True)
+    newname = tags(str(wheelpath), python_tags=["+py4"], remove=True)
     assert not wheelpath.exists()
     assert TESTWHEEL_NAME.replace("py2.py3", "py2.py3.py4") == newname
     output_file = wheelpath.parent / newname
@@ -59,7 +59,7 @@ def test_abi_tags(wheelpath):
     output_file = wheelpath.parent / newname
     output_file.unlink()
 
-    newname = tags(str(wheelpath), abi_tags=["abi3", "cp33m"])
+    newname = tags(str(wheelpath), abi_tags=["abi3", "+cp33m"])
     assert TESTWHEEL_NAME.replace("none", "abi3.cp33m") == newname
     output_file = wheelpath.parent / newname
     output_file.unlink()
@@ -67,7 +67,7 @@ def test_abi_tags(wheelpath):
     newname = tags(str(wheelpath), abi_tags=["none"])
     assert TESTWHEEL_NAME == newname
 
-    newname = tags(str(wheelpath), abi_tags=["", "abi3", "cp33m"], remove=True)
+    newname = tags(str(wheelpath), abi_tags=["+abi3", "+cp33m"], remove=True)
     assert not wheelpath.exists()
     assert TESTWHEEL_NAME.replace("none", "abi3.cp33m.none") == newname
     output_file = wheelpath.parent / newname
@@ -81,14 +81,32 @@ def test_plat_tags(wheelpath):
     assert output_file.exists()
     output_file.unlink()
 
-    newname = tags(str(wheelpath), platform_tags=["linux_x86_64", "win32"])
+    newname = tags(str(wheelpath), platform_tags=["linux_x86_64", "+win32"])
     assert TESTWHEEL_NAME.replace("any", "linux_x86_64.win32") == newname
     output_file = wheelpath.parent / newname
     assert output_file.exists()
     output_file.unlink()
 
-    newname = tags(str(wheelpath), platform_tags=["", "linux_x86_64", "win32"])
+    newname = tags(str(wheelpath), platform_tags=["linux_x86_64.win32"])
+    assert TESTWHEEL_NAME.replace("any", "linux_x86_64.win32") == newname
+    output_file = wheelpath.parent / newname
+    assert output_file.exists()
+    output_file.unlink()
+
+    newname = tags(str(wheelpath), platform_tags=["+linux_x86_64", "+win32"])
     assert TESTWHEEL_NAME.replace("any", "any.linux_x86_64.win32") == newname
+    output_file = wheelpath.parent / newname
+    assert output_file.exists()
+    output_file.unlink()
+
+    newname = tags(str(wheelpath), platform_tags=["+linux_x86_64.win32"])
+    assert TESTWHEEL_NAME.replace("any", "any.linux_x86_64.win32") == newname
+    output_file = wheelpath.parent / newname
+    assert output_file.exists()
+    output_file.unlink()
+
+    newname = tags(str(wheelpath), platform_tags=["-any", "+linux_x86_64.win32"])
+    assert TESTWHEEL_NAME.replace("any", "linux_x86_64.win32") == newname
     output_file = wheelpath.parent / newname
     assert output_file.exists()
     output_file.unlink()
@@ -109,7 +127,7 @@ def test_multi_tags(wheelpath):
     newname = tags(
         str(wheelpath),
         platform_tags=["linux_x86_64"],
-        python_tags=["", "py4"],
+        python_tags=["+py4"],
         build_number=1,
     )
     assert "test-1.0-1-py2.py3.py4-none-linux_x86_64.whl" == newname
@@ -155,7 +173,7 @@ def test_tags_command_del(capsys, wheelpath):
     args = [
         "tags",
         "--python-tag",
-        ".py4",
+        "+py4",
         "--abi-tag",
         "cp33m",
         "--platform-tag",
@@ -177,8 +195,7 @@ def test_tags_command_del(capsys, wheelpath):
 def test_permission_bits(capsys, wheelpath):
     args = [
         "tags",
-        "--python-tag",
-        ".py4",
+        "--python-tag=+py4",
         str(wheelpath),
     ]
     p = parser()

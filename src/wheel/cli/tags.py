@@ -1,36 +1,46 @@
 from __future__ import annotations
 
+import contextlib
 import itertools
 import os
+from collections.abc import Iterable
 
 from ..wheelfile import WheelFile
 from .pack import read_tags, set_build_number
 
 
-def compute_tags(original_tags: list[str], new_tags: list[str] | None) -> list[str]:
-    """Add or replace tags."""
+def _compute_tags(original_tags: Iterable[str], new_tags: Iterable[str]) -> list[str]:
+    """Add or replace tags. Supports dot-separated tags"""
 
-    if not new_tags:
-        return original_tags
+    return_tags = list(original_tags)
 
-    if new_tags[0] == "":
-        return original_tags + new_tags[1:]
-    else:
-        return new_tags
+    for tag in new_tags:
+        if tag.startswith("+"):
+            return_tags.extend(tag[1:].split("."))
+        elif tag.startswith("-"):
+            for t in tag[1:].split("."):
+                with contextlib.suppress(ValueError):
+                    return_tags.remove(t)
+        else:
+            return_tags = tag.split(".")
+
+    return return_tags
 
 
 def tags(
     wheel: str,
-    python_tags: list[str] | None = None,
-    abi_tags: list[str] | None = None,
-    platform_tags: list[str] | None = None,
+    python_tags: Iterable[str] | None = None,
+    abi_tags: Iterable[str] | None = None,
+    platform_tags: Iterable[str] | None = None,
     build_number: int | None = None,
     remove: bool = False,
 ) -> str:
     """Change the tags on a wheel file.
 
     The tags are left unchanged if they are not specified. To specify "none",
-    use ["none"]. To append to the previous tags, use ["", ...].
+    use ["none"]. To append to the previous tags, a tag should start with a
+    "+".  If a tag starts with "-", it will be removed from existing tags.
+    Processing is done left to right.
 
     :param wheel: The paths to the wheels
     :param python_tags: The Python tags to set
@@ -80,9 +90,9 @@ def tags(
     if build_number is not None:
         build = str(build_number)
 
-    final_python_tags = compute_tags(original_python_tags, python_tags)
-    final_abi_tags = compute_tags(original_abi_tags, abi_tags)
-    final_plat_tags = compute_tags(original_plat_tags, platform_tags)
+    final_python_tags = _compute_tags(original_python_tags, python_tags or [])
+    final_abi_tags = _compute_tags(original_abi_tags, abi_tags or [])
+    final_plat_tags = _compute_tags(original_plat_tags, platform_tags or [])
 
     final_tags = [
         namever,
@@ -129,7 +139,7 @@ def tags(
     return final_wheel_name
 
 
-def set_tags(in_string: bytes, tags: list[str]) -> bytes:
+def set_tags(in_string: bytes, tags: Iterable[str]) -> bytes:
     """Set the tags in the .dist-info/WHEEL file contents.
 
     :param in_string: The string to modify.
