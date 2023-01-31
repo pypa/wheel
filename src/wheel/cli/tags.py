@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import contextlib
 import itertools
 import os
 from collections.abc import Iterable
@@ -9,29 +8,25 @@ from ..wheelfile import WheelFile
 from .pack import read_tags, set_build_number
 
 
-def _compute_tags(original_tags: Iterable[str], new_tags: Iterable[str]) -> list[str]:
+def _compute_tags(original_tags: Iterable[str], new_tags: str | None) -> set[str]:
     """Add or replace tags. Supports dot-separated tags"""
+    if new_tags is None:
+        return set(original_tags)
 
-    return_tags = list(original_tags)
+    if new_tags.startswith("+"):
+        return {*original_tags, *new_tags[1:].split(".")}
 
-    for tag in new_tags:
-        if tag.startswith("+"):
-            return_tags.extend(tag[1:].split("."))
-        elif tag.startswith("-"):
-            for t in tag[1:].split("."):
-                with contextlib.suppress(ValueError):
-                    return_tags.remove(t)
-        else:
-            return_tags = tag.split(".")
+    if new_tags.startswith("-"):
+        return set(original_tags) - set(new_tags[1:].split("."))
 
-    return return_tags
+    return set(new_tags.split("."))
 
 
 def tags(
     wheel: str,
-    python_tags: Iterable[str] | None = None,
-    abi_tags: Iterable[str] | None = None,
-    platform_tags: Iterable[str] | None = None,
+    python_tags: str | None = None,
+    abi_tags: str | None = None,
+    platform_tags: str | None = None,
     build_number: int | None = None,
     remove: bool = False,
 ) -> str:
@@ -50,6 +45,8 @@ def tags(
     :param remove: Remove the original wheel
     """
     with WheelFile(wheel, "r") as f:
+        assert f.filename, f"{f.filename} must be available"
+
         wheel_info = f.read(f.dist_info_path + "/WHEEL")
 
         original_wheel_name = os.path.basename(f.filename)
@@ -90,15 +87,15 @@ def tags(
     if build_number is not None:
         build = str(build_number)
 
-    final_python_tags = _compute_tags(original_python_tags, python_tags or [])
-    final_abi_tags = _compute_tags(original_abi_tags, abi_tags or [])
-    final_plat_tags = _compute_tags(original_plat_tags, platform_tags or [])
+    final_python_tags = sorted(_compute_tags(original_python_tags, python_tags))
+    final_abi_tags = sorted(_compute_tags(original_abi_tags, abi_tags))
+    final_plat_tags = sorted(_compute_tags(original_plat_tags, platform_tags))
 
     final_tags = [
         namever,
-        ".".join(sorted(final_python_tags)),
-        ".".join(sorted(final_abi_tags)),
-        ".".join(sorted(final_plat_tags)),
+        ".".join(final_python_tags),
+        ".".join(final_abi_tags),
+        ".".join(final_plat_tags),
     ]
     if build:
         final_tags.insert(1, build)

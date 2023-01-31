@@ -91,7 +91,7 @@ def read_tags(input_str: bytes) -> tuple[list[str], str | None]:
     return tags, existing_build_number
 
 
-def set_build_number(wheel_file_content: str, build_number: str | None) -> str:
+def set_build_number(wheel_file_content: bytes, build_number: str | None) -> bytes:
     """Compute a build tag and add/replace/remove as necessary.
 
     :param wheel_file_content: The contents of .dist-info/WHEEL

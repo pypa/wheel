@@ -109,13 +109,11 @@ def parser():
         help="Remove the original files, keeping only the renamed ones",
     )
     tags_parser.add_argument(
-        "--python-tag", metavar="TAG", nargs="+", help="Specify an interpreter tag(s)"
+        "--python-tag", metavar="TAG", help="Specify an interpreter tag(s)"
     )
+    tags_parser.add_argument("--abi-tag", metavar="TAG", help="Specify an ABI tag(s)")
     tags_parser.add_argument(
-        "--abi-tag", metavar="TAG", nargs="+", help="Specify an ABI tag(s)"
-    )
-    tags_parser.add_argument(
-        "--platform-tag", metavar="TAG", nargs="+", help="Specify a platform tag(s)"
+        "--platform-tag", metavar="TAG", help="Specify a platform tag(s)"
     )
     tags_parser.add_argument(
         "--build", type=int, metavar="NUMBER", help="Specify a build number"
