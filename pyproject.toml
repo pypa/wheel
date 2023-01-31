@@ -23,9 +23,6 @@ maintainers = [{name = "Alex Grönholm", email = "alex.gronholm@nextday.fi"}]
 keywords = ["wheel", "packaging"]
 license = {file = "LICENSE.txt"}
 requires-python = ">=3.7"
-dependencies = [
-    "setuptools >= 45.2.0"
-]
 dynamic = ["version"]
 
 [project.urls]
@@ -95,9 +92,6 @@ extend-exclude = '''
 ^/src/wheel/vendored/
 '''
 
-[tool.flake8]
-max-line-length = 88
-
 [tool.pytest.ini_options]
 testpaths = "tests"
 
@@ -122,3 +116,35 @@ ignore = [
 ]
 target-version = "py37"
 src = ["src"]
+
+[tool.tox]
+legacy_tox_ini = '''
+# Tox (http://tox.testrun.org/) is a tool for running tests
+# in multiple virtualenvs. This configuration file will run the
+# test suite on all supported python versions. To use it, "pip install tox"
+# and then run "tox" from this directory.
+
+[tox]
+envlist = py37, py38, py39, py310, py311, pypy3, lint, pkg
+minversion = 4.0.0
+skip_missing_interpreters = true
+
+[testenv]
+depends = lint
+commands = {envpython} -b -m pytest -W always {posargs}
+extras = test
+
+[testenv:lint]
+depends =
+basepython = python3
+deps = pre-commit
+commands = pre-commit run --all-files --show-diff-on-failure
+skip_install = true
+
+[testenv:pkg]
+basepython = python3
+deps =
+    build
+    flit
+commands = {envpython} -b -m pytest tests/test_sdist.py {posargs}
+'''
