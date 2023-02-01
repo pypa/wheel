@@ -14,8 +14,10 @@ Description
 Make a new wheel with given tags from and existing wheel. Any tags left
 unspecified will remain the same. Multiple tags are separated by a "." Starting
 with a "+" will append to the existing tags.  Starting with a "-" will remove a
-tag. The original file will remain unless ``--remove`` is given. The output
-filename(s) will be displayed on stdout for further processing.
+tag. Be sure to use the equals syntax on the shell so that it does not get
+parsed as an extra option, such as ``--python-tag=-py2``. The original file
+will remain unless ``--remove`` is given. The output filename(s) will be
+displayed on stdout for further processing.
 
 
 Options

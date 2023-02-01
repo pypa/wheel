@@ -58,8 +58,9 @@ def version_f(args):
 
 TAGS_HELP = """\
 Make a new wheel with given tags. Any tags unspecified will remain the same.
-Starting with a "+" will append to the existing tags. Starting with a "-" will
-remove a tag. The original file will remain unless --remove is given. The
+Starting the tags with a "+" will append to the existing tags. Starting with a
+"-" will remove a tag (use --option=-TAG syntax). Multiple tags can be
+separated by ".". The original file will remain unless --remove is given.  The
 output filename(s) will be displayed on stdout for further processing.
 """
 
