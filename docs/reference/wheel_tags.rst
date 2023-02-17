@@ -6,7 +6,7 @@ Usage
 
 ::
 
-    wheel tagstags [-h] [--remove] [--python-tag TAG] [--abi-tag TAG] [--platform-tag TAG] [--build NUMBER] WHEEL [...]
+    wheel tags [-h] [--remove] [--python-tag TAG] [--abi-tag TAG] [--platform-tag TAG] [--build NUMBER] WHEEL [...]
 
 Description
 -----------
