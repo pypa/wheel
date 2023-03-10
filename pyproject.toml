@@ -74,7 +74,15 @@ extend-exclude = '''
 '''
 
 [tool.pytest.ini_options]
-testpaths = "tests"
+minversion = "6.0"
+addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+xfail_strict = true
+filterwarnings = [
+    "error",
+    "ignore::EncodingWarning:_pytest.*",
+]
+log_cli_level = "info"
+testpaths = ["test"]
 
 [tool.coverage.run]
 source = ["wheel"]
@@ -112,8 +120,10 @@ skip_missing_interpreters = true
 
 [testenv]
 depends = lint
-commands = {envpython} -b -m pytest -W always {posargs}
+commands = {envpython} -b -m pytest {posargs}
 extras = test
+set_env =
+  PYTHONWARNDEFAULTENCODING = 1
 
 [testenv:lint]
 depends =
