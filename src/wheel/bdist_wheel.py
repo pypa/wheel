@@ -120,7 +120,6 @@ def remove_readonly(func, path, excinfo):
 
 
 class bdist_wheel(Command):
-
     description = "create a wheel distribution"
 
     supported_compressions = OrderedDict(
