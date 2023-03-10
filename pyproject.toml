@@ -79,7 +79,7 @@ addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
 xfail_strict = true
 filterwarnings = [
     "error",
-    "ignore::EncodingWarning:_pytest.*",
+    "ignore::Warning:_pytest.*",
 ]
 log_cli_level = "info"
 testpaths = ["test"]
