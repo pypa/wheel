@@ -10,7 +10,7 @@ from wheel.wheelfile import WHEEL_INFO_RE
 def test_egg_re():
     """Make sure egg_info_re matches."""
     egg_names_path = os.path.join(os.path.dirname(__file__), "eggnames.txt")
-    with open(egg_names_path) as egg_names:
+    with open(egg_names_path, encoding="utf-8") as egg_names:
         for line in egg_names:
             line = line.strip()
             if line:
