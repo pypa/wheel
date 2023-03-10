@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3.2,<4"]
+requires = ["flit_core >=3.8,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -45,45 +45,26 @@ test = [
 [tool.flit.sdist]
 include = [
     "LICENSE*",
-    "docs/*.py",
-    "docs/*.rst",
-    "docs/*/*.rst",
+    "docs/**/*.py",
+    "docs/**/*.rst",
     "docs/Makefile",
     "docs/make.bat",
     "manpages/*.rst",
-    "tests/*.py",
-    "tests/cli/*.py",
-    "tests/cli/*.txt",
-    "tests/testdata/*.dist/*.py",
-    "tests/testdata/*.py",
-    "tests/testdata/abi3extension.dist/extension.c",
-    "tests/testdata/abi3extension.dist/setup.cfg",
-    "tests/testdata/commasinfilenames.dist/mypackage/*.py",
-    "tests/testdata/commasinfilenames.dist/mypackage/data/*.py",
-    "tests/testdata/commasinfilenames.dist/mypackage/data/*.txt",
-    "tests/testdata/commasinfilenames.dist/testrepo-0.1.0/mypackage/*.py",
-    "tests/testdata/complex-dist/*.py",
-    "tests/testdata/complex-dist/complexdist/*.py",
-    "tests/testdata/extension.dist/*.c",
-    "tests/testdata/headers.dist/header.h",
-    "tests/testdata/headers.dist/setup.cfg",
-    "tests/testdata/macosx_minimal_system_version/*.c",
+    "tests/**/*.py",
+    "tests/**/*.txt",
+    "tests/**/*.c",
+    "tests/**/*.h",
+    "tests/**/*.cfg",
     "tests/testdata/macosx_minimal_system_version/*.dylib",
-    "tests/testdata/simple.dist/simpledist/*.py",
     "tests/testdata/test-1.0-py2.py3-none-any.whl",
-    "tests/testdata/unicode.dist/unicodedist/*.py",
 ]
 exclude = [
     ".cirrus.yml",
-    ".github/*",
-    ".github/*/*",
+    ".github/**",
     ".gitignore",
     ".pre-commit-config.yaml",
     ".readthedocs.yml",
-    "__pycache__",
-    "*/__pycache__",
-    "*/*/__pycache__",
-    "*/*/*/__pycache__",
+    "**/__pycache__",
 ]
 
 [tool.black]
@@ -145,6 +126,6 @@ skip_install = true
 basepython = python3
 deps =
     build
-    flit
+    flit>=3.8
 commands = {envpython} -b -m pytest tests/test_sdist.py {posargs}
 '''
