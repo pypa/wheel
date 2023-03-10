@@ -1,0 +1,131 @@
+[build-system]
+requires = ["flit_core >=3.8,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "wheel"
+description = "A built-package format for Python"
+readme = "README.rst"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: System :: Archiving :: Packaging",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+authors = [{name = "Daniel Holth", email = "dholth@fastmail.fm"}]
+maintainers = [{name = "Alex Grönholm", email = "alex.gronholm@nextday.fi"}]
+keywords = ["wheel", "packaging"]
+license = {file = "LICENSE.txt"}
+requires-python = ">=3.7"
+dynamic = ["version"]
+
+[project.urls]
+Documentation = "https://wheel.readthedocs.io/"
+Changelog = "https://wheel.readthedocs.io/en/stable/news.html"
+"Issue Tracker" = "https://github.com/pypa/wheel/issues"
+
+[project.scripts]
+wheel = "wheel.cli:main"
+
+[project.entry-points."distutils.commands"]
+bdist_wheel = "wheel.bdist_wheel:bdist_wheel"
+
+[project.optional-dependencies]
+test = [
+    "pytest >= 6.0.0"
+]
+
+[tool.flit.sdist]
+include = [
+    "LICENSE*",
+    "docs/**/*.py",
+    "docs/**/*.rst",
+    "docs/Makefile",
+    "docs/make.bat",
+    "manpages/*.rst",
+    "tests/**/*.py",
+    "tests/**/*.txt",
+    "tests/**/*.c",
+    "tests/**/*.h",
+    "tests/**/*.cfg",
+    "tests/testdata/macosx_minimal_system_version/*.dylib",
+    "tests/testdata/test-1.0-py2.py3-none-any.whl",
+]
+exclude = [
+    ".cirrus.yml",
+    ".github/**",
+    ".gitignore",
+    ".pre-commit-config.yaml",
+    ".readthedocs.yml",
+    "**/__pycache__",
+]
+
+[tool.black]
+target-version = ['py37']
+extend-exclude = '''
+^/src/wheel/vendored/
+'''
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+
+[tool.coverage.run]
+source = ["wheel"]
+omit = ["*/vendored/*"]
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.ruff]
+line-length = 88
+select = [
+    "E", "F", "W",  # default flake-8
+    "I",            # isort
+    "PGH",          # pygrep-hooks
+    "UP",           # pyupgrade
+    "B0",           # flake8-bugbear
+]
+ignore = [
+    "E501",  # Line too long
+]
+target-version = "py37"
+src = ["src"]
+
+[tool.tox]
+legacy_tox_ini = '''
+# Tox (http://tox.testrun.org/) is a tool for running tests
+# in multiple virtualenvs. This configuration file will run the
+# test suite on all supported python versions. To use it, "pip install tox"
+# and then run "tox" from this directory.
+
+[tox]
+envlist = py37, py38, py39, py310, py311, pypy3, lint, pkg
+minversion = 4.0.0
+skip_missing_interpreters = true
+
+[testenv]
+depends = lint
+commands = {envpython} -b -m pytest -W always {posargs}
+extras = test
+
+[testenv:lint]
+depends =
+basepython = python3
+deps = pre-commit
+commands = pre-commit run --all-files --show-diff-on-failure
+skip_install = true
+
+[testenv:pkg]
+basepython = python3
+deps =
+    build
+    flit>=3.8
+commands = {envpython} -b -m pytest tests/test_sdist.py {posargs}
+'''
