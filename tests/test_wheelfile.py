@@ -21,11 +21,76 @@ def wheel_path(tmpdir):
         "foo-2-py2.py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
     ],
 )
-def test_wheelfile_re(filename, tmpdir):
+def test_wheelfile_re_simple(filename, tmpdir):
     # Regression test for #208 and #485
     path = tmpdir.join(filename)
     with WheelFile(str(path), "w") as wf:
+        assert wf.parsed_filename
         assert wf.parsed_filename.group("namever") == "foo-2"
+
+
+@pytest.mark.parametrize(
+    "wheel_name_expectations",
+    # See https://peps.python.org/pep-0427/#file-name-convention for the spec
+    # List of Tuple[str, expectation]
+    [
+        (
+            "foo-2-py3-none-any.whl",
+            {
+                "namever": "foo-2",
+                "name": "foo",
+                "ver": "2",
+                "build": None,
+                "pyver": "py3",
+                "abi": "none",
+                "plat": "any",
+            },
+        ),
+        (
+            "foo-2-py2.py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+            {
+                "namever": "foo-2",
+                "name": "foo",
+                "ver": "2",
+                "build": None,
+                "pyver": "py2.py3",
+                "abi": "none",
+                "plat": "manylinux_2_17_x86_64.manylinux2014_x86_64",
+            },
+        ),
+        (
+            "foo-2-3-py3-cp33m-manylinux2014_x86_64.whl",
+            {
+                "namever": "foo-2",
+                "name": "foo",
+                "ver": "2",
+                "build": "3",
+                "pyver": "py3",
+                "abi": "cp33m",
+                "plat": "manylinux2014_x86_64",
+            },
+        ),
+        (
+            "foo-2-3.2.3-py3-abi3-manylinux2014_x86_64.whl",
+            {
+                "namever": "foo-2",
+                "name": "foo",
+                "ver": "2",
+                "build": "3.2.3",
+                "pyver": "py3",
+                "abi": "abi3",
+                "plat": "manylinux2014_x86_64",
+            },
+        ),
+    ],
+)
+def test_wheelfile_re_complex(wheel_name_expectations, tmpdir):
+    # Regression test for #208 and #485
+    (filename, expectation) = wheel_name_expectations
+    path = tmpdir.join(filename)
+    with WheelFile(str(path), "w") as wf:
+        assert wf.parsed_filename
+        assert wf.parsed_filename.groupdict() == expectation
 
 
 @pytest.mark.parametrize(
