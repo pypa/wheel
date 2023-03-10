@@ -72,7 +72,6 @@ include = [
     "tests/testdata/simple.dist/simpledist/*.py",
     "tests/testdata/test-1.0-py2.py3-none-any.whl",
     "tests/testdata/unicode.dist/unicodedist/*.py",
-    "tox.ini",
 ]
 exclude = [
     ".cirrus.yml",
