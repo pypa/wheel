@@ -3,7 +3,7 @@ from __future__ import annotations
 from wheel.metadata import pkginfo_to_metadata
 
 
-def test_pkginfo_to_metadata(tmpdir):
+def test_pkginfo_to_metadata(tmp_path):
     expected_metadata = [
         ("Metadata-Version", "2.1"),
         ("Name", "spam"),
@@ -30,8 +30,8 @@ def test_pkginfo_to_metadata(tmpdir):
         ("Requires-Dist", "pytest-cov ; extra == 'test'"),
     ]
 
-    pkg_info = tmpdir.join("PKG-INFO")
-    pkg_info.write(
+    pkg_info = tmp_path.joinpath("PKG-INFO")
+    pkg_info.write_text(
         """\
 Metadata-Version: 0.0
 Name: spam
@@ -41,11 +41,13 @@ Provides-Extra: test
 Provides-Extra: reST
 Provides-Extra: signatures
 Provides-Extra: Signatures
-Provides-Extra: faster-signatures"""
+Provides-Extra: faster-signatures""",
+        encoding="utf-8",
     )
 
-    egg_info_dir = tmpdir.ensure_dir("test.egg-info")
-    egg_info_dir.join("requires.txt").write(
+    egg_info_dir = tmp_path.joinpath("test.egg-info")
+    egg_info_dir.mkdir(exist_ok=True)
+    egg_info_dir.joinpath("requires.txt").write_text(
         """\
 pip@https://github.com/pypa/pip/archive/1.3.1.zip
 
@@ -73,7 +75,8 @@ pyxdg
 
 [test]
 pytest>=3.0.0
-pytest-cov"""
+pytest-cov""",
+        encoding="utf-8",
     )
 
     message = pkginfo_to_metadata(
