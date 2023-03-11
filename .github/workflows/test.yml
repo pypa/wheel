@@ -40,9 +40,12 @@ jobs:
         path: ~/.cache/pip
         key: pip-test-${{ matrix.python-version }}-${{ matrix.os }}
     - name: Install the project
-      run: "pip install --no-binary=:all: ."
+      run: pip install --no-binary=wheel .
     - name: Install test dependencies
       run: pip install .[test] coverage[toml]
+    - name: Include SDist check dependencies
+      if: matrix.python-version == '3.11'
+      run: pip install build flit
     - name: Test with pytest
       run: |
         coverage run -m pytest -W always
