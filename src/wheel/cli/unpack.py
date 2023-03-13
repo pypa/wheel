@@ -23,11 +23,10 @@ def unpack(path: str, dest: str = ".") -> None:
         destination = Path(dest) / namever
         print(f"Unpacking to: {destination}...", end="", flush=True)
         for zinfo in wf.filelist:
-            extracted_path = destination / zinfo.filename
-            wf.extract(zinfo, extracted_path)
+            wf.extract(zinfo, destination)
 
             # Set the executable bit if it was set in the archive
             if stat.S_IMODE(zinfo.external_attr >> 16 & 0o111):
-                extracted_path.chmod(0o777 & ~umask | 0o111)
+                destination.joinpath(zinfo.filename).chmod(0o777 & ~umask | 0o111)
 
     print("OK")
