@@ -3,12 +3,14 @@ Release Notes
 
 **UNRELEASED**
 
+- Added a ``wheel tags`` command to modify tags on an existing wheel
 - Updated vendored ``packaging`` to 23.0
 - ``wheel unpack`` now preserves the executable attribute of extracted files
 - Fixed spaces in platform names not being converted to underscores (PR by David Tucker)
 - Fixed ``RECORD`` files in generated wheels missing the regular file attribute
 - Fixed ``DeprecationWarning`` about the use of the deprecated ``pkg_resources`` API
   (PR by Thomas Grainger)
+- Wheel now uses flit-core as a build backend
 
 **0.38.4 (2022-11-09)**
 
