@@ -26,6 +26,9 @@ Commands
   ``convert``
     Convert egg or wininst to wheel
 
+  ``tags``
+    Change the tags on a wheel file
+
   ``version``
     Print version and exit
 
