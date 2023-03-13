@@ -7,11 +7,14 @@ import tempfile
 import zipfile
 from glob import iglob
 
-from setuptools.dist import Distribution
-
 from ..bdist_wheel import bdist_wheel
 from ..wheelfile import WheelFile
 from . import WheelError
+
+try:
+    from setuptools import Distribution
+except ImportError:
+    from distutils.dist import Distribution
 
 egg_info_re = re.compile(
     r"""

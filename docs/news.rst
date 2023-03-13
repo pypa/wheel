@@ -1,6 +1,34 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Updated vendored ``packaging`` to 23.0
+- Fixed spaces in platform names not being converted to underscores (PR by David Tucker)
+- Fixed ``DeprecationWarning`` about the use of the deprecated ``pkg_resources`` API
+  (PR by Thomas Grainger)
+
+**0.38.4 (2022-11-09)**
+
+- Fixed ``PKG-INFO`` conversion in ``bdist_wheel`` mangling UTF-8 header values in
+  ``METADATA`` (PR by Anderson Bravalheri)
+
+**0.38.3 (2022-11-08)**
+
+- Fixed install failure when used with ``--no-binary``, reported on Ubuntu 20.04, by
+  removing ``setup_requires`` from ``setup.cfg``
+
+**0.38.2 (2022-11-05)**
+
+- Fixed regression introduced in v0.38.1 which broke parsing of wheel file names with
+  multiple platform tags
+
+**0.38.1 (2022-11-04)**
+
+- Removed install dependency on setuptools
+- The future-proof fix in 0.36.0 for converting PyPy's SOABI into a abi tag was
+  faulty. Fixed so that future changes in the SOABI will not change the tag.
+
 **0.38.0 (2022-10-21)**
 
 - Dropped support for Python < 3.7

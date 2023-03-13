@@ -15,12 +15,13 @@ import sysconfig
 import warnings
 from collections import OrderedDict
 from email.generator import BytesGenerator, Generator
+from email.policy import EmailPolicy
+from glob import iglob
 from io import BytesIO
 from shutil import rmtree
-from sysconfig import get_config_var
 from zipfile import ZIP_DEFLATED, ZIP_STORED
 
-import pkg_resources
+import setuptools
 from setuptools import Command
 
 from . import __version__ as wheel_version
@@ -28,10 +29,30 @@ from .macosx_libfile import calculate_macosx_platform_tag
 from .metadata import pkginfo_to_metadata
 from .util import log
 from .vendored.packaging import tags
+from .vendored.packaging import version as _packaging_version
 from .wheelfile import WheelFile
 
-safe_name = pkg_resources.safe_name
-safe_version = pkg_resources.safe_version
+
+def safe_name(name):
+    """Convert an arbitrary string to a standard distribution name
+    Any runs of non-alphanumeric/. characters are replaced with a single '-'.
+    """
+    return re.sub("[^A-Za-z0-9.]+", "-", name)
+
+
+def safe_version(version):
+    """
+    Convert an arbitrary string to a standard version string
+    """
+    try:
+        # normalize the version
+        return str(_packaging_version.Version(version))
+    except _packaging_version.InvalidVersion:
+        version = version.replace(" ", ".")
+        return re.sub("[^A-Za-z0-9.]+", "-", version)
+
+
+setuptools_major_version = int(setuptools.__version__.split(".")[0])
 
 PY_LIMITED_API_PATTERN = r"cp3\d"
 
@@ -55,7 +76,7 @@ def get_platform(archive_root):
 def get_flag(var, fallback, expected=True, warn=True):
     """Use a fallback value for determining SOABI flags if the needed config
     var is unset or unavailable."""
-    val = get_config_var(var)
+    val = sysconfig.get_config_var(var)
     if val is None:
         if warn:
             warnings.warn(
@@ -69,8 +90,8 @@ def get_flag(var, fallback, expected=True, warn=True):
 
 
 def get_abi_tag():
-    """Return the ABI tag based on SOABI (if available) or emulate SOABI (PyPy)."""
-    soabi = get_config_var("SOABI")
+    """Return the ABI tag based on SOABI (if available) or emulate SOABI (PyPy2)."""
+    soabi = sysconfig.get_config_var("SOABI")
     impl = tags.interpreter_name()
     if not soabi and impl in ("cp", "pp") and hasattr(sys, "maxunicode"):
         d = ""
@@ -87,9 +108,9 @@ def get_abi_tag():
             m = "m"
 
         abi = f"{impl}{tags.interpreter_version()}{d}{m}{u}"
-    elif soabi and soabi.startswith("cpython-"):
+    elif soabi and impl == "cp":
         abi = "cp" + soabi.split("-")[1]
-    elif soabi and soabi.startswith("pypy-"):
+    elif soabi and impl == "pp":
         # we want something like pypy36-pp73
         abi = "-".join(soabi.split("-")[:2])
         abi = abi.replace(".", "_").replace("-", "_")
@@ -116,7 +137,6 @@ def remove_readonly(func, path, excinfo):
 
 
 class bdist_wheel(Command):
-
     description = "create a wheel distribution"
 
     supported_compressions = OrderedDict(
@@ -281,7 +301,9 @@ class bdist_wheel(Command):
             ):
                 plat_name = "linux_i686"
 
-        plat_name = plat_name.lower().replace("-", "_").replace(".", "_")
+        plat_name = (
+            plat_name.lower().replace("-", "_").replace(".", "_").replace(" ", "_")
+        )
 
         if self.root_is_pure:
             if self.universal:
@@ -431,8 +453,47 @@ class bdist_wheel(Command):
 
     @property
     def license_paths(self):
-        metadata = self.distribution.metadata
-        return sorted(metadata.license_files or [])
+        if setuptools_major_version >= 57:
+            # Setuptools has resolved any patterns to actual file names
+            return self.distribution.metadata.license_files or ()
+
+        files = set()
+        metadata = self.distribution.get_option_dict("metadata")
+        if setuptools_major_version >= 42:
+            # Setuptools recognizes the license_files option but does not do globbing
+            patterns = self.distribution.metadata.license_files
+        else:
+            # Prior to those, wheel is entirely responsible for handling license files
+            if "license_files" in metadata:
+                patterns = metadata["license_files"][1].split()
+            else:
+                patterns = ()
+
+        if "license_file" in metadata:
+            warnings.warn(
+                'The "license_file" option is deprecated. Use "license_files" instead.',
+                DeprecationWarning,
+            )
+            files.add(metadata["license_file"][1])
+
+        if not files and not patterns and not isinstance(patterns, list):
+            patterns = ("LICEN[CS]E*", "COPYING*", "NOTICE*", "AUTHORS*")
+
+        for pattern in patterns:
+            for path in iglob(pattern):
+                if path.endswith("~"):
+                    log.debug(
+                        f'ignoring license file "{path}" as it looks like a backup'
+                    )
+                    continue
+
+                if path not in files and os.path.isfile(path):
+                    log.info(
+                        f'adding license file "{path}" (matched pattern "{pattern}")'
+                    )
+                    files.add(path)
+
+        return files
 
     def egg2dist(self, egginfo_path, distinfo_path):
         """Convert an .egg-info directory into a .dist-info directory"""
@@ -492,8 +553,13 @@ class bdist_wheel(Command):
                 adios(dependency_links_path)
 
         pkg_info_path = os.path.join(distinfo_path, "METADATA")
+        serialization_policy = EmailPolicy(
+            utf8=True,
+            mangle_from_=False,
+            max_line_length=0,
+        )
         with open(pkg_info_path, "w", encoding="utf-8") as out:
-            Generator(out, mangle_from_=False, maxheaderlen=0).flatten(pkg_info)
+            Generator(out, policy=serialization_policy).flatten(pkg_info)
 
         for license_path in self.license_paths:
             filename = os.path.basename(license_path)
