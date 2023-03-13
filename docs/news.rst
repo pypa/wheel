@@ -10,8 +10,7 @@ Release Notes
 - Fixed ``RECORD`` files in generated wheels missing the regular file attribute
 - Fixed ``DeprecationWarning`` about the use of the deprecated ``pkg_resources`` API
   (PR by Thomas Grainger)
-- Wheel now uses flit-core as a build backend, removing a circular dependence
-  for setuptools.
+- Wheel now uses flit-core as a build backend
 
 **0.38.4 (2022-11-09)**
 
