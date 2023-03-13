@@ -22,6 +22,8 @@ def unpack(path: str, dest: str = ".") -> None:
             wf.extract(zinfo, destination)
 
             # Set permissions to the same values as they were set in the archive
+            # We have to do this manually due to
+            # https://github.com/python/cpython/issues/59999
             permissions = zinfo.external_attr >> 16 & 0o777
             destination.joinpath(zinfo.filename).chmod(permissions)
 
