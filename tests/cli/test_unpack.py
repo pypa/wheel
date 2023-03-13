@@ -24,7 +24,7 @@ def test_unpack(wheel_paths, tmp_path):
 def test_unpack_executable_bit(tmp_path):
     wheel_path = tmp_path / "test-1.0-py3-none-any.whl"
     script_path = tmp_path / "script"
-    script_path.write_text("test script")
+    script_path.write_bytes(b"test script")
     script_path.chmod(0o777)
     with WheelFile(wheel_path, "w") as wf:
         wf.write(str(script_path), "script")
