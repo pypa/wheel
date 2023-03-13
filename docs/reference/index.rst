@@ -7,3 +7,4 @@ Reference Guide
    wheel_convert
    wheel_unpack
    wheel_pack
+   wheel_tags

@@ -12,7 +12,7 @@ import pytest
 
 
 @pytest.fixture(scope="session")
-def wheels_and_eggs(tmpdir_factory):
+def wheels_and_eggs(tmp_path_factory):
     """Build wheels and eggs from test distributions."""
     test_distributions = (
         "complex-dist",
@@ -28,8 +28,8 @@ def wheels_and_eggs(tmpdir_factory):
 
     pwd = os.path.abspath(os.curdir)
     this_dir = os.path.dirname(__file__)
-    build_dir = tmpdir_factory.mktemp("build")
-    dist_dir = tmpdir_factory.mktemp("dist")
+    build_dir = tmp_path_factory.mktemp("build")
+    dist_dir = tmp_path_factory.mktemp("dist")
     for dist in test_distributions:
         os.chdir(os.path.join(this_dir, "testdata", dist))
         subprocess.check_call(
@@ -51,7 +51,7 @@ def wheels_and_eggs(tmpdir_factory):
 
     os.chdir(pwd)
     return sorted(
-        str(fname) for fname in dist_dir.listdir() if fname.ext in (".whl", ".egg")
+        str(fname) for fname in dist_dir.iterdir() if fname.suffix in (".whl", ".egg")
     )
 
 

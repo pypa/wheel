@@ -6,6 +6,8 @@ Release Notes
 - Updated vendored ``packaging`` to 23.0
 - Fixed spaces in platform names not being converted to underscores (PR by David Tucker)
 - Fixed ``RECORD`` files in generated wheels missing the regular file attribute
+- Fixed ``DeprecationWarning`` about the use of the deprecated ``pkg_resources`` API
+  (PR by Thomas Grainger)
 
 **0.38.4 (2022-11-09)**
 

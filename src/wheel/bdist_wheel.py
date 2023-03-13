@@ -21,7 +21,7 @@ from io import BytesIO
 from shutil import rmtree
 from zipfile import ZIP_DEFLATED, ZIP_STORED
 
-import pkg_resources
+import setuptools
 from setuptools import Command
 
 from . import __version__ as wheel_version
@@ -29,13 +29,30 @@ from .macosx_libfile import calculate_macosx_platform_tag
 from .metadata import pkginfo_to_metadata
 from .util import log
 from .vendored.packaging import tags
+from .vendored.packaging import version as _packaging_version
 from .wheelfile import WheelFile
 
-safe_name = pkg_resources.safe_name
-safe_version = pkg_resources.safe_version
-setuptools_major_version = int(
-    pkg_resources.get_distribution("setuptools").version.split(".")[0]
-)
+
+def safe_name(name):
+    """Convert an arbitrary string to a standard distribution name
+    Any runs of non-alphanumeric/. characters are replaced with a single '-'.
+    """
+    return re.sub("[^A-Za-z0-9.]+", "-", name)
+
+
+def safe_version(version):
+    """
+    Convert an arbitrary string to a standard version string
+    """
+    try:
+        # normalize the version
+        return str(_packaging_version.Version(version))
+    except _packaging_version.InvalidVersion:
+        version = version.replace(" ", ".")
+        return re.sub("[^A-Za-z0-9.]+", "-", version)
+
+
+setuptools_major_version = int(setuptools.__version__.split(".")[0])
 
 PY_LIMITED_API_PATTERN = r"cp3\d"
 
