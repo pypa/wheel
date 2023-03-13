@@ -3,7 +3,7 @@ Release Notes
 
 **UNRELEASED**
 
-- Added a ``wheel tags`` command to modify tags on an existing wheel.
+- Added a ``wheel tags`` command to modify tags on an existing wheel
 - Updated vendored ``packaging`` to 23.0
 - ``wheel unpack`` now preserves the executable attribute of extracted files
 - Fixed spaces in platform names not being converted to underscores (PR by David Tucker)
