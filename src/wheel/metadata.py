@@ -152,7 +152,7 @@ def pkginfo_to_metadata(egg_info_path: str, pkginfo_path: str) -> Message:
     del pkg_info["Requires-Dist"]
     requires_path = os.path.join(egg_info_path, "requires.txt")
     if os.path.exists(requires_path):
-        with open(requires_path) as requires_file:
+        with open(requires_path, encoding="utf-8") as requires_file:
             requires = requires_file.read()
 
         parsed_requirements = sorted(split_sections(requires), key=lambda x: x[0] or "")
