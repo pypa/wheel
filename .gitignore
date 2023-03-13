@@ -10,6 +10,8 @@ src/wheel/_version.py
 __pycache__
 .coverage
 .pytest_cache
+.ruff_cache
+.mypy_cache
 .tox
 .idea
 .cache
