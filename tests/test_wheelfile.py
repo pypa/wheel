@@ -181,7 +181,6 @@ def test_attributes(tmp_path_factory, wheel_path):
         path.chmod(mode)
 
     with WheelFile(wheel_path, "w") as wf:
-        wf.writestr("somefile", b"blaa")
         wf.write_files(str(build_dir))
 
     with ZipFile(wheel_path, "r") as zf:
