@@ -25,11 +25,12 @@ def test_unpack_executable_bit(tmp_path):
     wheel_path = tmp_path / "test-1.0-py3-none-any.whl"
     script_path = tmp_path / "script"
     script_path.write_bytes(b"test script")
-    script_path.chmod(0o777)
+    script_path.chmod(0o755)
     with WheelFile(wheel_path, "w") as wf:
-        wf.write(str(script_path), "script")
+        wf.write(str(script_path), "nested/script")
 
     script_path.unlink()
-    script_path = script_path.parent / "test-1.0" / "script"
+    script_path = tmp_path / "test-1.0" / "nested" / "script"
     unpack(str(wheel_path), str(tmp_path))
-    assert stat.S_IMODE(script_path.stat().st_mode) & 0o111
+    assert not script_path.is_dir()
+    assert stat.S_IMODE(script_path.stat().st_mode) == 0o755
