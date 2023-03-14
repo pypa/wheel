@@ -5,6 +5,7 @@
 *.dll
 build
 dist
+venv*/
 docs/_build
 src/wheel/_version.py
 __pycache__
