@@ -22,7 +22,6 @@ classifiers = [
 authors = [{name = "Daniel Holth", email = "dholth@fastmail.fm"}]
 maintainers = [{name = "Alex Grönholm", email = "alex.gronholm@nextday.fi"}]
 keywords = ["wheel", "packaging"]
-license = {file = "LICENSE.txt"}
 requires-python = ">=3.7"
 dynamic = ["version"]
 
