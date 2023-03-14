@@ -33,9 +33,12 @@ def test_compare_sdists(monkeypatch, tmp_path):
     (sdist_build,) = sdist_build_dir.glob("*.tar.gz")
 
     # Flit doesn't allow targeting directories, as far as I can tell
-    subprocess.run(
-        [sys.executable, "-m", "flit", "build", "--format=sdist"], check=True
+    process = subprocess.run(
+        [sys.executable, "-m", "flit", "build", "--format=sdist"],
+        stderr=subprocess.PIPE,
     )
+    if process.returncode != 0:
+        pytest.fail(process.stderr.decode("utf-8"))
 
     (sdist_flit,) = Path("dist").glob("*.tar.gz")
 
