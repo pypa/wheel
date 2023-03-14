@@ -100,9 +100,6 @@ select = [
     "UP",           # pyupgrade
     "B0",           # flake8-bugbear
 ]
-ignore = [
-    "E501",  # Line too long
-]
 target-version = "py37"
 src = ["src"]
 
