@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.40.0 (2023-03-14)**
 
 - Added a ``wheel tags`` command to modify tags on an existing wheel
   (PR by Henry Schreiner)
