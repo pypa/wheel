@@ -83,7 +83,7 @@ def get_flag(var, fallback, expected=True, warn=True):
                 "Config variable '{}' is unset, Python ABI tag may "
                 "be incorrect".format(var),
                 RuntimeWarning,
-                2,
+                stacklevel=2,
             )
         return fallback
     return val == expected
@@ -473,6 +473,7 @@ class bdist_wheel(Command):
             warnings.warn(
                 'The "license_file" option is deprecated. Use "license_files" instead.',
                 DeprecationWarning,
+                stacklevel=2,
             )
             files.add(metadata["license_file"][1])
 
