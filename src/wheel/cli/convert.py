@@ -188,7 +188,7 @@ def wininst2wheel(path, dest_dir):
         else:
             paths = {"platlib": ""}
 
-        dist_info = "%(name)s-%(ver)s" % info
+        dist_info = "{name}-{ver}".format(**info)
         datadir = "%s.data/" % dist_info
 
         # rewrite paths to trick ZipFile into extracting an egg
