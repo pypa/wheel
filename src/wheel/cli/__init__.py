@@ -57,7 +57,7 @@ def version_f(args):
     print("wheel %s" % __version__)
 
 
-def parse_build_tag(build_tag: str):
+def parse_build_tag(build_tag: str) -> str:
     if not build_tag[0].isdigit():
         raise ArgumentTypeError("build tag must begin with a digit")
     elif "-" in build_tag:
