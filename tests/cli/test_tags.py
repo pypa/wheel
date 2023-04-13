@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import shutil
+import sys
 from pathlib import Path
 from zipfile import ZipFile
 
 import pytest
 
-from wheel.cli import parser
+from wheel.cli import main, parser
 from wheel.cli.tags import tags
 from wheel.wheelfile import WheelFile
 
@@ -110,12 +111,29 @@ def test_plat_tags(wheelpath):
     assert TESTWHEEL_NAME == newname
 
 
-def test_build_number(wheelpath):
-    newname = tags(str(wheelpath), build_number=1)
-    assert TESTWHEEL_NAME.replace("-py2", "-1-py2") == newname
+def test_build_tag(wheelpath):
+    newname = tags(str(wheelpath), build_tag="1bah")
+    assert TESTWHEEL_NAME.replace("-py2", "-1bah-py2") == newname
     output_file = wheelpath.parent / newname
     assert output_file.exists()
     output_file.unlink()
+
+
+@pytest.mark.parametrize(
+    "build_tag, error",
+    [
+        pytest.param("foo", "build tag must begin with a digit", id="digitstart"),
+        pytest.param("1-f", "invalid character ('-') in build tag", id="hyphen"),
+    ],
+)
+def test_invalid_build_tag(wheelpath, build_tag, error, monkeypatch, capsys):
+    monkeypatch.setattr(sys, "argv", [sys.argv[0], "tags", "--build", build_tag])
+    with pytest.raises(SystemExit) as exc:
+        main()
+
+    _, err = capsys.readouterr()
+    assert exc.value.args[0] == 2
+    assert f"error: argument --build: {error}" in err
 
 
 def test_multi_tags(wheelpath):
@@ -123,7 +141,7 @@ def test_multi_tags(wheelpath):
         str(wheelpath),
         platform_tags="linux_x86_64",
         python_tags="+py4",
-        build_number=1,
+        build_tag="1",
     )
     assert "test-1.0-1-py2.py3.py4-none-linux_x86_64.whl" == newname
 

@@ -27,7 +27,7 @@ def tags(
     python_tags: str | None = None,
     abi_tags: str | None = None,
     platform_tags: str | None = None,
-    build_number: int | None = None,
+    build_tag: str | None = None,
     remove: bool = False,
 ) -> str:
     """Change the tags on a wheel file.
@@ -41,7 +41,7 @@ def tags(
     :param python_tags: The Python tags to set
     :param abi_tags: The ABI tags to set
     :param platform_tags: The platform tags to set
-    :param build_number: The build number to set
+    :param build_tag: The build tag to set
     :param remove: Remove the original wheel
     """
     with WheelFile(wheel, "r") as f:
@@ -56,7 +56,7 @@ def tags(
         original_abi_tags = f.parsed_filename.group("abi").split(".")
         original_plat_tags = f.parsed_filename.group("plat").split(".")
 
-    tags, existing_build_number = read_tags(wheel_info)
+    tags, existing_build_tag = read_tags(wheel_info)
 
     impls = {tag.split("-")[0] for tag in tags}
     abivers = {tag.split("-")[1] for tag in tags}
@@ -76,16 +76,16 @@ def tags(
         )
         raise AssertionError(msg)
 
-    if existing_build_number != build:
+    if existing_build_tag != build:
         msg = (
             f"Incorrect filename '{build}' "
-            "& *.dist-info/WHEEL '{existing_build_number}' build numbers"
+            f"& *.dist-info/WHEEL '{existing_build_tag}' build numbers"
         )
         raise AssertionError(msg)
 
     # Start changing as needed
-    if build_number is not None:
-        build = str(build_number)
+    if build_tag is not None:
+        build = build_tag
 
     final_python_tags = sorted(_compute_tags(original_python_tags, python_tags))
     final_abi_tags = sorted(_compute_tags(original_abi_tags, abi_tags))
