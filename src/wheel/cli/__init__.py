@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+from argparse import ArgumentTypeError
 
 
 class WheelError(Exception):
@@ -54,6 +55,15 @@ def version_f(args):
     from .. import __version__
 
     print("wheel %s" % __version__)
+
+
+def parse_build_tag(build_tag: str) -> str:
+    if not build_tag[0].isdigit():
+        raise ArgumentTypeError("build tag must begin with a digit")
+    elif "-" in build_tag:
+        raise ArgumentTypeError("invalid character ('-') in build tag")
+
+    return build_tag
 
 
 TAGS_HELP = """\
@@ -117,7 +127,7 @@ def parser():
         "--platform-tag", metavar="TAG", help="Specify a platform tag(s)"
     )
     tags_parser.add_argument(
-        "--build", type=int, metavar="NUMBER", help="Specify a build number"
+        "--build", type=parse_build_tag, metavar="BUILD", help="Specify a build tag"
     )
     tags_parser.set_defaults(func=tags_f)
 
