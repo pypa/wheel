@@ -5,6 +5,8 @@ Release Notes
 
 - Added full support of the build tag syntax to ``wheel tags`` (you can now set a build
   tag like ``123mytag``)
+- Fix warning on Python 3.12 about ``onerror`` deprecation. (PR by Henry Schreiner)
+- Support testing on Python 3.12 betas (PR by Ewout ter Hoeven)
 
 **0.40.0 (2023-03-14)**
 
