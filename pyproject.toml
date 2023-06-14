@@ -18,6 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 authors = [{name = "Daniel Holth", email = "dholth@fastmail.fm"}]
 maintainers = [{name = "Alex Grönholm", email = "alex.gronholm@nextday.fi"}]
@@ -39,7 +40,7 @@ bdist_wheel = "wheel.bdist_wheel:bdist_wheel"
 [project.optional-dependencies]
 test = [
     "pytest >= 6.0.0",
-    "setuptools >= 65"
+    "setuptools >= 65",
 ]
 
 [tool.flit.sdist]
@@ -97,25 +98,27 @@ select = [
     "I",            # isort
     "PGH",          # pygrep-hooks
     "UP",           # pyupgrade
-    "B0",           # flake8-bugbear
+    "B",            # flake8-bugbear
 ]
 src = ["src"]
 
+# Tox (https://tox.wiki/) is a tool for running tests in multiple virtualenvs.
+# This configuration file will run the test suite on all supported python
+# versions. To use it, "pipx install tox" and then run "tox" from this
+# directory.
+
 [tool.tox]
 legacy_tox_ini = '''
-# Tox (https://tox.wiki/) is a tool for running tests
-# in multiple virtualenvs. This configuration file will run the
-# test suite on all supported python versions. To use it, "pip install tox"
-# and then run "tox" from this directory.
-
 [tox]
-envlist = py37, py38, py39, py310, py311, pypy3, lint, pkg
+envlist = py37, py38, py39, py310, py311, py312, pypy3, lint, pkg
 minversion = 4.0.0
 skip_missing_interpreters = true
 
 [testenv]
+package = wheel
+wheel_build_env = .pkg
 depends = lint
-commands = {envpython} -b -m pytest {posargs}
+commands = {env_python} -b -m pytest {posargs}
 extras = test
 set_env =
   PYTHONWARNDEFAULTENCODING = 1

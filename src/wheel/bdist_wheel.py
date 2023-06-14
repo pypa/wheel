@@ -238,7 +238,7 @@ class bdist_wheel(Command):
         try:
             self.compression = self.supported_compressions[self.compression]
         except KeyError:
-            raise ValueError(f"Unsupported compression: {self.compression}")
+            raise ValueError(f"Unsupported compression: {self.compression}") from None
 
         need_options = ("dist_dir", "plat_name", "skip_build")
 

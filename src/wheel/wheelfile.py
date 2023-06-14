@@ -62,7 +62,7 @@ class WheelFile(ZipFile):
             try:
                 record = self.open(self.record_path)
             except KeyError:
-                raise WheelError(f"Missing {self.record_path} file")
+                raise WheelError(f"Missing {self.record_path} file") from None
 
             with record:
                 for line in csv.reader(
@@ -76,7 +76,9 @@ class WheelFile(ZipFile):
                     try:
                         hashlib.new(algorithm)
                     except ValueError:
-                        raise WheelError(f"Unsupported hash algorithm: {algorithm}")
+                        raise WheelError(
+                            f"Unsupported hash algorithm: {algorithm}"
+                        ) from None
 
                     if algorithm.lower() in {"md5", "sha1"}:
                         raise WheelError(
