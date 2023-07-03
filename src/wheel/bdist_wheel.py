@@ -135,7 +135,6 @@ def remove_readonly(func, path, excinfo):
 
 
 def remove_readonly_exc(func, path, exc):
-    print(str(exc))
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
