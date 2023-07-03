@@ -68,7 +68,6 @@ exclude = [
 ]
 
 [tool.black]
-target-version = ['py37']
 extend-exclude = '''
 ^/src/wheel/vendored/
 '''
@@ -100,7 +99,6 @@ select = [
     "UP",           # pyupgrade
     "B0",           # flake8-bugbear
 ]
-target-version = "py37"
 src = ["src"]
 
 [tool.tox]
