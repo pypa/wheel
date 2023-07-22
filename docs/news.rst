@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.41.0 (2023-07-22)**
 
 - Added full support of the build tag syntax to ``wheel tags`` (you can now set a build
   tag like ``123mytag``)
