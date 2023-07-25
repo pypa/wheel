@@ -113,6 +113,9 @@ def get_abi_tag():
         # we want something like pypy36-pp73
         abi = "-".join(soabi.split("-")[:2])
         abi = abi.replace(".", "_").replace("-", "_")
+    elif soabi and impl == "graalpy":
+        abi = "-".join(soabi.split("-")[:3])
+        abi = abi.replace(".", "_").replace("-", "_")
     elif soabi:
         abi = soabi.replace(".", "_").replace("-", "_")
     else:
