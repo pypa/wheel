@@ -1,13 +1,17 @@
 name: Publish packages to PyPI
 
 on:
-  create:
-    tags: "*"
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+.post[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+[a-b][0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+rc[0-9]+"
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    environment: release
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python
@@ -18,7 +22,20 @@ jobs:
       run: pip install flit
     - name: Create packages
       run: flit build --setup-py
+    - name: Store package artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: dist
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
+    steps:
+    - name: Retrieve package artifacts
+      uses: actions/download-artifact@v3
     - name: Upload packages
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.pypi_password }}
