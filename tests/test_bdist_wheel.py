@@ -377,6 +377,7 @@ def test_data_dir_with_tag_build(monkeypatch, tmp_path):
         "test-1.0+what.dist-info/WHEEL",
     ):
         assert expected in entries
+
     for not_expected in (
         "test.data/headers/hello.h",
         "test-1.0.data/data/hello/world/file.txt",
