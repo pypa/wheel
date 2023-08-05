@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.41.1 (2023-08-05)**
 
 - Fixed naming of the ``data_dir`` directory in the presence of local version segment
   given via ``egg_info.tag_build`` (PR by Anderson Bravalheri)
