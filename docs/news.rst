@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fix naming of the ``data_dir`` directory in the presence of local version segment
+  given via ``egg_info.tag_build`` (PR by Anderson Bravalheri)
+
 **0.41.0 (2023-07-22)**
 
 - Added full support of the build tag syntax to ``wheel tags`` (you can now set a build
