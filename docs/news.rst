@@ -5,6 +5,7 @@ Release Notes
 
 - Fixed naming of the ``data_dir`` directory in the presence of local version segment
   given via ``egg_info.tag_build`` (PR by Anderson Bravalheri)
+- Fixed version specifiers in ``Requires-Dist`` being wrapped in parentheses
 
 **0.41.0 (2023-07-22)**
 

@@ -92,7 +92,7 @@ def requires_to_requires_dist(requirement: Requirement) -> str:
         requires_dist.append(spec.operator + spec.version)
 
     if requires_dist:
-        return " (" + ",".join(sorted(requires_dist)) + ")"
+        return " " + ",".join(sorted(requires_dist))
     else:
         return ""
 
