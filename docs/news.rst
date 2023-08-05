@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fix ``bdist_wheel.data_dir`` in the presence of local version segment
+  given via ``egg_info.tag_build`` (PR #550 by Anderson Bravalheri)
+
 **0.41.0 (2023-07-22)**
 
 - Added full support of the build tag syntax to ``wheel tags`` (you can now set a build
