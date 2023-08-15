@@ -80,8 +80,7 @@ def get_flag(var, fallback, expected=True, warn=True):
     if val is None:
         if warn:
             warnings.warn(
-                "Config variable '{}' is unset, Python ABI tag may "
-                "be incorrect".format(var),
+                f"Config variable '{var}' is unset, Python ABI tag may " "be incorrect",
                 RuntimeWarning,
                 stacklevel=2,
             )
