@@ -394,13 +394,6 @@ def test_data_dir_with_tag_build(monkeypatch, tmp_path):
     [("linux-x86_64", "linux_i686"), ("linux-aarch64", "linux_armv7l")],
 )
 def test_platform_linux32(reported, expected, monkeypatch):
-    def return_factory(return_val):
-        def fun(*args, **kwargs):
-            return return_val
-
-        return fun
-
-    monkeypatch.setattr(sysconfig, "get_platform", return_factory(reported))
     monkeypatch.setattr(struct, "calcsize", lambda x: 4)
     dist = setuptools.Distribution()
     cmd = bdist_wheel(dist)
