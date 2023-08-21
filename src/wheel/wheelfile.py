@@ -6,7 +6,6 @@ import os.path
 import re
 import stat
 import time
-from collections import OrderedDict
 from io import StringIO, TextIOWrapper
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
@@ -50,7 +49,7 @@ class WheelFile(ZipFile):
             self.parsed_filename.group("namever")
         )
         self.record_path = self.dist_info_path + "/RECORD"
-        self._file_hashes = OrderedDict()
+        self._file_hashes = {}
         self._file_sizes = {}
         if mode == "r":
             # Ignore RECORD and any embedded wheel signatures
