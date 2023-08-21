@@ -225,8 +225,10 @@ def test_permission_bits(capsys, wheelpath):
                 member_info = inf.getinfo(member)
                 if member_info.is_dir():
                     continue
+                
                 if member_info.filename.endswith("/RECORD"):
                     continue
+
                 out_attr = outf.getinfo(member).external_attr
                 inf_attr = member_info.external_attr
                 assert (
