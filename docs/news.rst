@@ -5,6 +5,8 @@ Release Notes
 
 - Fixed platform tag detection for GraalPy and 32-bit python running on an aarch64
   kernel (PR by Matthieu Darbois)
+- Fixed ``wheel tags`` to not list directories in ``RECORD`` files
+  (PR by Mike Taves)
 
 **0.41.1 (2023-08-05)**
 

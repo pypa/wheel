@@ -120,6 +120,8 @@ def tags(
         ) as fout:
             fout.comment = fin.comment  # preserve the comment
             for item in fin.infolist():
+                if item.is_dir():
+                    continue
                 if item.filename == f.dist_info_path + "/RECORD":
                     continue
                 if item.filename == f.dist_info_path + "/WHEEL":

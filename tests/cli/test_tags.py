@@ -222,11 +222,15 @@ def test_permission_bits(capsys, wheelpath):
     with ZipFile(str(output_file), "r") as outf:
         with ZipFile(str(wheelpath), "r") as inf:
             for member in inf.namelist():
-                if not member.endswith("/RECORD"):
-                    out_attr = outf.getinfo(member).external_attr
-                    inf_attr = inf.getinfo(member).external_attr
-                    assert (
-                        out_attr == inf_attr
-                    ), f"{member} 0x{out_attr:012o} != 0x{inf_attr:012o}"
+                member_info = inf.getinfo(member)
+                if member_info.is_dir():
+                    continue
+                if member_info.filename.endswith("/RECORD"):
+                    continue
+                out_attr = outf.getinfo(member).external_attr
+                inf_attr = member_info.external_attr
+                assert (
+                    out_attr == inf_attr
+                ), f"{member} 0x{out_attr:012o} != 0x{inf_attr:012o}"
 
     output_file.unlink()
