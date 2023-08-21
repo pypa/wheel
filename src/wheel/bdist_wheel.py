@@ -14,7 +14,6 @@ import struct
 import sys
 import sysconfig
 import warnings
-from collections import OrderedDict
 from email.generator import BytesGenerator, Generator
 from email.policy import EmailPolicy
 from glob import iglob
@@ -152,9 +151,10 @@ def remove_readonly_exc(func, path, exc):
 class bdist_wheel(Command):
     description = "create a wheel distribution"
 
-    supported_compressions = OrderedDict(
-        [("stored", ZIP_STORED), ("deflated", ZIP_DEFLATED)]
-    )
+    supported_compressions = {
+        "stored": ZIP_STORED,
+        "deflated": ZIP_DEFLATED,
+    }
 
     user_options = [
         ("bdist-dir=", "b", "temporary directory for creating the distribution"),
@@ -168,7 +168,7 @@ class bdist_wheel(Command):
             "keep-temp",
             "k",
             "keep the pseudo-installation tree around after "
-            + "creating the distribution archive",
+            "creating the distribution archive",
         ),
         ("dist-dir=", "d", "directory to put final built distributions in"),
         ("skip-build", None, "skip rebuilding everything (for testing/debugging)"),
