@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed platform tag detection for GraalPy and 32-bit python running on an aarch64
+  kernel (PR by Matthieu Darbois)
+
 **0.41.1 (2023-08-05)**
 
 - Fixed naming of the ``data_dir`` directory in the presence of local version segment

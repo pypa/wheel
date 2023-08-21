@@ -3,6 +3,7 @@ from __future__ import annotations
 import os.path
 import shutil
 import stat
+import struct
 import subprocess
 import sys
 import sysconfig
@@ -11,6 +12,7 @@ from unittest.mock import Mock
 from zipfile import ZipFile
 
 import pytest
+import setuptools
 
 from wheel.bdist_wheel import (
     bdist_wheel,
@@ -385,3 +387,17 @@ def test_data_dir_with_tag_build(monkeypatch, tmp_path):
         "test-1.0.dist-info/WHEEL",
     ):
         assert not_expected not in entries
+
+
+@pytest.mark.parametrize(
+    "reported,expected",
+    [("linux-x86_64", "linux_i686"), ("linux-aarch64", "linux_armv7l")],
+)
+def test_platform_linux32(reported, expected, monkeypatch):
+    monkeypatch.setattr(struct, "calcsize", lambda x: 4)
+    dist = setuptools.Distribution()
+    cmd = bdist_wheel(dist)
+    cmd.plat_name = reported
+    cmd.root_is_pure = False
+    _, _, actual = cmd.get_tag()
+    assert actual == expected
