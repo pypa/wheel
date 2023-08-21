@@ -10,6 +10,7 @@ import os
 import re
 import shutil
 import stat
+import struct
 import sys
 import sysconfig
 import warnings
@@ -57,6 +58,10 @@ setuptools_major_version = int(setuptools.__version__.split(".")[0])
 PY_LIMITED_API_PATTERN = r"cp3\d"
 
 
+def _is_32bit_interpreter():
+    return struct.calcsize("P") == 4
+
+
 def python_tag():
     return f"py{sys.version_info[0]}"
 
@@ -66,9 +71,15 @@ def get_platform(archive_root):
     result = sysconfig.get_platform()
     if result.startswith("macosx") and archive_root is not None:
         result = calculate_macosx_platform_tag(archive_root, result)
-    elif result == "linux-x86_64" and sys.maxsize == 2147483647:
-        # pip pull request #3497
-        result = "linux-i686"
+    elif _is_32bit_interpreter():
+        if result == "linux-x86_64":
+            # pip pull request #3497
+            result = "linux-i686"
+        elif result == "linux-aarch64":
+            # packaging pull request #234
+            # TODO armv8l, packaging pull request #690 => this did not land
+            # in pip/packaging yet
+            result = "linux-armv7l"
 
     return result.replace("-", "_")
 
@@ -303,11 +314,13 @@ class bdist_wheel(Command):
                 # modules, use the default platform name.
                 plat_name = get_platform(self.bdist_dir)
 
-            if (
-                plat_name in ("linux-x86_64", "linux_x86_64")
-                and sys.maxsize == 2147483647
-            ):
-                plat_name = "linux_i686"
+            if _is_32bit_interpreter():
+                if plat_name in ("linux-x86_64", "linux_x86_64"):
+                    plat_name = "linux_i686"
+                if plat_name in ("linux-aarch64", "linux_aarch64"):
+                    # TODO armv8l, packaging pull request #690 => this did not land
+                    # in pip/packaging yet
+                    plat_name = "linux_armv7l"
 
         plat_name = (
             plat_name.lower().replace("-", "_").replace(".", "_").replace(" ", "_")
