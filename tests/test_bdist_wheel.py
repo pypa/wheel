@@ -285,16 +285,28 @@ def test_unix_epoch_timestamps(dummy_dist, monkeypatch, tmp_path):
     )
 
 
-def test_get_abi_tag_old(monkeypatch):
+def test_get_abi_tag_pypy_old(monkeypatch):
     monkeypatch.setattr(tags, "interpreter_name", lambda: "pp")
     monkeypatch.setattr(sysconfig, "get_config_var", lambda x: "pypy36-pp73")
     assert get_abi_tag() == "pypy36_pp73"
 
 
-def test_get_abi_tag_new(monkeypatch):
+def test_get_abi_tag_pypy_new(monkeypatch):
     monkeypatch.setattr(sysconfig, "get_config_var", lambda x: "pypy37-pp73-darwin")
     monkeypatch.setattr(tags, "interpreter_name", lambda: "pp")
     assert get_abi_tag() == "pypy37_pp73"
+
+
+def test_get_abi_tag_graalpy(monkeypatch):
+    monkeypatch.setattr(sysconfig, "get_config_var", lambda x: "graalpy231-310-native-x86_64-linux")
+    monkeypatch.setattr(tags, "interpreter_name", lambda: "graalpy")
+    assert get_abi_tag() == "graalpy231_310_native"
+
+
+def test_get_abi_tag_fallback(monkeypatch):
+    monkeypatch.setattr(sysconfig, "get_config_var", lambda x: "unknown-python-310")
+    monkeypatch.setattr(tags, "interpreter_name", lambda: "unknown-python")
+    assert get_abi_tag() == "unknown_python_310"
 
 
 def test_platform_with_space(dummy_dist, monkeypatch):
