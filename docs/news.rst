@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.41.2 (2023-08-22)**
 
 - Fixed platform tag detection for GraalPy and 32-bit python running on an aarch64
   kernel (PR by Matthieu Darbois)
