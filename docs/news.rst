@@ -7,6 +7,7 @@ Release Notes
   kernel (PR by Matthieu Darbois)
 - Fixed ``wheel tags`` to not list directories in ``RECORD`` files
   (PR by Mike Taves)
+- Fixed ABI tag generation for GraalPy (PR by Michael Simacek)
 
 **0.41.1 (2023-08-05)**
 
