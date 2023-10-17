@@ -39,6 +39,9 @@ wheel = "wheel.cli:main"
 bdist_wheel = "wheel.bdist_wheel:bdist_wheel"
 
 [project.optional-dependencies]
+convert = [
+    "setuptools",
+]
 test = [
     "pytest >= 6.0.0",
     "setuptools >= 65",
