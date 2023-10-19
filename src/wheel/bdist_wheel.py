@@ -117,7 +117,11 @@ def get_abi_tag():
             m = "m"
 
         abi = f"{impl}{tags.interpreter_version()}{d}{m}{u}"
-    elif soabi and impl == "cp":
+    elif soabi and impl == "cp" and soabi.startswith("cp"):
+        # Windows
+        abi = soabi.split("-")[0]
+    elif soabi and impl == "cp" and soabi.startswith("cpython"):
+        # non-Windows
         abi = "cp" + soabi.split("-")[1]
     elif soabi and impl == "pp":
         # we want something like pypy36-pp73

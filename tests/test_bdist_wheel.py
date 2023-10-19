@@ -287,6 +287,12 @@ def test_unix_epoch_timestamps(dummy_dist, monkeypatch, tmp_path):
     )
 
 
+def test_get_abi_tag_windows(monkeypatch):
+    monkeypatch.setattr(tags, "interpreter_name", lambda: "cp")
+    monkeypatch.setattr(sysconfig, "get_config_var", lambda x: "cp313-win_amd64")
+    assert get_abi_tag() == "cp313"
+
+
 def test_get_abi_tag_pypy_old(monkeypatch):
     monkeypatch.setattr(tags, "interpreter_name", lambda: "pp")
     monkeypatch.setattr(sysconfig, "get_config_var", lambda x: "pypy36-pp73")
