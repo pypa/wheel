@@ -3,7 +3,7 @@ Release Notes
 
 **UNRELEASED**
 
-- Fixed ABI tag generation for CPython 3.13a1 on Windows (PR by Sam Goss)
+- Fixed ABI tag generation for CPython 3.13a1 on Windows (PR by Sam Gross)
 
 **0.41.2 (2023-08-22)**
 
