@@ -110,7 +110,7 @@ src = ["src"]
 [tool.tox]
 legacy_tox_ini = '''
 [tox]
-envlist = py37, py38, py39, py310, py311, py312, pypy3, lint, pkg
+envlist = py37, py38, py39, py310, py311, py312, py313, pypy3, lint, pkg
 minversion = 4.0.0
 skip_missing_interpreters = true
 
