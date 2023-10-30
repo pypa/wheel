@@ -67,9 +67,7 @@ def test_pack(tmp_path_factory, tmp_path, build_tag_arg, existing_build_tag, fil
         Root-Is-Purelib: false
         Tag: py2-none-any
         Tag: py3-none-any
-    """.replace(
-            "\n", "\r\n"
-        )
+    """.replace("\n", "\r\n")
     )
     if expected_build_num:
         expected_wheel_content += "Build: %s\r\n" % expected_build_num
