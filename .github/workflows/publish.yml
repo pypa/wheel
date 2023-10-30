@@ -52,7 +52,7 @@ jobs:
       uses: agronholm/release-notes@v1
       with:
         path: docs/news.rst
-        pattern: "^\\*\\*([0-9a-z.]+) "
+        version_pattern: "^\\*\\*([0-9a-z.]+) "
     - uses: ncipollo/release-action@v1
       with:
         body: ${{ steps.changelog.outputs.changelog }}
