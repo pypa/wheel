@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -39,3 +39,20 @@ jobs:
       uses: actions/download-artifact@v3
     - name: Upload packages
       uses: pypa/gh-action-pypi-publish@release/v1
+
+  release:
+    name: Create a GitHub release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v4
+    - id: changelog
+      uses: agronholm/release-notes@v1
+      with:
+        path: docs/news.rst
+        pattern: "^\\*\\*([0-9a-z.]+) "
+    - uses: ncipollo/release-action@v1
+      with:
+        body: ${{ steps.changelog.outputs.changelog }}
