@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.41.3 (2023-10-30)**
 
 - Updated vendored ``packaging`` to 23.2
 - Fixed ABI tag generation for CPython 3.13a1 on Windows (PR by Sam Gross)
