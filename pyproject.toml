@@ -30,7 +30,7 @@ dynamic = ["version"]
 Documentation = "https://wheel.readthedocs.io/"
 Changelog = "https://wheel.readthedocs.io/en/stable/news.html"
 "Issue Tracker" = "https://github.com/pypa/wheel/issues"
-Source = "https://github.com/pypa/wheel/"
+Source = "https://github.com/pypa/wheel"
 
 [project.scripts]
 wheel = "wheel.cli:main"
