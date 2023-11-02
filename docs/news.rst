@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**0.41.3 (2023-10-30)**
+
+- Updated vendored ``packaging`` to 23.2
+- Fixed ABI tag generation for CPython 3.13a1 on Windows (PR by Sam Gross)
+
 **0.41.2 (2023-08-22)**
 
 - Fixed platform tag detection for GraalPy and 32-bit python running on an aarch64
