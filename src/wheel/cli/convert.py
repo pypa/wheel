@@ -42,7 +42,7 @@ class _bdist_wheel_tag(bdist_wheel):
             return bdist_wheel.get_tag(self)
 
 
-def egg2wheel(egg_path: str, dest_dir: str):
+def egg2wheel(egg_path: str, dest_dir: str) -> None:
     filename = os.path.basename(egg_path)
     match = egg_info_re.match(filename)
     if not match:

@@ -10,7 +10,7 @@ DIST_INFO_RE = re.compile(r"^(?P<namever>(?P<name>.+?)-(?P<ver>\d.*?))\.dist-inf
 BUILD_NUM_RE = re.compile(rb"Build: (\d\w*)$")
 
 
-def pack(directory: str, dest_dir: str, build_number: str | None):
+def pack(directory: str, dest_dir: str, build_number: str | None) -> None:
     """Repack a previously unpacked wheel directory into a new wheel file.
 
     The .dist-info/WHEEL file must contain one or more tags so that the target
