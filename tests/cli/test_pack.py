@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import email.policy
 import os
-from textwrap import dedent
+from email.message import Message
+from email.parser import BytesParser
 from zipfile import ZipFile
 
 import pytest
@@ -55,24 +57,25 @@ def test_pack(tmp_path_factory, tmp_path, build_tag_arg, existing_build_tag, fil
             if line and not line.startswith(b"test-1.0.dist-info/WHEEL,")
         )
 
-        new_wheel_file_content = zf.read("test-1.0.dist-info/WHEEL")
+        parser = BytesParser(policy=email.policy.compat32)
+        new_wheel_file_content = parser.parsebytes(zf.read("test-1.0.dist-info/WHEEL"))
 
     assert new_record_lines == old_record_lines
 
+    # Line endings and trailing blank line will depend on whether WHEEL
+    # was modified.  Circumvent this by comparing parsed key/value pairs.
+    expected_wheel_content = Message()
+    expected_wheel_content["Wheel-Version"] = "1.0"
+    expected_wheel_content["Generator"] = "bdist_wheel (0.30.0)"
+    expected_wheel_content["Root-Is-Purelib"] = "false"
+    expected_wheel_content["Tag"] = "py2-none-any"
+    expected_wheel_content["Tag"] = "py3-none-any"
     expected_build_num = (
         build_tag_arg if build_tag_arg is not None else existing_build_tag
     )
-    expected_wheel_content = dedent(
-        """\
-        Wheel-Version: 1.0
-        Generator: bdist_wheel (0.30.0)
-        Root-Is-Purelib: false
-        Tag: py2-none-any
-        Tag: py3-none-any
-    """.replace("\n", "\r\n")
-    )
     if expected_build_num:
-        expected_wheel_content += "Build: %s\r\n" % expected_build_num
+        expected_wheel_content["Build"] = expected_build_num
 
-    expected_wheel_content = expected_wheel_content.encode("ascii")
-    assert new_wheel_file_content == expected_wheel_content
+    assert sorted(new_wheel_file_content.items()) == sorted(
+        expected_wheel_content.items()
+    )
