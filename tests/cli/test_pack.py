@@ -59,7 +59,9 @@ def test_pack(tmp_path_factory, tmp_path, build_tag_arg, existing_build_tag, fil
 
     assert new_record_lines == old_record_lines
 
-    expected_build_num = build_tag_arg or existing_build_tag
+    expected_build_num = (
+        build_tag_arg if build_tag_arg is not None else existing_build_tag
+    )
     expected_wheel_content = dedent(
         """\
         Wheel-Version: 1.0

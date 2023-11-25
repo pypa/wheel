@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed ``wheel pack --build-number ""`` not removing build tag from ``WHEEL``
+  (above changes by Benjamin Gilbert)
+
 **0.41.3 (2023-10-30)**
 
 - Updated vendored ``packaging`` to 23.2

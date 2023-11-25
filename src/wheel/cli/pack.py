@@ -7,7 +7,7 @@ from wheel.cli import WheelError
 from wheel.wheelfile import WheelFile
 
 DIST_INFO_RE = re.compile(r"^(?P<namever>(?P<name>.+?)-(?P<ver>\d.*?))\.dist-info$")
-BUILD_NUM_RE = re.compile(rb"Build: (\d\w*)$")
+BUILD_NUM_RE = re.compile(rb"Build: (\d\w*)\r?\n")
 
 
 def pack(directory: str, dest_dir: str, build_number: str | None) -> None:
