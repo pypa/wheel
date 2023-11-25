@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import email.policy
 import itertools
 import os
 from collections.abc import Iterable
+from email.parser import BytesParser
 
 from ..wheelfile import WheelFile
-from .pack import read_tags, set_build_number
 
 
 def _compute_tags(original_tags: Iterable[str], new_tags: str | None) -> set[str]:
@@ -48,6 +49,7 @@ def tags(
         assert f.filename, f"{f.filename} must be available"
 
         wheel_info = f.read(f.dist_info_path + "/WHEEL")
+        info = BytesParser(policy=email.policy.compat32).parsebytes(wheel_info)
 
         original_wheel_name = os.path.basename(f.filename)
         namever = f.parsed_filename.group("namever")
@@ -56,7 +58,8 @@ def tags(
         original_abi_tags = f.parsed_filename.group("abi").split(".")
         original_plat_tags = f.parsed_filename.group("plat").split(".")
 
-    tags, existing_build_tag = read_tags(wheel_info)
+    tags: list[str] = info.get_all("Tag", [])
+    existing_build_tag = info.get("Build")
 
     impls = {tag.split("-")[0] for tag in tags}
     abivers = {tag.split("-")[1] for tag in tags}
@@ -103,12 +106,13 @@ def tags(
     final_wheel_name = "-".join(final_tags) + ".whl"
 
     if original_wheel_name != final_wheel_name:
-        tags = [
-            f"{a}-{b}-{c}"
-            for a, b, c in itertools.product(
-                final_python_tags, final_abi_tags, final_plat_tags
-            )
-        ]
+        del info["Tag"], info["Build"]
+        for a, b, c in itertools.product(
+            final_python_tags, final_abi_tags, final_plat_tags
+        ):
+            info["Tag"] = f"{a}-{b}-{c}"
+        if build:
+            info["Build"] = build
 
         original_wheel_path = os.path.join(
             os.path.dirname(f.filename), original_wheel_name
@@ -125,10 +129,7 @@ def tags(
                 if item.filename == f.dist_info_path + "/RECORD":
                     continue
                 if item.filename == f.dist_info_path + "/WHEEL":
-                    content = fin.read(item)
-                    content = set_tags(content, tags)
-                    content = set_build_number(content, build)
-                    fout.writestr(item, content)
+                    fout.writestr(item, info.as_bytes())
                 else:
                     fout.writestr(item, fin.read(item))
 
@@ -136,18 +137,3 @@ def tags(
             os.remove(original_wheel_path)
 
     return final_wheel_name
-
-
-def set_tags(in_string: bytes, tags: Iterable[str]) -> bytes:
-    """Set the tags in the .dist-info/WHEEL file contents.
-
-    :param in_string: The string to modify.
-    :param tags: The tags to set.
-    """
-
-    lines = [line for line in in_string.splitlines() if not line.startswith(b"Tag:")]
-    for tag in tags:
-        lines.append(b"Tag: " + tag.encode("ascii"))
-    in_string = b"\r\n".join(lines) + b"\r\n"
-
-    return in_string

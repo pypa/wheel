@@ -39,8 +39,8 @@ def test_python_tags(wheelpath):
     with WheelFile(str(output_file)) as f:
         output = f.read(f.dist_info_path + "/WHEEL")
     assert (
-        output == b"Wheel-Version: 1.0\r\nGenerator: bdist_wheel (0.30.0)"
-        b"\r\nRoot-Is-Purelib: false\r\nTag: py3-none-any\r\n"
+        output == b"Wheel-Version: 1.0\nGenerator: bdist_wheel (0.30.0)"
+        b"\nRoot-Is-Purelib: false\nTag: py3-none-any\n\n"
     )
     output_file.unlink()
 
@@ -116,6 +116,8 @@ def test_build_tag(wheelpath):
     assert TESTWHEEL_NAME.replace("-py2", "-1bah-py2") == newname
     output_file = wheelpath.parent / newname
     assert output_file.exists()
+    newname = tags(str(wheelpath), build_tag="")
+    assert TESTWHEEL_NAME == newname
     output_file.unlink()
 
 
@@ -151,9 +153,9 @@ def test_multi_tags(wheelpath):
         output = f.read(f.dist_info_path + "/WHEEL")
     assert (
         output
-        == b"Wheel-Version: 1.0\r\nGenerator: bdist_wheel (0.30.0)\r\nRoot-Is-Purelib:"
-        b" false\r\nTag: py2-none-linux_x86_64\r\nTag: py3-none-linux_x86_64\r\nTag:"
-        b" py4-none-linux_x86_64\r\nBuild: 1\r\n"
+        == b"Wheel-Version: 1.0\nGenerator: bdist_wheel (0.30.0)\nRoot-Is-Purelib:"
+        b" false\nTag: py2-none-linux_x86_64\nTag: py3-none-linux_x86_64\nTag:"
+        b" py4-none-linux_x86_64\nBuild: 1\n\n"
     )
     output_file.unlink()
 
