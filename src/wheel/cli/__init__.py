@@ -58,7 +58,7 @@ def version_f(args):
 
 
 def parse_build_tag(build_tag: str) -> str:
-    if not build_tag[0].isdigit():
+    if build_tag and not build_tag[0].isdigit():
         raise ArgumentTypeError("build tag must begin with a digit")
     elif "-" in build_tag:
         raise ArgumentTypeError("invalid character ('-') in build tag")

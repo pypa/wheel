@@ -116,6 +116,8 @@ def test_build_tag(wheelpath):
     assert TESTWHEEL_NAME.replace("-py2", "-1bah-py2") == newname
     output_file = wheelpath.parent / newname
     assert output_file.exists()
+    newname = tags(str(wheelpath), build_tag="")
+    assert TESTWHEEL_NAME == newname
     output_file.unlink()
 
 

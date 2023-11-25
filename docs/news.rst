@@ -3,6 +3,7 @@ Release Notes
 
 **UNRELEASED**
 
+- Allow removing build tag with ``wheel tags --build ""``
 - Fixed ``wheel pack --build-number ""`` not removing build tag from ``WHEEL``
   (above changes by Benjamin Gilbert)
 
