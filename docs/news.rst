@@ -1,13 +1,13 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.42.0 (2023-11-26)**
 
+- Allowed removing build tag with ``wheel tags --build ""``
 - Fixed ``wheel pack`` and ``wheel tags`` writing updated ``WHEEL`` fields after a
   blank line, causing other tools to ignore them
 - Fixed ``wheel pack`` and ``wheel tags`` writing ``WHEEL`` with CRLF line endings or
   a mix of CRLF and LF
-- Allow removing build tag with ``wheel tags --build ""``
 - Fixed ``wheel pack --build-number ""`` not removing build tag from ``WHEEL``
   (above changes by Benjamin Gilbert)
 
