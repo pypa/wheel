@@ -110,7 +110,7 @@ def convert_requirements(requirements: list[str]) -> Iterator[str]:
 
 
 def generate_requirements(
-    extras_require: dict[str, list[str]]
+    extras_require: dict[str, list[str]],
 ) -> Iterator[tuple[str, str]]:
     """
     Convert requirements from a setup()-style dictionary to
