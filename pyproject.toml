@@ -94,6 +94,9 @@ show_missing = true
 
 [tool.ruff]
 line-length = 88
+src = ["src"]
+
+[tool.lint]
 select = [
     "E", "F", "W",  # default flake-8
     "I",            # isort
@@ -101,7 +104,6 @@ select = [
     "UP",           # pyupgrade
     "B",            # flake8-bugbear
 ]
-src = ["src"]
 
 # Tox (https://tox.wiki/) is a tool for running tests in multiple virtualenvs.
 # This configuration file will run the test suite on all supported python
