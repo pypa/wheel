@@ -96,7 +96,7 @@ show_missing = true
 line-length = 88
 src = ["src"]
 
-[tool.lint]
+[tool.ruff.lint]
 select = [
     "E", "F", "W",  # default flake-8
     "I",            # isort
