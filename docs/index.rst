@@ -1,7 +1,6 @@
 wheel
 =====
 
-`User list <http://groups.google.com/group/python-virtualenv>`_ |
 `Dev list <https://mail.python.org/archives/list/distutils-sig@python.org/>`_ |
 `GitHub <https://github.com/pypa/wheel>`_ |
 `PyPI <https://pypi.org/pypi/wheel/>`_ |
