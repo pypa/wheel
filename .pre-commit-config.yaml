@@ -18,7 +18,7 @@ repos:
   - id: trailing-whitespace
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.1.7
+  rev: v0.2.0
   hooks:
     - id: ruff
       args: [--fix, --show-fixes]
@@ -35,3 +35,6 @@ repos:
   - id: rst-backticks
   - id: rst-directive-colons
   - id: rst-inline-touching-normal
+
+ci:
+  autoupdate_schedule: quarterly

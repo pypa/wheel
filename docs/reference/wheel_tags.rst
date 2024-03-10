@@ -11,7 +11,7 @@ Usage
 Description
 -----------
 
-Make a new wheel with given tags from and existing wheel. Any tags left
+Make a new wheel with given tags from an existing wheel. Any tags left
 unspecified will remain the same. Multiple tags are separated by a "." Starting
 with a "+" will append to the existing tags.  Starting with a "-" will remove a
 tag. Be sure to use the equals syntax on the shell so that it does not get
