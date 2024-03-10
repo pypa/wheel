@@ -30,16 +30,14 @@ jobs:
           python-version: "pypy-3.10"
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
-    - uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: pip-test-${{ matrix.python-version }}-${{ matrix.os }}
+        cache: pip
+        cache-dependency-path: pyproject.toml
     - name: Install the project
       run: pip install --no-binary=wheel .
     - name: Install test dependencies
@@ -48,12 +46,12 @@ jobs:
       if: matrix.python-version == '3.12'
       run: pip install build flit
     - name: Test with pytest
-      run: |
-        coverage run -m pytest
-        coverage xml
+      run: coverage run -m pytest -v
       env:
         PYTHONWARNDEFAULTENCODING: 1
+    - name: Generate coverage report
+      run: coverage xml
     - name: Send coverage data to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         file: coverage.xml
