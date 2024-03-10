@@ -351,7 +351,7 @@ def test_rmtree_readonly(monkeypatch, tmp_path, capsys):
 
     if expected_count:
         captured = capsys.readouterr()
-        assert "file.txt" in captured.stdout
+        assert "file.txt" in captured.out
 
 
 def test_data_dir_with_tag_build(monkeypatch, tmp_path):
