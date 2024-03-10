@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Dropped support for Python 3.7
+
 **0.42.0 (2023-11-26)**
 
 - Allowed removing build tag with ``wheel tags --build ""``

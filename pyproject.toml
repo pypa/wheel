@@ -13,7 +13,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -23,7 +22,7 @@ classifiers = [
 authors = [{name = "Daniel Holth", email = "dholth@fastmail.fm"}]
 maintainers = [{name = "Alex Grönholm", email = "alex.gronholm@nextday.fi"}]
 keywords = ["wheel", "packaging"]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 dynamic = ["version"]
 
 [project.urls]
@@ -113,7 +112,7 @@ select = [
 [tool.tox]
 legacy_tox_ini = '''
 [tox]
-envlist = py37, py38, py39, py310, py311, py312, py313, pypy3, lint, pkg
+envlist = py38, py39, py310, py311, py312, py313, pypy3, lint, pkg
 minversion = 4.0.0
 skip_missing_interpreters = true
 

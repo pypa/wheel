@@ -14,20 +14,20 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "pypy-3.8", "pypy-3.9"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "pypy-3.9", "pypy-3.10"]
         include:
         - os: macos-latest
-          python-version: "3.7"
+          python-version: "3.8"
         - os: windows-latest
-          python-version: "3.7"
+          python-version: "3.8"
         - os: macos-latest
-          python-version: "3.11"
+          python-version: "3.12"
         - os: windows-latest
-          python-version: "3.11"
+          python-version: "3.12"
         - os: macos-latest
-          python-version: "pypy-3.9"
+          python-version: "pypy-3.10"
         - os: windows-latest
-          python-version: "pypy-3.9"
+          python-version: "pypy-3.10"
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
@@ -45,7 +45,7 @@ jobs:
     - name: Install test dependencies
       run: pip install .[test] coverage[toml]
     - name: Include SDist check dependencies
-      if: matrix.python-version == '3.11'
+      if: matrix.python-version == '3.12'
       run: pip install build flit
     - name: Test with pytest
       run: |
