@@ -1,6 +1,7 @@
 """
 Tools for converting old- to new-style metadata.
 """
+
 from __future__ import annotations
 
 import functools

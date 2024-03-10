@@ -81,8 +81,8 @@ class WheelFile(ZipFile):
 
                     if algorithm.lower() in {"md5", "sha1"}:
                         raise WheelError(
-                            "Weak hash algorithm ({}) is not permitted by PEP "
-                            "427".format(algorithm)
+                            f"Weak hash algorithm ({algorithm}) is not permitted by "
+                            f"PEP 427"
                         )
 
                     self._file_hashes[path] = (

@@ -45,8 +45,8 @@ def pack(directory: str, dest_dir: str, build_number: str | None) -> None:
 
         if not tags:
             raise WheelError(
-                "No tags present in {}/WHEEL; cannot determine target wheel "
-                "filename".format(dist_info_dir)
+                f"No tags present in {dist_info_dir}/WHEEL; cannot determine target "
+                f"wheel filename"
             )
 
     # Set the wheel file name and add/replace/remove the Build tag in .dist-info/WHEEL
