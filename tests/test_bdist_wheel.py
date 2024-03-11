@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os.path
+import platform
 import shutil
 import stat
 import struct
@@ -408,6 +409,9 @@ def test_data_dir_with_tag_build(monkeypatch, tmp_path):
 @pytest.mark.parametrize(
     "reported,expected",
     [("linux-x86_64", "linux_i686"), ("linux-aarch64", "linux_armv7l")],
+)
+@pytest.mark.skipif(
+    platform.system() != "Linux", reason="Only makes sense to test on Linux"
 )
 def test_platform_linux32(reported, expected, monkeypatch):
     monkeypatch.setattr(struct, "calcsize", lambda x: 4)
