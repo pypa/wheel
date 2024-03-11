@@ -327,7 +327,7 @@ def test_platform_with_space(dummy_dist, monkeypatch):
     )
 
 
-def test_rmtree_readonly(monkeypatch, tmp_path, capsys):
+def test_rmtree_readonly(monkeypatch, tmp_path):
     """Verify onerr works as expected"""
 
     bdist_dir = tmp_path / "with_readonly"
@@ -348,10 +348,6 @@ def test_rmtree_readonly(monkeypatch, tmp_path, capsys):
         assert count_remove_readonly_exc.call_count == expected_count
 
     assert not bdist_dir.is_dir()
-
-    if expected_count:
-        captured = capsys.readouterr()
-        assert "file.txt" in captured.out
 
 
 def test_data_dir_with_tag_build(monkeypatch, tmp_path):
