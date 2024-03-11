@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.43.0 (2024-03-11)**
 
 - Dropped support for Python 3.7
 - Updated vendored ``packaging`` to 24.0
