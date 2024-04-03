@@ -7,6 +7,7 @@ import re
 import stat
 import time
 from io import StringIO, TextIOWrapper
+from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 from wheel.cli import WheelError
@@ -194,3 +195,15 @@ class WheelFile(ZipFile):
             self.writestr(self.record_path, data.getvalue())
 
         ZipFile.close(self)
+
+    def _extract_member(self, member, targetpath, pwd):
+        targetpath = super()._extract_member(member, targetpath, pwd)
+        if not isinstance(member, ZipInfo):
+            member = self.getinfo(member)
+
+        # Set permissions to the same values as they were set in the archive
+        # We have to do this manually due to
+        # https://github.com/python/cpython/issues/59999
+        permissions = member.external_attr >> 16 & 0o777
+        Path(targetpath).chmod(permissions)
+        return targetpath
