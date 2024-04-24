@@ -104,6 +104,14 @@ select = [
     "B",            # flake8-bugbear
 ]
 
+[tool.pyright]
+include = ["src/wheel"]
+ignore = ["docs", "tests"]
+pythonVersion = "3.8"
+typeCheckingMode = "strict"
+
+reportUnnecessaryTypeIgnoreComment = "warning"
+
 # Tox (https://tox.wiki/) is a tool for running tests in multiple virtualenvs.
 # This configuration file will run the test suite on all supported python
 # versions. To use it, "pipx install tox" and then run "tox" from this
