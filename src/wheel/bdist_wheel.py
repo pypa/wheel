@@ -219,6 +219,12 @@ class bdist_wheel(Command):
             None,
             "Python tag (cp32|cp33|cpNN) for abi3 wheel tag" " (default: false)",
         ),
+        (
+            "dist-info-dir=",
+            None,
+            "directory where a pre-generated dist-info can be found (e.g. as a "
+            "result of calling the PEP517 'prepare_metadata_for_build_wheel' "
+            "method)"),
     ]
 
     boolean_options = ["keep-temp", "skip-build", "relative", "universal"]
@@ -231,6 +237,7 @@ class bdist_wheel(Command):
         self.format = "zip"
         self.keep_temp = False
         self.dist_dir = None
+        self.dist_info_dir = None
         self.egginfo_dir = None
         self.root_is_pure = None
         self.skip_build = None
@@ -249,8 +256,9 @@ class bdist_wheel(Command):
             bdist_base = self.get_finalized_command("bdist").bdist_base
             self.bdist_dir = os.path.join(bdist_base, "wheel")
 
-        egg_info = self.distribution.get_command_obj("egg_info")
-        egg_info.ensure_finalized()  # needed for correct `wheel_dist_name`
+        if self.dist_info_dir is None:
+            egg_info = self.distribution.get_command_obj("egg_info")
+            egg_info.ensure_finalized()  # needed for correct `wheel_dist_name`
 
         self.data_dir = self.wheel_dist_name + ".data"
         self.plat_name_supplied = self.plat_name is not None
@@ -412,12 +420,21 @@ class bdist_wheel(Command):
             )
 
         self.set_undefined_options("install_egg_info", ("target", "egginfo_dir"))
+
         distinfo_dirname = (
             f"{safer_name(self.distribution.get_name())}-"
             f"{safer_version(self.distribution.get_version())}.dist-info"
         )
         distinfo_dir = os.path.join(self.bdist_dir, distinfo_dirname)
-        self.egg2dist(self.egginfo_dir, distinfo_dir)
+        if self.dist_info_dir:
+            # Use the given dist-info directly.
+            shutil.copytree(self.dist_info_dir, distinfo_dir)
+            # Egg info is still generated, so remove it now to avoid it getting
+            # copied into the wheel.
+            shutil.rmtree(self.egginfo_dir)
+        else:
+            # Convert the generated egg-info into dist-info.
+            self.egg2dist(self.egginfo_dir, distinfo_dir)
 
         self.write_wheelfile(distinfo_dir)
 
