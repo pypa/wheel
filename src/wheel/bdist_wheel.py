@@ -224,7 +224,8 @@ class bdist_wheel(Command):
             None,
             "directory where a pre-generated dist-info can be found (e.g. as a "
             "result of calling the PEP517 'prepare_metadata_for_build_wheel' "
-            "method)"),
+            "method)",
+        ),
     ]
 
     boolean_options = ["keep-temp", "skip-build", "relative", "universal"]

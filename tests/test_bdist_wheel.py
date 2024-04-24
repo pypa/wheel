@@ -127,23 +127,28 @@ def test_dist_info_provided(dummy_dist, monkeypatch, tmp_path):
     monkeypatch.chdir(dummy_dist)
     distinfo = tmp_path / "dummy_dist.dist-info"
     distinfo.mkdir()
-    (distinfo / 'METADATA').write_text("name: helloworld", encoding="utf-8")
+    (distinfo / "METADATA").write_text("name: helloworld", encoding="utf-8")
 
     # We don't control the metadata. According to PEP-517, "The hook MAY also
     # create other files inside this directory, and a build frontend MUST
     # preserve".
-    (distinfo / 'FOO').write_text("bar", encoding="utf-8")
+    (distinfo / "FOO").write_text("bar", encoding="utf-8")
     subprocess.check_call(
         [
-            sys.executable, "setup.py", "bdist_wheel",
-            "-b", str(tmp_path), "--universal",
-            "--dist-info-dir", str(distinfo),
+            sys.executable,
+            "setup.py",
+            "bdist_wheel",
+            "-b",
+            str(tmp_path),
+            "--universal",
+            "--dist-info-dir",
+            str(distinfo),
         ],
     )
     with WheelFile("dist/dummy_dist-1.0-py2.py3-none-any.whl") as wf:
         with wf.open("dummy_dist-1.0.dist-info/METADATA") as fh:
-            assert fh.read() == b'name: helloworld'
-        assert 'dummy_dist-1.0.dist-info/FOO' in list(wf.namelist())
+            assert fh.read() == b"name: helloworld"
+        assert "dummy_dist-1.0.dist-info/FOO" in list(wf.namelist())
 
 
 def test_licenses_default(dummy_dist, monkeypatch, tmp_path):
