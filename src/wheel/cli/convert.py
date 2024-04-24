@@ -96,7 +96,7 @@ def egg2wheel(egg_path: str, dest_dir: str) -> None:
     shutil.rmtree(dir)
 
 
-def parse_wininst_info(wininfo_name, egginfo_name):
+def parse_wininst_info(wininfo_name: str, egginfo_name: str | None):
     """Extract metadata from filenames.
 
     Extracts the 4 metadataitems needed (name, version, pyversion, arch) from
@@ -167,7 +167,7 @@ def parse_wininst_info(wininfo_name, egginfo_name):
     return {"name": w_name, "ver": w_ver, "arch": w_arch, "pyver": w_pyver}
 
 
-def wininst2wheel(path, dest_dir):
+def wininst2wheel(path: str, dest_dir: str):
     with zipfile.ZipFile(path) as bdw:
         # Search for egg-info in the archive
         egginfo_name = None
@@ -193,7 +193,7 @@ def wininst2wheel(path, dest_dir):
 
         # rewrite paths to trick ZipFile into extracting an egg
         # XXX grab wininst .ini - between .exe, padding, and first zip file.
-        members = []
+        members: list[str] = []
         egginfo_name = ""
         for zipinfo in bdw.infolist():
             key, basename = zipinfo.filename.split("/", 1)
@@ -257,7 +257,7 @@ def wininst2wheel(path, dest_dir):
     shutil.rmtree(dir)
 
 
-def convert(files, dest_dir, verbose):
+def convert(files: list[str], dest_dir: str, verbose: bool):
     for pat in files:
         for installer in iglob(pat):
             if os.path.splitext(installer)[1] == ".egg":
