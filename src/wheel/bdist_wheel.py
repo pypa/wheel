@@ -24,7 +24,6 @@ import setuptools
 from setuptools import Command
 
 from . import __version__ as wheel_version
-from .macosx_libfile import calculate_macosx_platform_tag
 from .metadata import pkginfo_to_metadata
 from .util import log
 from .vendored.packaging import tags
@@ -68,6 +67,8 @@ def get_platform(archive_root):
     """Return our platform name 'win32', 'linux_x86_64'"""
     result = sysconfig.get_platform()
     if result.startswith("macosx") and archive_root is not None:
+        from .macosx_libfile import calculate_macosx_platform_tag
+
         result = calculate_macosx_platform_tag(archive_root, result)
     elif _is_32bit_interpreter():
         if result == "linux-x86_64":
