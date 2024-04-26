@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import builtins
-import functools
 import os.path
 import platform
 import shutil
@@ -425,37 +424,28 @@ def test_platform_linux32(reported, expected, monkeypatch):
     assert actual == expected
 
 
-builtin_import = builtins.__import__
+builtins_import = builtins.__import__
 
 
 def _fake_import(name: str, *args, **kwargs):
     if name == "ctypes":
         raise ModuleNotFoundError("No module named %s" % name)
-    return builtin_import(name, *args, **kwargs)
+
+    wheel_module_items = [
+        item for item in sys.modules.items() if item[0].startswith("wheel")
+    ]
+    for item in wheel_module_items:
+        del sys.modules[item[0]]
+    try:
+        return builtins_import(name, *args, **kwargs)
+    finally:
+        for name, module in wheel_module_items:
+            sys.modules[name] = module
 
 
-def mock_import(func):
-    @functools.wraps(func)
-    def wrap() -> None:
-        wheel_module_items = [
-            item for item in sys.modules.items() if item[0].startswith("wheel")
-        ]
-        try:
-            builtins.__import__ = _fake_import
-            for name, _ in wheel_module_items:
-                del sys.modules[name]
-            return func()
-        finally:
-            # restore original modules
-            builtins.__import__ = builtin_import
-            for name, module in wheel_module_items:
-                sys.modules[name] = module
+def test_no_ctypes(monkeypatch) -> None:
+    monkeypatch.setattr(builtins, "__import__", _fake_import)
 
-    return wrap
-
-
-@mock_import
-def test_no_ctypes() -> None:
     from wheel import bdist_wheel
 
     assert bdist_wheel
