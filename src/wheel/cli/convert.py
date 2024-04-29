@@ -167,7 +167,7 @@ def parse_wininst_info(wininfo_name: str, egginfo_name: str | None):
     return {"name": w_name, "ver": w_ver, "arch": w_arch, "pyver": w_pyver}
 
 
-def wininst2wheel(path: str, dest_dir: str):
+def wininst2wheel(path: str, dest_dir: str) -> None:
     with zipfile.ZipFile(path) as bdw:
         # Search for egg-info in the archive
         egginfo_name = None
@@ -257,7 +257,7 @@ def wininst2wheel(path: str, dest_dir: str):
     shutil.rmtree(dir)
 
 
-def convert(files: list[str], dest_dir: str, verbose: bool):
+def convert(files: list[str], dest_dir: str, verbose: bool) -> None:
     for pat in files:
         for installer in iglob(pat):
             if os.path.splitext(installer)[1] == ".egg":

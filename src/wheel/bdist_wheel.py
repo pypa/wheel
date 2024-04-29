@@ -68,7 +68,7 @@ def python_tag() -> str:
     return f"py{sys.version_info[0]}"
 
 
-def get_platform(archive_root: str | None):
+def get_platform(archive_root: str | None) -> str:
     """Return our platform name 'win32', 'linux_x86_64'"""
     result = sysconfig.get_platform()
     if result.startswith("macosx") and archive_root is not None:
@@ -535,7 +535,7 @@ class bdist_wheel(Command):
     def egg2dist(self, egginfo_path: str, distinfo_path: str):
         """Convert an .egg-info directory into a .dist-info directory"""
 
-        def adios(p: str):
+        def adios(p: str) -> None:
             """Appropriately delete directory, file or link."""
             if os.path.exists(p) and not os.path.islink(p) and os.path.isdir(p):
                 shutil.rmtree(p)
