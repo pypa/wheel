@@ -139,7 +139,8 @@ def generate_requirements(
             condition = " ; " + condition
 
         for new_req in convert_requirements(depends):
-            yield "Requires-Dist", new_req + condition
+            canonical_req = str(Requirement(new_req + condition))
+            yield "Requires-Dist", canonical_req
 
 
 def pkginfo_to_metadata(egg_info_path: str, pkginfo_path: str) -> Message:
