@@ -562,7 +562,6 @@ class bdist_wheel(Command):
 
         if os.path.isfile(egginfo_path):
             # .egg-info is a single file
-            pkginfo_path = egginfo_path
             pkg_info = pkginfo_to_metadata(egginfo_path, egginfo_path)
             os.mkdir(distinfo_path)
         else:
