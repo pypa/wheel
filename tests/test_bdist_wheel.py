@@ -424,27 +424,22 @@ def test_platform_linux32(reported, expected, monkeypatch):
     assert actual == expected
 
 
-builtins_import = builtins.__import__
-
-
-def _fake_import(name: str, *args, **kwargs):
-    if name == "ctypes":
-        raise ModuleNotFoundError("No module named %s" % name)
-
-    wheel_module_items = [
-        item for item in sys.modules.items() if item[0].startswith("wheel")
-    ]
-    for item in wheel_module_items:
-        del sys.modules[item[0]]
-    try:
-        return builtins_import(name, *args, **kwargs)
-    finally:
-        for name, module in wheel_module_items:
-            sys.modules[name] = module
-
-
 def test_no_ctypes(monkeypatch) -> None:
+    builtins_import = builtins.__import__
+
+    def _fake_import(name: str, *args, **kwargs):
+        if name == "ctypes":
+            raise ModuleNotFoundError("No module named %s" % name)
+
+        return builtins_import(name, *args, **kwargs)
+
+    # Install an importer shim that refuses to load ctypes
     monkeypatch.setattr(builtins, "__import__", _fake_import)
+
+    # Unload all wheel modules
+    for module in list(sys.modules):
+        if module.startswith("wheel"):
+            monkeypatch.delitem(sys.modules, module)
 
     from wheel import bdist_wheel
 
