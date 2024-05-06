@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import builtins
+import importlib
 import os.path
 import platform
 import shutil
@@ -425,13 +426,11 @@ def test_platform_linux32(reported, expected, monkeypatch):
 
 
 def test_no_ctypes(monkeypatch) -> None:
-    builtins_import = builtins.__import__
-
     def _fake_import(name: str, *args, **kwargs):
         if name == "ctypes":
             raise ModuleNotFoundError("No module named %s" % name)
 
-        return builtins_import(name, *args, **kwargs)
+        return importlib.__import__(name, *args, **kwargs)
 
     # Install an importer shim that refuses to load ctypes
     monkeypatch.setattr(builtins, "__import__", _fake_import)
