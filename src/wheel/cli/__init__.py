@@ -54,7 +54,7 @@ def tags_f(args: argparse.Namespace) -> None:
 def version_f(args: argparse.Namespace) -> None:
     from .. import __version__
 
-    print("wheel %s" % __version__)
+    print(f"wheel {__version__}")
 
 
 def parse_build_tag(build_tag: str) -> str:
