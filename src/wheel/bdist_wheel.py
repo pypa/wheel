@@ -96,7 +96,7 @@ def get_flag(
     if val is None:
         if warn:
             warnings.warn(
-                f"Config variable '{var}' is unset, Python ABI tag may " "be incorrect",
+                f"Config variable '{var}' is unset, Python ABI tag may be incorrect",
                 RuntimeWarning,
                 stacklevel=2,
             )
@@ -192,23 +192,23 @@ class bdist_wheel(Command):
         (
             "relative",
             None,
-            "build the archive using relative paths " "(default: false)",
+            "build the archive using relative paths (default: false)",
         ),
         (
             "owner=",
             "u",
-            "Owner name used when creating a tar file" " [default: current user]",
+            "Owner name used when creating a tar file [default: current user]",
         ),
         (
             "group=",
             "g",
-            "Group name used when creating a tar file" " [default: current group]",
+            "Group name used when creating a tar file [default: current group]",
         ),
-        ("universal", None, "make a universal wheel" " (default: false)"),
+        ("universal", None, "make a universal wheel (default: false)"),
         (
             "compression=",
             None,
-            "zipfile compression (one of: {})" " (default: 'deflated')".format(
+            "zipfile compression (one of: {}) (default: 'deflated')".format(
                 ", ".join(supported_compressions)
             ),
         ),
@@ -228,7 +228,7 @@ class bdist_wheel(Command):
         (
             "py-limited-api=",
             None,
-            "Python tag (cp32|cp33|cpNN) for abi3 wheel tag" " (default: false)",
+            "Python tag (cp32|cp33|cpNN) for abi3 wheel tag (default: false)",
         ),
     ]
 
