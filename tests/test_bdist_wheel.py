@@ -428,7 +428,7 @@ def test_platform_linux32(reported, expected, monkeypatch):
 def test_no_ctypes(monkeypatch) -> None:
     def _fake_import(name: str, *args, **kwargs):
         if name == "ctypes":
-            raise ModuleNotFoundError("No module named %s" % name)
+            raise ModuleNotFoundError(f"No module named {name}")
 
         return importlib.__import__(name, *args, **kwargs)
 

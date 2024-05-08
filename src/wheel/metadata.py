@@ -133,7 +133,7 @@ def generate_requirements(
             yield "Provides-Extra", extra
             if condition:
                 condition = "(" + condition + ") and "
-            condition += "extra == '%s'" % extra
+            condition += f"extra == '{extra}'"
 
         if condition:
             condition = " ; " + condition

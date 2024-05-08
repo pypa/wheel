@@ -189,7 +189,7 @@ def wininst2wheel(path: str, dest_dir: str) -> None:
             paths = {"platlib": ""}
 
         dist_info = "{name}-{ver}".format(**info)
-        datadir = "%s.data/" % dist_info
+        datadir = f"{dist_info}.data/"
 
         # rewrite paths to trick ZipFile into extracting an egg
         # XXX grab wininst .ini - between .exe, padding, and first zip file.
@@ -246,7 +246,7 @@ def wininst2wheel(path: str, dest_dir: str) -> None:
         bw.full_tag_supplied = True
         bw.full_tag = (pyver, abi, arch)
 
-    dist_info_dir = os.path.join(dir, "%s.dist-info" % dist_info)
+    dist_info_dir = os.path.join(dir, f"{dist_info}.dist-info")
     bw.egg2dist(os.path.join(dir, egginfo_name), dist_info_dir)
     bw.write_wheelfile(dist_info_dir, generator="wininst2wheel")
 

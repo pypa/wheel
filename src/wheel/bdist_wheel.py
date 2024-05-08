@@ -179,7 +179,7 @@ class bdist_wheel(Command):
             "plat-name=",
             "p",
             "platform name to embed in generated filenames "
-            "(default: %s)" % get_platform(None),
+            f"(default: {get_platform(None)})",
         ),
         (
             "keep-temp",
@@ -215,8 +215,7 @@ class bdist_wheel(Command):
         (
             "python-tag=",
             None,
-            "Python implementation compatibility tag"
-            " (default: '%s')" % (python_tag()),
+            f"Python implementation compatibility tag (default: '{python_tag()}')",
         ),
         (
             "build-number=",
@@ -282,7 +281,7 @@ class bdist_wheel(Command):
         if self.py_limited_api and not re.match(
             PY_LIMITED_API_PATTERN, self.py_limited_api
         ):
-            raise ValueError("py-limited-api must match '%s'" % PY_LIMITED_API_PATTERN)
+            raise ValueError(f"py-limited-api must match '{PY_LIMITED_API_PATTERN}'")
 
         # Support legacy [wheel] section for setting universal
         wheel = self.distribution.get_option_dict("wheel")
