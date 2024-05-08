@@ -16,7 +16,6 @@ from zipfile import ZipFile
 
 import pytest
 import setuptools
-
 from wheel.bdist_wheel import (
     bdist_wheel,
     get_abi_tag,
