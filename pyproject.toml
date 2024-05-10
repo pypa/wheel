@@ -68,11 +68,6 @@ exclude = [
     "**/__pycache__",
 ]
 
-[tool.black]
-extend-exclude = '''
-^/src/wheel/vendored/
-'''
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
@@ -103,7 +98,6 @@ lint.extend-select = [
     "UP",           # pyupgrade
     "W",            # pycodestyle warnings
 ]
-
 
 # Tox (https://tox.wiki/) is a tool for running tests in multiple virtualenvs.
 # This configuration file will run the test suite on all supported python
