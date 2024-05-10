@@ -68,11 +68,6 @@ exclude = [
     "**/__pycache__",
 ]
 
-[tool.black]
-extend-exclude = '''
-^/src/wheel/vendored/
-'''
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
@@ -90,6 +85,9 @@ omit = ["*/vendored/*"]
 
 [tool.coverage.report]
 show_missing = true
+
+[tool.ruff]
+extend-exclude = ['src/wheel/vendored/']
 
 [tool.ruff.lint]
 extend-select = [
