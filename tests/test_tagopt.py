@@ -33,7 +33,7 @@ def temp_pkg(request, tmp_path):
     if ext[0]:
         # if ext[1] is not '', it will write a bad header and fail to compile
         tmp_path.joinpath("test.c").write_text(
-            "#include <std%sio.h>" % ext[1], encoding="utf-8"
+            f"#include <std{ext[1]}io.h>", encoding="utf-8"
         )
         setup_py = SETUP_PY.format(ext_modules=EXT_MODULES)
     else:

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import builtins
+import importlib
 import os.path
 import platform
 import shutil
@@ -14,7 +16,6 @@ from zipfile import ZipFile
 
 import pytest
 import setuptools
-
 from wheel.bdist_wheel import (
     bdist_wheel,
     get_abi_tag,
@@ -421,3 +422,23 @@ def test_platform_linux32(reported, expected, monkeypatch):
     cmd.root_is_pure = False
     _, _, actual = cmd.get_tag()
     assert actual == expected
+
+
+def test_no_ctypes(monkeypatch) -> None:
+    def _fake_import(name: str, *args, **kwargs):
+        if name == "ctypes":
+            raise ModuleNotFoundError(f"No module named {name}")
+
+        return importlib.__import__(name, *args, **kwargs)
+
+    # Install an importer shim that refuses to load ctypes
+    monkeypatch.setattr(builtins, "__import__", _fake_import)
+
+    # Unload all wheel modules
+    for module in list(sys.modules):
+        if module.startswith("wheel"):
+            monkeypatch.delitem(sys.modules, module)
+
+    from wheel import bdist_wheel
+
+    assert bdist_wheel

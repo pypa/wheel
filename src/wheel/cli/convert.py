@@ -96,7 +96,7 @@ def egg2wheel(egg_path: str, dest_dir: str) -> None:
     shutil.rmtree(dir)
 
 
-def parse_wininst_info(wininfo_name, egginfo_name):
+def parse_wininst_info(wininfo_name: str, egginfo_name: str | None):
     """Extract metadata from filenames.
 
     Extracts the 4 metadataitems needed (name, version, pyversion, arch) from
@@ -167,7 +167,7 @@ def parse_wininst_info(wininfo_name, egginfo_name):
     return {"name": w_name, "ver": w_ver, "arch": w_arch, "pyver": w_pyver}
 
 
-def wininst2wheel(path, dest_dir):
+def wininst2wheel(path: str, dest_dir: str) -> None:
     with zipfile.ZipFile(path) as bdw:
         # Search for egg-info in the archive
         egginfo_name = None
@@ -189,11 +189,11 @@ def wininst2wheel(path, dest_dir):
             paths = {"platlib": ""}
 
         dist_info = "{name}-{ver}".format(**info)
-        datadir = "%s.data/" % dist_info
+        datadir = f"{dist_info}.data/"
 
         # rewrite paths to trick ZipFile into extracting an egg
         # XXX grab wininst .ini - between .exe, padding, and first zip file.
-        members = []
+        members: list[str] = []
         egginfo_name = ""
         for zipinfo in bdw.infolist():
             key, basename = zipinfo.filename.split("/", 1)
@@ -246,7 +246,7 @@ def wininst2wheel(path, dest_dir):
         bw.full_tag_supplied = True
         bw.full_tag = (pyver, abi, arch)
 
-    dist_info_dir = os.path.join(dir, "%s.dist-info" % dist_info)
+    dist_info_dir = os.path.join(dir, f"{dist_info}.dist-info")
     bw.egg2dist(os.path.join(dir, egginfo_name), dist_info_dir)
     bw.write_wheelfile(dist_info_dir, generator="wininst2wheel")
 
@@ -257,7 +257,7 @@ def wininst2wheel(path, dest_dir):
     shutil.rmtree(dir)
 
 
-def convert(files, dest_dir, verbose):
+def convert(files: list[str], dest_dir: str, verbose: bool) -> None:
     for pat in files:
         for installer in iglob(pat):
             if os.path.splitext(installer)[1] == ".egg":
