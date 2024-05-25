@@ -6,7 +6,7 @@ import os
 from collections.abc import Iterable
 from email.parser import BytesParser
 
-from ..wheelfile import WheelFile
+from .._wheelfile import WheelFile
 
 
 def _compute_tags(original_tags: Iterable[str], new_tags: str | None) -> set[str]:

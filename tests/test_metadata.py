@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from wheel.metadata import pkginfo_to_metadata
+from wheel._metadata import pkginfo_to_metadata
 
 
 def test_pkginfo_to_metadata(tmp_path):

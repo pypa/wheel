@@ -7,8 +7,8 @@ import tempfile
 import zipfile
 from glob import iglob
 
-from ..bdist_wheel import bdist_wheel
-from ..wheelfile import WheelFile
+from .._bdist_wheel import bdist_wheel
+from .._wheelfile import WheelFile
 from . import WheelError
 
 try:

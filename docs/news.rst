@@ -4,6 +4,7 @@ Release Notes
 **UNRELEASED**
 
 - Canonicalize requirements in METADATA file (PR by Wim Jeantine-Glenn)
+- Added deprecation warnings to all modules not previously prefixed with an underscore
 
 **0.43.0 (2024-03-11)**
 
