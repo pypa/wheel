@@ -3,8 +3,8 @@ from __future__ import annotations
 import os.path
 import re
 
-from wheel.cli.convert import convert, egg_info_re
-from wheel.wheelfile import WHEEL_INFO_RE
+from wheel._cli._convert import convert, egg_info_re
+from wheel._wheelfile import WHEEL_INFO_RE
 
 
 def test_egg_re():

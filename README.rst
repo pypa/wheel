@@ -1,19 +1,25 @@
 wheel
 =====
 
-This library is the reference implementation of the Python wheel packaging
-standard, as defined in `PEP 427`_.
+This is a command line tool for manipulating Python wheel files, as defined in
+`PEP 427`_. It contains the following functionality:
 
-It has two different roles:
+* Convert ``.egg`` archives into ``.whl``
+* Unpack wheel archives
+* Repack wheel archives
+* Add or remove tags in existing wheel archives
 
-#. A setuptools_ extension for building wheels that provides the
-   ``bdist_wheel`` setuptools command
-#. A command line tool for working with wheel files
+Historical note
+---------------
 
-It should be noted that wheel is **not** intended to be used as a library, and
-as such there is no stable, public API.
+This library used to be the reference implementation of the Python wheel packaging
+standard, and a setuptools_ extension containing the ``bdist_wheel`` command. The wheel
+file processing functionality has since been moved to the packaging_ library, and the
+``bdist_wheel`` command has been merged into setuptools itself, leaving this project to
+only contain the command line interface.
 
 .. _PEP 427: https://www.python.org/dev/peps/pep-0427/
+.. _packaging: https://pypi.org/project/packaging/
 .. _setuptools: https://pypi.org/project/setuptools/
 
 Documentation

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ..wheelfile import WheelFile
+from .._wheelfile import WheelFile
 
 
 def unpack(path: str, dest: str = ".") -> None:

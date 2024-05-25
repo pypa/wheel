@@ -6,9 +6,9 @@ from pathlib import Path
 from zipfile import ZipFile
 
 import pytest
-from wheel.cli import main, parser
-from wheel.cli.tags import tags
-from wheel.wheelfile import WheelFile
+from wheel._cli import main, parser
+from wheel._cli._tags import tags
+from wheel._wheelfile import WheelFile
 
 TESTDIR = Path(__file__).parent.parent
 TESTWHEEL_NAME = "test-1.0-py2.py3-none-any.whl"

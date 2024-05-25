@@ -16,14 +16,14 @@ from zipfile import ZipFile
 
 import pytest
 import setuptools
-from wheel.bdist_wheel import (
+from wheel._bdist_wheel import (
     bdist_wheel,
     get_abi_tag,
     remove_readonly,
     remove_readonly_exc,
 )
-from wheel.vendored.packaging import tags
-from wheel.wheelfile import WheelFile
+from wheel._vendored.packaging import tags
+from wheel._wheelfile import WheelFile
 
 DEFAULT_FILES = {
     "dummy_dist-1.0.dist-info/top_level.txt",
@@ -438,7 +438,5 @@ def test_no_ctypes(monkeypatch) -> None:
     for module in list(sys.modules):
         if module.startswith("wheel"):
             monkeypatch.delitem(sys.modules, module)
-
-    from wheel import bdist_wheel
 
     assert bdist_wheel

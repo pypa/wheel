@@ -4,8 +4,8 @@ import platform
 import stat
 
 import pytest
-from wheel.cli.unpack import unpack
-from wheel.wheelfile import WheelFile
+from wheel._cli._unpack import unpack
+from wheel._wheelfile import WheelFile
 
 
 def test_unpack(wheel_paths, tmp_path):

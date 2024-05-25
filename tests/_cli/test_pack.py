@@ -7,7 +7,7 @@ from email.parser import BytesParser
 from zipfile import ZipFile
 
 import pytest
-from wheel.cli.pack import pack
+from wheel._cli._pack import pack
 
 THISDIR = os.path.dirname(__file__)
 TESTWHEEL_NAME = "test-1.0-py2.py3-none-any.whl"

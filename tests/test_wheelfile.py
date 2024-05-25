@@ -5,8 +5,8 @@ import sys
 from zipfile import ZIP_DEFLATED, ZipFile
 
 import pytest
-from wheel.cli import WheelError
-from wheel.wheelfile import WheelFile
+from wheel._cli import WheelError
+from wheel._wheelfile import WheelFile
 
 
 @pytest.fixture
