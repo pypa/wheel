@@ -179,7 +179,7 @@ class bdist_wheel(Command):
             "plat-name=",
             "p",
             "platform name to embed in generated filenames "
-            f"(default: {get_platform(None)})",
+            f"[default: {get_platform(None)}]",
         ),
         (
             "keep-temp",
@@ -192,7 +192,7 @@ class bdist_wheel(Command):
         (
             "relative",
             None,
-            "build the archive using relative paths (default: false)",
+            "build the archive using relative paths [default: false]",
         ),
         (
             "owner=",
@@ -204,18 +204,18 @@ class bdist_wheel(Command):
             "g",
             "Group name used when creating a tar file [default: current group]",
         ),
-        ("universal", None, "make a universal wheel (default: false)"),
+        ("universal", None, "make a universal wheel [default: false]"),
         (
             "compression=",
             None,
-            "zipfile compression (one of: {}) (default: 'deflated')".format(
+            "zipfile compression (one of: {}) [default: 'deflated']".format(
                 ", ".join(supported_compressions)
             ),
         ),
         (
             "python-tag=",
             None,
-            f"Python implementation compatibility tag (default: '{python_tag()}')",
+            f"Python implementation compatibility tag [default: '{python_tag()}']",
         ),
         (
             "build-number=",
@@ -227,7 +227,7 @@ class bdist_wheel(Command):
         (
             "py-limited-api=",
             None,
-            "Python tag (cp32|cp33|cpNN) for abi3 wheel tag (default: false)",
+            "Python tag (cp32|cp33|cpNN) for abi3 wheel tag [default: false]",
         ),
     ]
 
