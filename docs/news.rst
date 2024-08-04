@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.44.0 (2024-08-04)**
 
 - Canonicalized requirements in METADATA file (PR by Wim Jeantine-Glenn)
 - Deprecated the ``bdist_wheel`` module, as the code was migrated to ``setuptools``
