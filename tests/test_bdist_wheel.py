@@ -16,7 +16,7 @@ from zipfile import ZipFile
 
 import pytest
 import setuptools
-from wheel.bdist_wheel import (
+from wheel._bdist_wheel import (
     bdist_wheel,
     get_abi_tag,
     remove_readonly,
@@ -439,6 +439,13 @@ def test_no_ctypes(monkeypatch) -> None:
         if module.startswith("wheel"):
             monkeypatch.delitem(sys.modules, module)
 
-    from wheel import bdist_wheel
+    from wheel import _bdist_wheel
 
-    assert bdist_wheel
+    assert _bdist_wheel
+
+
+def test_deprecated_import() -> None:
+    with pytest.warns(DeprecationWarning):
+        from wheel import bdist_wheel
+
+    assert issubclass(bdist_wheel.bdist_wheel, setuptools.Command)
