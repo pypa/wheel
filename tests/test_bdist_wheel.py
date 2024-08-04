@@ -442,3 +442,10 @@ def test_no_ctypes(monkeypatch) -> None:
     from wheel import _bdist_wheel
 
     assert _bdist_wheel
+
+
+def test_deprecated_import() -> None:
+    with pytest.warns(DeprecationWarning):
+        from wheel import bdist_wheel
+
+    assert issubclass(bdist_wheel.bdist_wheel, setuptools.Command)
