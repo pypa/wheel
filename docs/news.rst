@@ -3,7 +3,9 @@ Release Notes
 
 **UNRELEASED**
 
-- Canonicalize requirements in METADATA file (PR by Wim Jeantine-Glenn)
+- Canonicalized requirements in METADATA file (PR by Wim Jeantine-Glenn)
+- Deprecated the ``bdist_wheel`` module, as the code was migrated to ``setuptools``
+  itself
 
 **0.43.0 (2024-03-11)**
 
