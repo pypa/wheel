@@ -485,7 +485,7 @@ class bdist_wheel(Command):
         for impl in impl_tag.split("."):
             for abi in abi_tag.split("."):
                 for plat in plat_tag.split("."):
-                    msg["Tag"] = "-".join((impl, abi, plat))
+                    msg["Tag"] = f"{impl}-{abi}-{plat}"
 
         wheelfile_path = os.path.join(wheelfile_base, "WHEEL")
         log.info(f"creating {wheelfile_path}")
