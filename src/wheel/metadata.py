@@ -9,11 +9,13 @@ import itertools
 import os.path
 import re
 import textwrap
-from email.message import Message
 from email.parser import Parser
-from typing import Generator, Iterable, Iterator, Literal
+from typing import TYPE_CHECKING, Generator, Iterable, Iterator, Literal
 
 from .vendored.packaging.requirements import Requirement
+
+if TYPE_CHECKING:
+    from email.message import Message
 
 
 def _nonblank(str: str) -> bool | Literal[""]:
