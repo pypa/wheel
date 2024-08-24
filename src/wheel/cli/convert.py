@@ -231,7 +231,7 @@ def wininst2wheel(path: str, dest_dir: str) -> None:
     # CPython-specific.
     if arch != "any":
         pyver = pyver.replace("py", "cp")
-    wheel_name = "-".join((dist_info, pyver, abi, arch))
+    wheel_name = f"{dist_info}-{pyver}-{abi}-{arch}"
     if root_is_purelib:
         bw = bdist_wheel(Distribution())
     else:
