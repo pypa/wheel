@@ -440,7 +440,7 @@ def calculate_macosx_platform_tag(archive_root: StrPath, platform_tag: str) -> s
     versions_dict: dict[str, tuple[int, int]] = {}
     for dirpath, _dirnames, filenames in os.walk(archive_root):
         for filename in filenames:
-            if filename.endswith(".dylib") or filename.endswith(".so"):
+            if filename.endswith((".dylib", ".so")):
                 lib_path = os.path.join(dirpath, filename)
                 min_ver = extract_macosx_min_system_version(lib_path)
                 if min_ver is not None:
