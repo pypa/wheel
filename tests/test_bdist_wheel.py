@@ -170,7 +170,7 @@ def test_licenses_override(dummy_dist, monkeypatch, tmp_path, config_file, confi
     )
     with WheelFile("dist/dummy_dist-1.0-py2.py3-none-any.whl") as wf:
         license_files = {
-            "dummy_dist-1.0.dist-info/" + fname for fname in {"DUMMYFILE", "LICENSE"}
+            "dummy_dist-1.0.dist-info/" + fname for fname in ("DUMMYFILE", "LICENSE")
         }
         assert set(wf.namelist()) == DEFAULT_FILES | license_files
 
