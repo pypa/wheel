@@ -1,6 +1,6 @@
 from warnings import warn
 
-from ._bdist_wheel import bdist_wheel as bdist_wheel
+from ._bdist_wheel import bdist_wheel as bdist_wheel  # noqa: PLC0414
 
 warn(
     "The 'wheel' package is no longer the canonical location of the 'bdist_wheel' "
