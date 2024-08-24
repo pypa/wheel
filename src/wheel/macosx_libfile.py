@@ -43,10 +43,10 @@ from __future__ import annotations
 import ctypes
 import os
 import sys
-from io import BufferedIOBase
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from io import BufferedIOBase
     from typing import Union
 
     StrPath = Union[str, os.PathLike[str]]
