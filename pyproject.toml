@@ -96,11 +96,16 @@ extend-exclude = ["src/wheel/vendored"]
 [tool.ruff.lint]
 extend-select = [
     "B",            # flake8-bugbear
+    "FLY",          # flynt
     "G",            # flake8-logging-format
     "I",            # isort
     "ISC",          # flake8-implicit-str-concat
+    "PERF",         # Perflint
     "PGH",          # pygrep-hooks
+    "PIE",          # flake8-pie
+    "PLC",          # Pylint
     "RUF100",       # unused noqa (yesqa)
+    "TCH",          # flake8-type-checking
     "UP",           # pyupgrade
     "W",            # pycodestyle warnings
 ]
