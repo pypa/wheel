@@ -7,6 +7,7 @@ from email.parser import BytesParser
 from zipfile import ZipFile
 
 import pytest
+
 from wheel.cli.pack import pack
 
 THISDIR = os.path.dirname(__file__)
