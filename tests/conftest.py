@@ -7,6 +7,7 @@ from __future__ import annotations
 import os.path
 import subprocess
 import sys
+import sysconfig
 
 import pytest
 
@@ -22,7 +23,7 @@ def wheels_and_eggs(tmp_path_factory):
         "unicode.dist",
     )
 
-    if sys.platform != "win32":
+    if sys.platform != "win32" and sysconfig.get_config_var("Py_GIL_DISABLED") != 1:
         # ABI3 extensions don't really work on Windows
         test_distributions += ("abi3extension.dist",)
 
