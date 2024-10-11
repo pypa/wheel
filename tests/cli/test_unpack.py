@@ -4,6 +4,7 @@ import platform
 import stat
 
 import pytest
+
 from wheel.cli.unpack import unpack
 from wheel.wheelfile import WheelFile
 
