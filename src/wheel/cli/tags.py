@@ -3,10 +3,13 @@ from __future__ import annotations
 import email.policy
 import itertools
 import os
-from collections.abc import Iterable
 from email.parser import BytesParser
+from typing import TYPE_CHECKING
 
 from ..wheelfile import WheelFile
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 def _compute_tags(original_tags: Iterable[str], new_tags: str | None) -> set[str]:
