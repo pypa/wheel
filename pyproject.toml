@@ -82,6 +82,10 @@ testpaths = ["test"]
 [tool.coverage.run]
 source = ["wheel"]
 omit = ["*/vendored/*"]
+exclude_also = [
+    "@overload",
+    "if TYPE_CHECKING:"
+]
 
 [tool.coverage.report]
 show_missing = true
