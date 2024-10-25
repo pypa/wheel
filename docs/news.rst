@@ -4,10 +4,11 @@ Release Notes
 **UNRELEASED**
 
 - Added a redirection from ``wheel.bdist_wheel.bdist_wheel`` to
-  ``setuptools.command.bdist_wheel.bdist_wheel`` to improve
-  compatibility with ``setuptools``' latest fixes (#638).
-  Projects are still advised to migrate away from the deprecated
-  module and import the ``setuptools``' implementation explicitly.
+  ``setuptools.command.bdist_wheel.bdist_wheel`` to improve compatibility with
+  ``setuptools``' latest fixes.
+
+  Projects are still advised to migrate away from the deprecated  module and import
+  the ``setuptools``' implementation explicitly. (PR by @abravalheri)
 
 **0.44.0 (2024-08-04)**
 
