@@ -132,6 +132,9 @@ def bdist_wininst_path(arch: str, pyver: str | None, tmp_path: Path) -> str:
             f"{prefix}/Sampledist-1.0.0{pyver_suffix}.egg-info/top_level.txt", b""
         )
         zip.writestr(
+            f"{prefix}/Sampledist-1.0.0{pyver_suffix}.egg-info/entry_points.txt", b""
+        )
+        zip.writestr(
             f"{prefix}/Sampledist-1.0.0{pyver_suffix}.egg-info/requires.txt",
             REQUIRES_TXT,
         )
@@ -158,6 +161,7 @@ def egg_path(arch: str, pyver: str | None, tmp_path: Path) -> str:
         zip.writestr("EGG-INFO/PKG-INFO", PKG_INFO)
         zip.writestr("EGG-INFO/SOURCES.txt", b"")
         zip.writestr("EGG-INFO/top_level.txt", b"")
+        zip.writestr("EGG-INFO/entry_points.txt", b"")
         zip.writestr("EGG-INFO/requires.txt", REQUIRES_TXT)
         zip.writestr("EGG-INFO/zip-safe", b"")
 
@@ -183,6 +187,7 @@ def test_convert_egg_file(
     with WheelFile(wheel_path) as wf:
         assert wf.read("sampledist-1.0.0.dist-info/METADATA") == EXPECTED_METADATA
         assert wf.read("sampledist-1.0.0.dist-info/WHEEL") == expected_wheelfile
+        assert wf.read("sampledist-1.0.0.dist-info/entry_points.txt") == b""
 
 
 def test_convert_egg_directory(
@@ -203,6 +208,7 @@ def test_convert_egg_directory(
     with WheelFile(wheel_path) as wf:
         assert wf.read("sampledist-1.0.0.dist-info/METADATA") == EXPECTED_METADATA
         assert wf.read("sampledist-1.0.0.dist-info/WHEEL") == expected_wheelfile
+        assert wf.read("sampledist-1.0.0.dist-info/entry_points.txt") == b""
 
 
 def test_convert_bdist_wininst(
@@ -221,3 +227,4 @@ def test_convert_bdist_wininst(
         )
         assert wf.read("sampledist-1.0.0.dist-info/METADATA") == EXPECTED_METADATA
         assert wf.read("sampledist-1.0.0.dist-info/WHEEL") == expected_wheelfile
+        assert wf.read("sampledist-1.0.0.dist-info/entry_points.txt") == b""
