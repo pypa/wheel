@@ -20,6 +20,8 @@ PKG_INFO = dedent(
     Version: 1.0.0
     Author: Alex Grönholm
     Author-email: alex.gronholm@example.com
+    Home-page: https://example.com
+    Download-URL: https://example.com/sampledist
     Description: Sample Distribution
         ===================
           Test description
@@ -41,6 +43,8 @@ EXPECTED_METADATA = dedent(
     Version: 1.0.0
     Author: Alex Grönholm
     Author-email: alex.gronholm@example.com
+    Project-URL: Homepage, https://example.com
+    Project-URL: Download, https://example.com/sampledist
     Requires-Dist: somepackage>=1.5
     Requires-Dist: otherpackage>=1.7
     Requires-Dist: six; python_version < "3"
