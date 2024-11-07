@@ -3,6 +3,7 @@ Release Notes
 
 **UNRELEASED**
 
+- Refactored the ``convert`` command to not need setuptools to be installed
 - Added a redirection from ``wheel.bdist_wheel.bdist_wheel`` to
   ``setuptools.command.bdist_wheel.bdist_wheel`` to improve compatibility with
   ``setuptools``' latest fixes.
