@@ -24,7 +24,16 @@ PKG_INFO = dedent(
         ===================
           Test description
     """
-)
+).encode("utf-8")
+REQUIRES_TXT = dedent(
+    """\
+    somepackage>=1.5
+    otherpackage>=1.7
+
+    [:python_version < '3']
+    six
+    """
+).encode("utf-8")
 EXPECTED_METADATA = dedent(
     """\
     Metadata-Version: 2.4
@@ -32,6 +41,9 @@ EXPECTED_METADATA = dedent(
     Version: 1.0.0
     Author: Alex Grönholm
     Author-email: alex.gronholm@example.com
+    Requires-Dist: somepackage>=1.5
+    Requires-Dist: otherpackage>=1.7
+    Requires-Dist: six; python_version < "3"
 
     Sample Distribution
     ===================
@@ -107,13 +119,17 @@ def bdist_wininst_path(arch: str, pyver: str | None, tmp_path: Path) -> str:
         )
         zip.writestr(
             f"{prefix}/Sampledist-1.0.0{pyver_suffix}.egg-info/PKG-INFO",
-            PKG_INFO.encode("utf-8"),
+            PKG_INFO,
         )
         zip.writestr(
             f"{prefix}/Sampledist-1.0.0{pyver_suffix}.egg-info/SOURCES.txt", b""
         )
         zip.writestr(
             f"{prefix}/Sampledist-1.0.0{pyver_suffix}.egg-info/top_level.txt", b""
+        )
+        zip.writestr(
+            f"{prefix}/Sampledist-1.0.0{pyver_suffix}.egg-info/requires.txt",
+            REQUIRES_TXT,
         )
         zip.writestr(f"{prefix}/Sampledist-1.0.0{pyver_suffix}.egg-info/zip-safe", b"")
         zip.writestr("SCRIPTS/somecommand", b"#!python\nprint('hello')")
@@ -135,9 +151,10 @@ def egg_path(arch: str, pyver: str | None, tmp_path: Path) -> str:
         zip.writestr("sampledist/__init__.py", b"")
         zip.writestr(f"sampledist/_extmodule.cp37-{arch}.pyd", b"")
         zip.writestr("EGG-INFO/dependency_links.txt", b"")
-        zip.writestr("EGG-INFO/PKG-INFO", PKG_INFO.encode("utf-8"))
+        zip.writestr("EGG-INFO/PKG-INFO", PKG_INFO)
         zip.writestr("EGG-INFO/SOURCES.txt", b"")
         zip.writestr("EGG-INFO/top_level.txt", b"")
+        zip.writestr("EGG-INFO/requires.txt", REQUIRES_TXT)
         zip.writestr("EGG-INFO/zip-safe", b"")
 
     return str(bdist_path)
