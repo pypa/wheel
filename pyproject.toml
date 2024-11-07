@@ -6,6 +6,7 @@ build-backend = "flit_core.buildapi"
 name = "wheel"
 description = "A built-package format for Python"
 readme = "README.rst"
+license = {file = "LICENSE.txt"}
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",

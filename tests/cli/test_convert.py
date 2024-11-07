@@ -13,48 +13,56 @@ import wheel
 from wheel.cli.convert import convert, egg_filename_re
 from wheel.wheelfile import WHEEL_INFO_RE, WheelFile
 
-PKG_INFO = dedent(
-    """\
-    Metadata-Version: 2.1
-    Name: Sampledist
-    Version: 1.0.0
-    Author: Alex Grönholm
-    Author-email: alex.gronholm@example.com
-    Home-page: https://example.com
-    Download-URL: https://example.com/sampledist
-    Description: Sample Distribution
-        ===================
-          Test description
-    """
-).encode("utf-8")
-REQUIRES_TXT = dedent(
-    """\
-    somepackage>=1.5
-    otherpackage>=1.7
-
-    [:python_version < '3']
-    six
-    """
-).encode("utf-8")
-EXPECTED_METADATA = dedent(
-    """\
-    Metadata-Version: 2.4
-    Name: Sampledist
-    Version: 1.0.0
-    Author: Alex Grönholm
-    Author-email: alex.gronholm@example.com
-    Project-URL: Homepage, https://example.com
-    Project-URL: Download, https://example.com/sampledist
-    Requires-Dist: somepackage>=1.5
-    Requires-Dist: otherpackage>=1.7
-    Requires-Dist: six; python_version < "3"
-
-    Sample Distribution
+PKG_INFO = """\
+Metadata-Version: 2.1
+Name: Sampledist
+Version: 1.0.0
+Author: Alex Grönholm
+Author-email: alex.gronholm@example.com
+Home-page: https://example.com
+Download-URL: https://example.com/sampledist
+License: Sample license text
+    second row
+    third row
+    
+    fourth row
+Description: Sample Distribution
     ===================
-      Test description
+    
+    Test description
+""".encode()  # noqa: W293
 
-    """
-).encode("utf-8")
+REQUIRES_TXT = b"""\
+somepackage>=1.5
+otherpackage>=1.7
+
+[:python_version < '3']
+six
+"""
+
+EXPECTED_METADATA = """\
+Metadata-Version: 2.4
+Name: Sampledist
+Version: 1.0.0
+Author: Alex Grönholm
+Author-email: alex.gronholm@example.com
+Project-URL: Homepage, https://example.com
+Project-URL: Download, https://example.com/sampledist
+License: Sample license text
+    second row
+    third row
+    
+    fourth row
+Requires-Dist: somepackage>=1.5
+Requires-Dist: otherpackage>=1.7
+Requires-Dist: six; python_version < "3"
+
+Sample Distribution
+===================
+
+Test description
+
+""".encode()  # noqa: W293
 
 
 @pytest.fixture(
