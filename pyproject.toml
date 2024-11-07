@@ -70,7 +70,7 @@ exclude = [
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+addopts = ["-rsfE", "--tb=short", "--strict-markers", "--strict-config"]
 xfail_strict = true
 filterwarnings = [
     "error",
