@@ -130,40 +130,40 @@ class EggFileSource(ConvertSource):
 
     def generate_contents(self) -> Iterator[tuple[str, bytes]]:
         with ZipFile(self.path, "r") as zip_file:
-            for zinfo in zip_file.infolist():
+            for filename in sorted(zip_file.namelist()):
                 # Skip any compiled bytecode files
-                if zinfo.filename.endswith(".pyc"):
+                if filename.endswith(".pyc"):
                     continue
 
                 # Skip pure directory entries
-                if zinfo.filename.endswith("/"):
+                if filename.endswith("/"):
                     continue
 
                 # Handle files in the egg-info directory specially, selectively moving
                 # them to the dist-info directory while converting as needed
-                if zinfo.filename.startswith("EGG-INFO/"):
-                    if zinfo.filename == "EGG-INFO/requires.txt":
-                        requires = zip_file.read(zinfo.filename).decode("utf-8")
+                if filename.startswith("EGG-INFO/"):
+                    if filename == "EGG-INFO/requires.txt":
+                        requires = zip_file.read(filename).decode("utf-8")
                         convert_requires(requires, self.metadata)
-                    elif zinfo.filename == "EGG-INFO/PKG-INFO":
-                        pkginfo = zip_file.read(zinfo.filename).decode("utf-8")
+                    elif filename == "EGG-INFO/PKG-INFO":
+                        pkginfo = zip_file.read(filename).decode("utf-8")
                         convert_pkg_info(pkginfo, self.metadata)
-                    elif zinfo.filename == "EGG-INFO/entry_points.txt":
+                    elif filename == "EGG-INFO/entry_points.txt":
                         yield (
                             f"{self.dist_info_dir}/entry_points.txt",
-                            zip_file.read(zinfo.filename),
+                            zip_file.read(filename),
                         )
 
                     continue
 
                 # For any other file, just pass it through
-                yield zinfo.filename, zip_file.read(zinfo)
+                yield filename, zip_file.read(filename)
 
 
 class EggDirectorySource(EggFileSource):
     def generate_contents(self) -> Iterator[tuple[str, bytes]]:
         for dirpath, _, filenames in os.walk(self.path):
-            for filename in filenames:
+            for filename in sorted(filenames):
                 path = Path(dirpath, filename)
 
                 # Skip any compiled bytecode files
@@ -259,30 +259,30 @@ class WininstFileSource(ConvertSource):
         dist_info_dir = f"{self.name}-{self.version}.dist-info"
         data_dir = f"{self.name}-{self.version}.data"
         with ZipFile(self.path, "r") as zip_file:
-            for zinfo in zip_file.infolist():
+            for filename in sorted(zip_file.namelist()):
                 # Skip any compiled bytecode files
-                if zinfo.filename.endswith(".pyc"):
+                if filename.endswith(".pyc"):
                     continue
 
                 # Skip pure directory entries
-                if zinfo.filename.endswith("/"):
+                if filename.endswith("/"):
                     continue
 
                 # Handle files in the egg-info directory specially, selectively moving
                 # them to the dist-info directory while converting as needed
-                prefix, target_filename = zinfo.filename.split("/", 1)
+                prefix, target_filename = filename.split("/", 1)
                 if egg_info_re.search(target_filename):
                     basename = target_filename.rsplit("/", 1)[-1]
                     if basename == "requires.txt":
-                        requires = zip_file.read(zinfo.filename).decode("utf-8")
+                        requires = zip_file.read(filename).decode("utf-8")
                         convert_requires(requires, self.metadata)
                     elif basename == "PKG-INFO":
-                        pkginfo = zip_file.read(zinfo.filename).decode("utf-8")
+                        pkginfo = zip_file.read(filename).decode("utf-8")
                         convert_pkg_info(pkginfo, self.metadata)
                     elif basename == "entry_points.txt":
                         yield (
                             f"{dist_info_dir}/entry_points.txt",
-                            zip_file.read(zinfo.filename),
+                            zip_file.read(filename),
                         )
 
                     continue
@@ -290,7 +290,7 @@ class WininstFileSource(ConvertSource):
                     target_filename = f"{data_dir}/scripts/{target_filename}"
 
                 # For any other file, just pass it through
-                yield target_filename, zip_file.read(zinfo)
+                yield target_filename, zip_file.read(filename)
 
 
 def convert(files: list[str], dest_dir: str, verbose: bool) -> None:
