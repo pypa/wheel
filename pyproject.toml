@@ -89,6 +89,9 @@ exclude_also = [
 
 [tool.coverage.report]
 show_missing = true
+exclude_also = [
+    "@abstractmethod",
+]
 
 [tool.ruff]
 extend-exclude = ["src/wheel/vendored"]

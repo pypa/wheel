@@ -131,10 +131,6 @@ class EggFileSource(ConvertSource):
     def generate_contents(self) -> Iterator[tuple[str, bytes]]:
         with ZipFile(self.path, "r") as zip_file:
             for filename in sorted(zip_file.namelist()):
-                # Skip any compiled bytecode files
-                if filename.endswith(".pyc"):
-                    continue
-
                 # Skip pure directory entries
                 if filename.endswith("/"):
                     continue
@@ -165,11 +161,6 @@ class EggDirectorySource(EggFileSource):
         for dirpath, _, filenames in os.walk(self.path):
             for filename in sorted(filenames):
                 path = Path(dirpath, filename)
-
-                # Skip any compiled bytecode files
-                if filename.endswith(".pyc"):
-                    continue
-
                 if path.parent.name == "EGG-INFO":
                     if path.name == "requires.txt":
                         requires = path.read_text("utf-8")
@@ -260,10 +251,6 @@ class WininstFileSource(ConvertSource):
         data_dir = f"{self.name}-{self.version}.data"
         with ZipFile(self.path, "r") as zip_file:
             for filename in sorted(zip_file.namelist()):
-                # Skip any compiled bytecode files
-                if filename.endswith(".pyc"):
-                    continue
-
                 # Skip pure directory entries
                 if filename.endswith("/"):
                     continue
