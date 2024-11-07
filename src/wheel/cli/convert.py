@@ -293,7 +293,7 @@ def convert(files: list[str], dest_dir: str, verbose: bool) -> None:
                 source = WininstFileSource(path)
 
             if verbose:
-                print(f"{archive}... ", flush=True)
+                print(f"{archive}... ", flush=True, end="")
 
             dest_path = Path(dest_dir) / (
                 f"{source.name}-{source.version}-{source.pyver}-{source.abi}"
