@@ -7,11 +7,11 @@ from textwrap import dedent
 
 import pytest
 from _pytest.fixtures import SubRequest
-from pytest import TempPathFactory
+from pytest import CaptureFixture, TempPathFactory
 
 import wheel
 from wheel.cli.convert import convert, egg_filename_re
-from wheel.wheelfile import WHEEL_INFO_RE, WheelFile
+from wheel.wheelfile import WheelFile
 
 PKG_INFO = """\
 Metadata-Version: 2.1
@@ -187,15 +187,20 @@ def test_egg_re() -> None:
 
 
 def test_convert_egg_file(
-    egg_path: str, tmp_path: Path, arch: str, expected_wheelfile: bytes
+    egg_path: str,
+    tmp_path: Path,
+    arch: str,
+    expected_wheelfile: bytes,
+    capsys: CaptureFixture,
 ) -> None:
-    convert([egg_path], str(tmp_path), verbose=False)
+    convert([egg_path], str(tmp_path), verbose=True)
     wheel_path = next(path for path in tmp_path.iterdir() if path.suffix == ".whl")
-    assert WHEEL_INFO_RE.match(wheel_path.name)
     with WheelFile(wheel_path) as wf:
         assert wf.read("sampledist-1.0.0.dist-info/METADATA") == EXPECTED_METADATA
         assert wf.read("sampledist-1.0.0.dist-info/WHEEL") == expected_wheelfile
         assert wf.read("sampledist-1.0.0.dist-info/entry_points.txt") == b""
+
+    assert capsys.readouterr().out == f"{egg_path}...OK\n"
 
 
 def test_convert_egg_directory(
@@ -204,19 +209,21 @@ def test_convert_egg_directory(
     tmp_path_factory: TempPathFactory,
     arch: str,
     expected_wheelfile: bytes,
+    capsys: CaptureFixture,
 ) -> None:
     with zipfile.ZipFile(egg_path) as egg_file:
         egg_dir_path = tmp_path_factory.mktemp("eggdir") / Path(egg_path).name
         egg_dir_path.mkdir()
         egg_file.extractall(egg_dir_path)
 
-    convert([str(egg_dir_path)], str(tmp_path), verbose=False)
+    convert([str(egg_dir_path)], str(tmp_path), verbose=True)
     wheel_path = next(path for path in tmp_path.iterdir() if path.suffix == ".whl")
-    assert WHEEL_INFO_RE.match(wheel_path.name)
     with WheelFile(wheel_path) as wf:
         assert wf.read("sampledist-1.0.0.dist-info/METADATA") == EXPECTED_METADATA
         assert wf.read("sampledist-1.0.0.dist-info/WHEEL") == expected_wheelfile
         assert wf.read("sampledist-1.0.0.dist-info/entry_points.txt") == b""
+
+    assert capsys.readouterr().out == f"{egg_dir_path}...OK\n"
 
 
 def test_convert_bdist_wininst(
@@ -224,10 +231,10 @@ def test_convert_bdist_wininst(
     tmp_path: Path,
     arch: str,
     expected_wheelfile: bytes,
+    capsys: CaptureFixture,
 ) -> None:
-    convert([bdist_wininst_path], str(tmp_path), verbose=False)
+    convert([bdist_wininst_path], str(tmp_path), verbose=True)
     wheel_path = next(path for path in tmp_path.iterdir() if path.suffix == ".whl")
-    assert WHEEL_INFO_RE.match(wheel_path.name)
     with WheelFile(wheel_path) as wf:
         assert (
             wf.read("sampledist-1.0.0.data/scripts/somecommand")
@@ -236,3 +243,5 @@ def test_convert_bdist_wininst(
         assert wf.read("sampledist-1.0.0.dist-info/METADATA") == EXPECTED_METADATA
         assert wf.read("sampledist-1.0.0.dist-info/WHEEL") == expected_wheelfile
         assert wf.read("sampledist-1.0.0.dist-info/entry_points.txt") == b""
+
+    assert capsys.readouterr().out == f"{bdist_wininst_path}...OK\n"
