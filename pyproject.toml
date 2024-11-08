@@ -6,6 +6,7 @@ build-backend = "flit_core.buildapi"
 name = "wheel"
 description = "A built-package format for Python"
 readme = "README.rst"
+license = {file = "LICENSE.txt"}
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -89,6 +90,9 @@ exclude_also = [
 
 [tool.coverage.report]
 show_missing = true
+exclude_also = [
+    "@abstractmethod",
+]
 
 [tool.ruff]
 extend-exclude = ["src/wheel/vendored"]
