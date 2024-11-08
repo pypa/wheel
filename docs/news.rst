@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.45.0 (2024-11-08)**
 
 - Refactored the ``convert`` command to not need setuptools to be installed
 - Don't configure setuptools logging unless running ``bdist_wheel``
