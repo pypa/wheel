@@ -122,8 +122,8 @@ class EggFileSource(ConvertSource):
         self.version = match.group("ver")
         if pyver := match.group("pyver"):
             self.pyver = pyver.replace(".", "")
-            self.abi = self.pyver.replace("py", "cp")
             if arch := match.group("arch"):
+                self.abi = self.pyver.replace("py", "cp")
                 self.platform = normalize(arch)
 
         self.metadata = Message()
@@ -225,7 +225,6 @@ class WininstFileSource(ConvertSource):
             self.platform = normalize(match.group("platform"))
             if pyver := match.group("pyver"):
                 self.pyver = pyver.replace(".", "")
-                self.abi = pyver.replace("py", "cp")
 
         # Look for an .egg-info directory and any .pyd files for more precise info
         egg_info_found = pyd_found = False

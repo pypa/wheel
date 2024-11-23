@@ -176,6 +176,16 @@ def egg_path(arch: str, pyver: str | None, tmp_path: Path) -> str:
     return str(bdist_path)
 
 
+@pytest.fixture
+def expected_wheel_filename(pyver: str | None, arch: str) -> str:
+    if arch != "any":
+        pyver = pyver.replace(".", "") if pyver else "py2.py3"
+        abiver = pyver.replace("py", "cp")
+        return f"sampledist-1.0.0-{pyver}-{abiver}-{arch}.whl"
+    else:
+        return "sampledist-1.0.0-py2.py3-none-any.whl"
+
+
 def test_egg_re() -> None:
     """Make sure egg_info_re matches."""
     egg_names_path = os.path.join(os.path.dirname(__file__), "eggnames.txt")
@@ -191,10 +201,12 @@ def test_convert_egg_file(
     tmp_path: Path,
     arch: str,
     expected_wheelfile: bytes,
+    expected_wheel_filename: str,
     capsys: CaptureFixture,
 ) -> None:
     convert([egg_path], str(tmp_path), verbose=True)
     wheel_path = next(path for path in tmp_path.iterdir() if path.suffix == ".whl")
+    assert wheel_path.name == expected_wheel_filename
     with WheelFile(wheel_path) as wf:
         assert wf.read("sampledist-1.0.0.dist-info/METADATA") == EXPECTED_METADATA
         assert wf.read("sampledist-1.0.0.dist-info/WHEEL") == expected_wheelfile
@@ -207,8 +219,10 @@ def test_convert_egg_directory(
     egg_path: str,
     tmp_path: Path,
     tmp_path_factory: TempPathFactory,
+    pyver: str | None,
     arch: str,
     expected_wheelfile: bytes,
+    expected_wheel_filename: str,
     capsys: CaptureFixture,
 ) -> None:
     with zipfile.ZipFile(egg_path) as egg_file:
@@ -218,6 +232,7 @@ def test_convert_egg_directory(
 
     convert([str(egg_dir_path)], str(tmp_path), verbose=True)
     wheel_path = next(path for path in tmp_path.iterdir() if path.suffix == ".whl")
+    assert wheel_path.name == expected_wheel_filename
     with WheelFile(wheel_path) as wf:
         assert wf.read("sampledist-1.0.0.dist-info/METADATA") == EXPECTED_METADATA
         assert wf.read("sampledist-1.0.0.dist-info/WHEEL") == expected_wheelfile
@@ -231,10 +246,12 @@ def test_convert_bdist_wininst(
     tmp_path: Path,
     arch: str,
     expected_wheelfile: bytes,
+    expected_wheel_filename: str,
     capsys: CaptureFixture,
 ) -> None:
     convert([bdist_wininst_path], str(tmp_path), verbose=True)
     wheel_path = next(path for path in tmp_path.iterdir() if path.suffix == ".whl")
+    assert wheel_path.name == expected_wheel_filename
     with WheelFile(wheel_path) as wf:
         assert (
             wf.read("sampledist-1.0.0.data/scripts/somecommand")

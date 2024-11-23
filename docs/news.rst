@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed pure Python wheels converted from eggs and wininst files having the ABI tag in
+  the file name
+
 **0.45.0 (2024-11-08)**
 
 - Refactored the ``convert`` command to not need setuptools to be installed
