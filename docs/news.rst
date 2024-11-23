@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.45.1 (2024-11-23)**
 
 - Fixed pure Python wheels converted from eggs and wininst files having the ABI tag in
   the file name
