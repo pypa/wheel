@@ -19,6 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 authors = [{name = "Daniel Holth", email = "dholth@fastmail.fm"}]
 maintainers = [{name = "Alex Grönholm", email = "alex.gronholm@nextday.fi"}]
