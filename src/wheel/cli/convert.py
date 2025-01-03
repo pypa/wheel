@@ -72,7 +72,10 @@ def convert_pkg_info(pkginfo: str, metadata: Message):
 
         if key_lower == "description":
             description_lines = value.splitlines()
-            value = "\n".join(
+            if len(description_lines) == 0:
+                value = '\n'
+            else:
+                value = "\n".join(
                 (
                     description_lines[0].lstrip(),
                     dedent("\n".join(description_lines[1:])),
