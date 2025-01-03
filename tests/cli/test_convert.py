@@ -264,9 +264,10 @@ def test_convert_bdist_wininst(
 
     assert capsys.readouterr().out == f"{bdist_wininst_path}...OK\n"
 
+
 def test_convert_pkg_info_with_empty_description():
     # Regression test for https://github.com/pypa/wheel/issues/645
-    pkginfo =  """\
+    pkginfo = """\
 Metadata-Version: 2.1
 Name: Sampledist
 Version: 1.0.0
@@ -275,11 +276,12 @@ Download-URL: https://example.com/sampledist
 Description:"""
     message = Message()
     convert_pkg_info(pkginfo, message)
-    assert message.get_all('Name') == ['Sampledist']
-    assert message.get_payload() == '\n'
+    assert message.get_all("Name") == ["Sampledist"]
+    assert message.get_payload() == "\n"
+
 
 def test_convert_pkg_info_with_one_line_description():
-    pkginfo =  """\
+    pkginfo = """\
 Metadata-Version: 2.1
 Name: Sampledist
 Version: 1.0.0
@@ -288,5 +290,5 @@ Download-URL: https://example.com/sampledist
 Description:    My cool package"""
     message = Message()
     convert_pkg_info(pkginfo, message)
-    assert message.get_all('Name') == ['Sampledist']
-    assert message.get_payload() == 'My cool package\n\n\n'
+    assert message.get_all("Name") == ["Sampledist"]
+    assert message.get_payload() == "My cool package\n\n\n"
