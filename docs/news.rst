@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed an exception when calling the ``convert`` command with an empty description
+  field
+
 **0.45.1 (2024-11-23)**
 
 - Fixed pure Python wheels converted from eggs and wininst files having the ABI tag in

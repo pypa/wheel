@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os.path
 import zipfile
+from email.message import Message
 from pathlib import Path
 from textwrap import dedent
 
@@ -10,7 +11,7 @@ from _pytest.fixtures import SubRequest
 from pytest import CaptureFixture, TempPathFactory
 
 import wheel
-from wheel.cli.convert import convert, egg_filename_re
+from wheel.cli.convert import convert, convert_pkg_info, egg_filename_re
 from wheel.wheelfile import WheelFile
 
 PKG_INFO = """\
@@ -262,3 +263,32 @@ def test_convert_bdist_wininst(
         assert wf.read("sampledist-1.0.0.dist-info/entry_points.txt") == b""
 
     assert capsys.readouterr().out == f"{bdist_wininst_path}...OK\n"
+
+
+def test_convert_pkg_info_with_empty_description():
+    # Regression test for https://github.com/pypa/wheel/issues/645
+    pkginfo = """\
+Metadata-Version: 2.1
+Name: Sampledist
+Version: 1.0.0
+Home-page: https://example.com
+Download-URL: https://example.com/sampledist
+Description:"""
+    message = Message()
+    convert_pkg_info(pkginfo, message)
+    assert message.get_all("Name") == ["Sampledist"]
+    assert message.get_payload() == "\n"
+
+
+def test_convert_pkg_info_with_one_line_description():
+    pkginfo = """\
+Metadata-Version: 2.1
+Name: Sampledist
+Version: 1.0.0
+Home-page: https://example.com
+Download-URL: https://example.com/sampledist
+Description:    My cool package"""
+    message = Message()
+    convert_pkg_info(pkginfo, message)
+    assert message.get_all("Name") == ["Sampledist"]
+    assert message.get_payload() == "My cool package\n\n\n"
