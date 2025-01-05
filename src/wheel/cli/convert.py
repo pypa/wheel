@@ -82,6 +82,7 @@ def convert_pkg_info(pkginfo: str, metadata: Message):
                 )
             else:
                 value = "\n"
+
             metadata.set_payload(value)
         elif key_lower == "home-page":
             metadata.add_header("Project-URL", f"Homepage, {value}")
