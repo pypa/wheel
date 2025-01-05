@@ -72,9 +72,7 @@ def convert_pkg_info(pkginfo: str, metadata: Message):
 
         if key_lower == "description":
             description_lines = value.splitlines()
-            if len(description_lines) == 0:
-                value = "\n"
-            else:
+            if description_lines:
                 value = "\n".join(
                     (
                         description_lines[0].lstrip(),
@@ -82,6 +80,8 @@ def convert_pkg_info(pkginfo: str, metadata: Message):
                         "\n",
                     )
                 )
+            else:
+                value = "\n"
             metadata.set_payload(value)
         elif key_lower == "home-page":
             metadata.add_header("Project-URL", f"Homepage, {value}")
