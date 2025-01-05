@@ -2,7 +2,9 @@ Release Notes
 =============
 
 **UNRELEASED**
-- Fixed an exception when calling the `convert` command with an empty description field
+
+- Fixed an exception when calling the ``convert`` command with an empty description
+  field
 
 **0.45.1 (2024-11-23)**
 
