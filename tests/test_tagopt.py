@@ -14,7 +14,7 @@ SETUP_PY = """\
 from setuptools import setup, Extension
 
 setup(
-    name="Test",
+    name="test",
     version="1.0",
     author_email="author@example.com",
     py_modules=["test"],
@@ -63,7 +63,7 @@ def test_default_tag(temp_pkg):
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name == f"Test-1.0-py{sys.version_info[0]}-none-any.whl"
+    assert wheels[0].name == f"test-1.0-py{sys.version_info[0]}-none-any.whl"
     assert wheels[0].suffix == ".whl"
 
 
@@ -76,7 +76,7 @@ def test_build_number(temp_pkg):
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name == f"Test-1.0-1-py{sys.version_info[0]}-none-any.whl"
+    assert wheels[0].name == f"test-1.0-1-py{sys.version_info[0]}-none-any.whl"
     assert wheels[0].suffix == ".whl"
 
 
@@ -89,7 +89,7 @@ def test_explicit_tag(temp_pkg):
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name.startswith("Test-1.0-py32-")
+    assert wheels[0].name.startswith("test-1.0-py32-")
     assert wheels[0].suffix == ".whl"
 
 
@@ -101,7 +101,7 @@ def test_universal_tag(temp_pkg):
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name.startswith("Test-1.0-py2.py3-")
+    assert wheels[0].name.startswith("test-1.0-py2.py3-")
     assert wheels[0].suffix == ".whl"
 
 
@@ -114,7 +114,7 @@ def test_universal_beats_explicit_tag(temp_pkg):
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name.startswith("Test-1.0-py2.py3-")
+    assert wheels[0].name.startswith("test-1.0-py2.py3-")
     assert wheels[0].suffix == ".whl"
 
 
@@ -129,7 +129,7 @@ def test_universal_in_setup_cfg(temp_pkg):
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name.startswith("Test-1.0-py2.py3-")
+    assert wheels[0].name.startswith("test-1.0-py2.py3-")
     assert wheels[0].suffix == ".whl"
 
 
@@ -144,7 +144,7 @@ def test_pythontag_in_setup_cfg(temp_pkg):
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name.startswith("Test-1.0-py32-")
+    assert wheels[0].name.startswith("test-1.0-py32-")
     assert wheels[0].suffix == ".whl"
 
 
@@ -157,7 +157,7 @@ def test_legacy_wheel_section_in_setup_cfg(temp_pkg):
     assert dist_dir.is_dir()
     wheels = list(dist_dir.iterdir())
     assert len(wheels) == 1
-    assert wheels[0].name.startswith("Test-1.0-py2.py3-")
+    assert wheels[0].name.startswith("test-1.0-py2.py3-")
     assert wheels[0].suffix == ".whl"
 
 
