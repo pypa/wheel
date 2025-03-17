@@ -88,16 +88,14 @@ def safe_name(name: str) -> str:
 def requires_to_requires_dist(requirement: Requirement) -> str:
     """Return the version specifier for a requirement in PEP 345/566 fashion."""
     if requirement.url:
-        return " @ " + requirement.url
+        return f" @ {requirement.url}"
 
-    requires_dist: list[str] = []
-    for spec in requirement.specifier:
-        requires_dist.append(spec.operator + spec.version)
+    if requirement.specifier:
+        return " " + ",".join(
+            sorted(spec.operator + spec.version for spec in requirement.specifier)
+        )
 
-    if requires_dist:
-        return " " + ",".join(sorted(requires_dist))
-    else:
-        return ""
+    return ""
 
 
 def convert_requirements(requirements: list[str]) -> Iterator[str]:
