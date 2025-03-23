@@ -6,12 +6,11 @@ build-backend = "flit_core.buildapi"
 name = "wheel"
 description = "Command line tool for manipulating wheel files"
 readme = "README.rst"
-license = {file = "LICENSE.txt"}
+license = "MIT"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Topic :: System :: Archiving :: Packaging",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
