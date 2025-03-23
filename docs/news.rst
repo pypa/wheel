@@ -3,6 +3,7 @@ Release Notes
 
 **UNRELEASED**
 
+- Dropped support for Python 3.8
 - Fixed an exception when calling the ``convert`` command with an empty description
   field
 

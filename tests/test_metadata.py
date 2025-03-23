@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from wheel.metadata import pkginfo_to_metadata
+from pathlib import Path
+
+from wheel._metadata import pkginfo_to_metadata
 
 
-def test_pkginfo_to_metadata(tmp_path):
+def test_pkginfo_to_metadata(tmp_path: Path) -> None:
     expected_metadata = [
         ("Metadata-Version", "2.1"),
         ("Name", "spam"),
