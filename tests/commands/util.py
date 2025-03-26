@@ -8,7 +8,9 @@ import pytest
 
 def run_command(command: str, *args: str | PathLike, check: bool = False) -> str:
     arguments = ["wheel", command, *args]
-    process = subprocess.run(arguments, capture_output=True, text=True, check=check)
+    process = subprocess.run(
+        arguments, capture_output=True, text=True, check=check, encoding="utf-8"
+    )
     if process.returncode:
         pytest.fail(
             f"'wheel {command}' exited with return code {process.returncode}\n"

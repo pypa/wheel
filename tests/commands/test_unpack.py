@@ -26,13 +26,16 @@ def test_unpack(tmp_path_factory: TempPathFactory) -> None:
     run_command("unpack", "--dest", extract_path, wheel_path)
 
     extract_path /= "test-1.0"
-    assert extract_path.joinpath("test-1.0.dist-info", "METADATA").read_text() == (
-        "Metadata-Version: 2.4\nName: test\nVersion: 1.0\n"
+    assert extract_path.joinpath("test-1.0.dist-info", "METADATA").read_text(
+        "utf-8"
+    ) == ("Metadata-Version: 2.4\nName: test\nVersion: 1.0\n")
+    assert (
+        extract_path.joinpath("test-1.0", "package", "__init__.py").read_text("utf-8")
+        == ""
     )
-    assert extract_path.joinpath("test-1.0", "package", "__init__.py").read_text() == ""
-    assert extract_path.joinpath("test-1.0", "package", "module.py").read_text() == (
-        "print('hello world')\n"
-    )
+    assert extract_path.joinpath("test-1.0", "package", "module.py").read_text(
+        "utf-8"
+    ) == ("print('hello world')\n")
 
 
 @pytest.mark.skipif(
