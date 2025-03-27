@@ -12,4 +12,4 @@ try:
 except ModuleNotFoundError as exc:
     raise ImportError(ERROR) from exc
 
-warn(ERROR, DeprecationWarning, stacklevel=1)
+warn(ERROR, DeprecationWarning, stacklevel=2)

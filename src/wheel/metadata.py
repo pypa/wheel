@@ -13,5 +13,5 @@ warn(
     f"Please either copy the code or find an alternative library to import it from, as "
     f"this warning will be removed in a future version of 'wheel'.",
     DeprecationWarning,
-    stacklevel=1,
+    stacklevel=2,
 )
