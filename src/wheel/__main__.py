@@ -16,7 +16,7 @@ def main() -> NoReturn:  # needed for console script
         path = os.path.dirname(os.path.dirname(__file__))
         sys.path[0:0] = [path]
 
-    from wheel._commands import main as cli_main
+    from ._commands import main as cli_main
 
     sys.exit(cli_main())
 
