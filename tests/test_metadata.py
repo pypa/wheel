@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from wheel._metadata import pkginfo_to_metadata
 
 
@@ -85,3 +87,10 @@ pytest-cov""",
         egg_info_path=str(egg_info_dir), pkginfo_path=str(pkg_info)
     )
     assert message.items() == expected_metadata
+
+
+def test_metadata_deprecated() -> None:
+    with pytest.warns(DeprecationWarning, match="has been made private"):
+        from wheel import metadata
+
+        assert hasattr(metadata, "pkginfo_to_metadata")

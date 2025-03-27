@@ -9,7 +9,7 @@ from ._metadata import safe_name as safe_name
 from ._metadata import split_sections as split_sections
 
 warn(
-    f"The {__name__:r} package has been made private and should no longer be imported. "
+    f"The {__name__!r} package has been made private and should no longer be imported. "
     f"Please either copy the code or find an alternative library to import it from, as "
     f"this warning will be removed in a future version of 'wheel'.",
     DeprecationWarning,

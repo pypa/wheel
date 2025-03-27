@@ -138,7 +138,7 @@ def test_build_tag(wheelpath: Path) -> None:
 )
 def test_invalid_build_tag(wheelpath: Path, build_tag: str, error: str) -> None:
     with pytest.raises(CalledProcessError) as exc_info:
-        run_command("tags", "--build", build_tag, wheelpath, check=True)
+        run_command("tags", "--build", build_tag, wheelpath, catch_systemexit=False)
 
     exc = exc_info.value
     assert exc.returncode == 2
