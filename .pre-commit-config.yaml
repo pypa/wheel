@@ -1,5 +1,3 @@
-exclude: ^src/wheel/vendored
-
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v5.0.0
@@ -15,7 +13,7 @@ repos:
   - id: mixed-line-ending
     args: ["--fix=lf"]
   - id: trailing-whitespace
-    exclude: "tests/cli/test_convert.py"
+    exclude: "tests/commands/test_convert.py"
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: v0.8.6

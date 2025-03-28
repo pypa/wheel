@@ -4,6 +4,7 @@ import tarfile
 from pathlib import Path
 
 import pytest
+from pytest import MonkeyPatch
 
 pytest.importorskip("flit")
 pytest.importorskip("build")
@@ -13,7 +14,7 @@ DIR = Path(__file__).parent.resolve()
 MAIN_DIR = DIR.parent
 
 
-def test_compare_sdists(monkeypatch, tmp_path):
+def test_compare_sdists(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.chdir(MAIN_DIR)
 
     sdist_build_dir = tmp_path / "bdir"
@@ -44,7 +45,7 @@ def test_compare_sdists(monkeypatch, tmp_path):
 
     out = [set(), set()]
     for i, sdist in enumerate([sdist_build, sdist_flit]):
-        with tarfile.open(str(sdist), "r:gz") as tar:
+        with tarfile.open(sdist, "r:gz") as tar:
             out[i] = set(tar.getnames())
 
     assert out[0] == (out[1] - {"setup.py"})

@@ -13,17 +13,20 @@ classifiers = [
     "Topic :: System :: Archiving :: Packaging",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 authors = [{name = "Daniel Holth", email = "dholth@fastmail.fm"}]
 maintainers = [{name = "Alex Grönholm", email = "alex.gronholm@nextday.fi"}]
 keywords = ["wheel", "packaging"]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
+dependencies = [
+    "packaging >= 24.0"
+]
 dynamic = ["version"]
 
 [project.urls]
@@ -33,15 +36,12 @@ Changelog = "https://wheel.readthedocs.io/en/stable/news.html"
 Source = "https://github.com/pypa/wheel"
 
 [project.scripts]
-wheel = "wheel.cli:main"
-
-[project.entry-points."distutils.commands"]
-bdist_wheel = "wheel.bdist_wheel:bdist_wheel"
+wheel = "wheel._commands:main"
 
 [project.optional-dependencies]
 test = [
     "pytest >= 6.0.0",
-    "setuptools >= 65",
+    "setuptools >= 77",
 ]
 
 [tool.flit.sdist]
@@ -61,7 +61,6 @@ include = [
     "tests/testdata/test-1.0-py2.py3-none-any.whl",
 ]
 exclude = [
-    ".cirrus.yml",
     ".github/**",
     ".gitignore",
     ".pre-commit-config.yaml",
@@ -82,23 +81,18 @@ testpaths = ["test"]
 
 [tool.coverage.run]
 source = ["wheel"]
-omit = ["*/vendored/*"]
-exclude_also = [
-    "@overload",
-    "if TYPE_CHECKING:"
-]
 
 [tool.coverage.report]
 show_missing = true
 exclude_also = [
     "@abstractmethod",
+    "@overload",
+    "if TYPE_CHECKING:",
 ]
-
-[tool.ruff]
-extend-exclude = ["src/wheel/vendored"]
 
 [tool.ruff.lint]
 extend-select = [
+    "ANN",          # flake8-annotations
     "B",            # flake8-bugbear
     "G",            # flake8-logging-format
     "I",            # isort
@@ -109,38 +103,34 @@ extend-select = [
     "W",            # pycodestyle warnings
 ]
 
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/commands/test_convert.py" = ["W293"]
+
+[tool.ruff.lint.flake8-annotations]
+mypy-init-return = true
+
 # Tox (https://tox.wiki/) is a tool for running tests in multiple virtualenvs.
 # This configuration file will run the test suite on all supported python
 # versions. To use it, "pipx install tox" and then run "tox" from this
 # directory.
 
 [tool.tox]
-legacy_tox_ini = '''
-[tox]
-envlist = py38, py39, py310, py311, py312, py313, pypy3, lint, pkg
-minversion = 4.0.0
+env_list = ["py39", "py310", "py311", "py312", "py313", "py314", "pypy3", "lint", "pkg"]
 skip_missing_interpreters = true
 
-[testenv]
-package = wheel
-wheel_build_env = .pkg
-depends = lint
-commands = {env_python} -b -m pytest {posargs}
-extras = test
-set_env =
-  PYTHONWARNDEFAULTENCODING = 1
+[tool.tox.env_run_base]
+depends = ["lint"]
+package = "wheel"
+commands = [["pytest", { replace = "posargs", extend = true }]]
+extras = ["test"]
+set_env = { PYTHONWARNDEFAULTENCODING = "1" }
 
-[testenv:lint]
-depends =
-basepython = python3
-deps = pre-commit
-commands = pre-commit run --all-files --show-diff-on-failure
-skip_install = true
+[tool.tox.env.lint]
+depends = []
+deps = ["pre-commit"]
+package = "skip"
+commands = [["pre-commit", "run", "-a"]]
 
-[testenv:pkg]
-basepython = python3
-deps =
-    build
-    flit>=3.8
-commands = {envpython} -b -m pytest tests/test_sdist.py {posargs}
-'''
+[tool.tox.env.pkg]
+deps = ["build", "flit >= 3.8"]
+commands = [["pytest", "tests/test_sdist.py", { replace = "posargs", extend = true }]]

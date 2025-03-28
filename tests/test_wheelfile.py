@@ -2,17 +2,18 @@ from __future__ import annotations
 
 import stat
 import sys
+from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
 import pytest
+from pytest import MonkeyPatch, TempPathFactory
 
-from wheel.cli import WheelError
-from wheel.wheelfile import WheelFile
+from wheel.wheelfile import WheelError, WheelFile
 
 
 @pytest.fixture
-def wheel_path(tmp_path):
-    return str(tmp_path.joinpath("test-1.0-py2.py3-none-any.whl"))
+def wheel_path(tmp_path: Path) -> Path:
+    return tmp_path.joinpath("test-1.0-py2.py3-none-any.whl")
 
 
 @pytest.mark.parametrize(
@@ -22,10 +23,10 @@ def wheel_path(tmp_path):
         "foo-2-py2.py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
     ],
 )
-def test_wheelfile_re(filename, tmp_path):
+def test_wheelfile_re(filename: str, tmp_path: Path) -> None:
     # Regression test for #208 and #485
-    path = tmp_path.joinpath(filename)
-    with WheelFile(str(path), "w") as wf:
+    path = tmp_path / filename
+    with WheelFile(path, "w") as wf:
         assert wf.parsed_filename.group("namever") == "foo-2"
 
 
@@ -40,12 +41,12 @@ def test_wheelfile_re(filename, tmp_path):
         "test-1.0-py 2-none-any.whl",
     ],
 )
-def test_bad_wheel_filename(filename):
+def test_bad_wheel_filename(filename: str) -> None:
     exc = pytest.raises(WheelError, WheelFile, filename)
     exc.match(f"^Bad wheel filename {filename!r}$")
 
 
-def test_missing_record(wheel_path):
+def test_missing_record(wheel_path: Path) -> None:
     with ZipFile(wheel_path, "w") as zf:
         zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
 
@@ -53,7 +54,7 @@ def test_missing_record(wheel_path):
     exc.match("^Missing test-1.0.dist-info/RECORD file$")
 
 
-def test_unsupported_hash_algorithm(wheel_path):
+def test_unsupported_hash_algorithm(wheel_path: Path) -> None:
     with ZipFile(wheel_path, "w") as zf:
         zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
         zf.writestr(
@@ -67,10 +68,12 @@ def test_unsupported_hash_algorithm(wheel_path):
 
 @pytest.mark.parametrize(
     "algorithm, digest",
-    [("md5", "4J-scNa2qvSgy07rS4at-Q"), ("sha1", "QjCnGu5Qucb6-vir1a6BVptvOA4")],
-    ids=["md5", "sha1"],
+    [
+        pytest.param("md5", "4J-scNa2qvSgy07rS4at-Q", id="md5"),
+        pytest.param("sha1", "QjCnGu5Qucb6-vir1a6BVptvOA4", id="sha1"),
+    ],
 )
-def test_weak_hash_algorithm(wheel_path, algorithm, digest):
+def test_weak_hash_algorithm(wheel_path: Path, algorithm: str, digest: str) -> None:
     hash_string = f"{algorithm}={digest}"
     with ZipFile(wheel_path, "w") as zf:
         zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
@@ -83,17 +86,23 @@ def test_weak_hash_algorithm(wheel_path, algorithm, digest):
 @pytest.mark.parametrize(
     "algorithm, digest",
     [
-        ("sha256", "bv-QV3RciQC2v3zL8Uvhd_arp40J5A9xmyubN34OVwo"),
-        ("sha384", "cDXriAy_7i02kBeDkN0m2RIDz85w6pwuHkt2PZ4VmT2PQc1TZs8Ebvf6eKDFcD_S"),
-        (
+        pytest.param(
+            "sha256", "bv-QV3RciQC2v3zL8Uvhd_arp40J5A9xmyubN34OVwo", id="sha256"
+        ),
+        pytest.param(
+            "sha384",
+            "cDXriAy_7i02kBeDkN0m2RIDz85w6pwuHkt2PZ4VmT2PQc1TZs8Ebvf6eKDFcD_S",
+            id="sha384",
+        ),
+        pytest.param(
             "sha512",
             "kdX9CQlwNt4FfOpOKO_X0pn_v1opQuksE40SrWtMyP1NqooWVWpzCE3myZTfpy8g2azZON_"
             "iLNpWVxTwuDWqBQ",
+            id="sha512",
         ),
     ],
-    ids=["sha256", "sha384", "sha512"],
 )
-def test_testzip(wheel_path, algorithm, digest):
+def test_testzip(wheel_path: Path, algorithm: str, digest: str) -> None:
     hash_string = f"{algorithm}={digest}"
     with ZipFile(wheel_path, "w") as zf:
         zf.writestr("hello/héllö.py", 'print("Héllö, world!")\n')
@@ -103,7 +112,7 @@ def test_testzip(wheel_path, algorithm, digest):
         wf.testzip()
 
 
-def test_testzip_missing_hash(wheel_path):
+def test_testzip_missing_hash(wheel_path: Path) -> None:
     with ZipFile(wheel_path, "w") as zf:
         zf.writestr("hello/héllö.py", 'print("Héllö, world!")\n')
         zf.writestr("test-1.0.dist-info/RECORD", "")
@@ -113,7 +122,7 @@ def test_testzip_missing_hash(wheel_path):
         exc.match("^No hash found for file 'hello/héllö.py'$")
 
 
-def test_testzip_bad_hash(wheel_path):
+def test_testzip_bad_hash(wheel_path: Path) -> None:
     with ZipFile(wheel_path, "w") as zf:
         zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
         zf.writestr(
@@ -126,7 +135,7 @@ def test_testzip_bad_hash(wheel_path):
         exc.match("^Hash mismatch for file 'hello/héllö.py'$")
 
 
-def test_write_str(wheel_path):
+def test_write_str(wheel_path: Path) -> None:
     with WheelFile(wheel_path, "w") as wf:
         wf.writestr("hello/héllö.py", 'print("Héllö, world!")\n')
         wf.writestr("hello/h,ll,.py", 'print("Héllö, world!")\n')
@@ -148,7 +157,9 @@ def test_write_str(wheel_path):
         )
 
 
-def test_timestamp(tmp_path_factory, wheel_path, monkeypatch):
+def test_timestamp(
+    tmp_path_factory: TempPathFactory, wheel_path: Path, monkeypatch: MonkeyPatch
+) -> None:
     # An environment variable can be used to influence the timestamp on
     # TarInfo objects inside the zip.  See issue #143.
     build_dir = tmp_path_factory.mktemp("build")
@@ -170,7 +181,7 @@ def test_timestamp(tmp_path_factory, wheel_path, monkeypatch):
 @pytest.mark.skipif(
     sys.platform == "win32", reason="Windows does not support UNIX-like permissions"
 )
-def test_attributes(tmp_path_factory, wheel_path):
+def test_attributes(tmp_path_factory: TempPathFactory, wheel_path: Path) -> None:
     # With the change from ZipFile.write() to .writestr(), we need to manually
     # set member attributes.
     build_dir = tmp_path_factory.mktemp("build")
