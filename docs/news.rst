@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.46.0 (2025-04-03)**
 
 - Dropped support for Python 3.8
 - Removed the ``bdist_wheel`` setuptools command implementation and entry point.
@@ -9,6 +9,7 @@ Release Notes
   ``setuptools.command.bdist_wheel``, emitting a deprecation warning on import.
 - Removed vendored ``packaging`` in favor of a run-time dependency on it
 - Made the ``wheel.metadata`` module private (with a deprecation warning if it's
+  imported
 - Made the ``wheel.cli`` package private (no deprecation warning)
 - Fixed an exception when calling the ``convert`` command with an empty description
   field
