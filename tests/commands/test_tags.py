@@ -225,8 +225,8 @@ def test_permission_bits(wheelpath: Path) -> None:
 
             out_attr = outf.getinfo(member).external_attr
             inf_attr = member_info.external_attr
-            assert (
-                out_attr == inf_attr
-            ), f"{member} 0x{out_attr:012o} != 0x{inf_attr:012o}"
+            assert out_attr == inf_attr, (
+                f"{member} 0x{out_attr:012o} != 0x{inf_attr:012o}"
+            )
 
     output_file.unlink()
