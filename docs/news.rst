@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Temporarily restored the ``wheel.macosx_libfile`` module
+  (`#659 <https://github.com/pypa/wheel/issues/665960>`_)
+
 **0.46.0 (2025-04-03)**
 
 - Dropped support for Python 3.8

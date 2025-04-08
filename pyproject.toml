@@ -105,6 +105,7 @@ extend-select = [
 
 [tool.ruff.lint.extend-per-file-ignores]
 "tests/commands/test_convert.py" = ["W293"]
+"src/wheel/macosx_libfile.py" = ["ANN201"]
 
 [tool.ruff.lint.flake8-annotations]
 mypy-init-return = true
