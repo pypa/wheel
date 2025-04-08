@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.46.1 (2025-04-08)**
 
 - Temporarily restored the ``wheel.macosx_libfile`` module
   (`#659 <https://github.com/pypa/wheel/issues/665960>`_)
