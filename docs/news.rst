@@ -5,6 +5,8 @@ Release Notes
 
 - Restored the ``bdist_wheel`` command for compatibility with ``setuptools`` older than
   v70.1
+- Importing ``wheel.bdist_wheel`` now emits a ``FutureWarning`` instead of a
+  ``DeprecationWarning``
 
 **0.46.1 (2025-04-08)**
 
