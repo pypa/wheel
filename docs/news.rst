@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Restored the ``bdist_wheel`` command for compatibility with ``setuptools`` older than
+  v70.1
+
 **0.46.1 (2025-04-08)**
 
 - Temporarily restored the ``wheel.macosx_libfile`` module

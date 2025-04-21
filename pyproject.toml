@@ -38,6 +38,9 @@ Source = "https://github.com/pypa/wheel"
 [project.scripts]
 wheel = "wheel._commands:main"
 
+[project.entry-points."distutils.commands"]
+bdist_wheel = "wheel.bdist_wheel:bdist_wheel"
+
 [project.optional-dependencies]
 test = [
     "pytest >= 6.0.0",
@@ -106,6 +109,7 @@ extend-select = [
 [tool.ruff.lint.extend-per-file-ignores]
 "tests/commands/test_convert.py" = ["W293"]
 "src/wheel/macosx_libfile.py" = ["ANN201"]
+"src/wheel/_bdist_wheel.py" = ["ANN202", "G004"]
 
 [tool.ruff.lint.flake8-annotations]
 mypy-init-return = true
