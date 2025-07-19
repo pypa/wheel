@@ -58,7 +58,7 @@ Display detailed information with file listing::
     Name: example-package
     Version: 1.0
     ...
-    
+
     File listing:
       example_package/__init__.py                                      45 bytes
       example_package/module.py                                     1,234 bytes
