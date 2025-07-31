@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3.8,<4"]
+requires = ["flit_core >=3.11,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -49,7 +49,6 @@ test = [
 
 [tool.flit.sdist]
 include = [
-    "LICENSE*",
     "docs/**/*.py",
     "docs/**/*.rst",
     "docs/Makefile",
