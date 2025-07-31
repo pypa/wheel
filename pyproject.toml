@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3.8,<4"]
+requires = ["flit_core >=3.12,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -7,6 +7,7 @@ name = "wheel"
 description = "Command line tool for manipulating wheel files"
 readme = "README.rst"
 license = "MIT"
+license-files = ["LICENSE*"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -49,7 +50,6 @@ test = [
 
 [tool.flit.sdist]
 include = [
-    "LICENSE*",
     "docs/**/*.py",
     "docs/**/*.rst",
     "docs/Makefile",
