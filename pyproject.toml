@@ -7,7 +7,6 @@ name = "wheel"
 description = "Command line tool for manipulating wheel files"
 readme = "README.rst"
 license = "MIT"
-license-files = ["LICENSE*"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
