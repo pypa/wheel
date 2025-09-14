@@ -68,7 +68,7 @@ def safe_version(version: str) -> str:
 
 setuptools_major_version = int(setuptools.__version__.split(".")[0])
 
-PY_LIMITED_API_PATTERN = r"cp3\d"
+PY_LIMITED_API_PATTERN = r"cp3\d+"
 
 
 def _is_32bit_interpreter() -> bool:
