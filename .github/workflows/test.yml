@@ -28,9 +28,9 @@ jobs:
           python-version: "pypy-3.11"
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
@@ -50,7 +50,7 @@ jobs:
     - name: Generate coverage report
       run: coverage xml
     - name: Send coverage data to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         file: coverage.xml
       env:
