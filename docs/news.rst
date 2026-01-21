@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.46.2 (2026-01-22)**
 
 - Restored the ``bdist_wheel`` command for compatibility with ``setuptools`` older than
   v70.1
