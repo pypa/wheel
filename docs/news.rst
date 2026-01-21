@@ -8,7 +8,7 @@ Release Notes
 - Importing ``wheel.bdist_wheel`` now emits a ``FutureWarning`` instead of a
   ``DeprecationWarning``
 - Fixed ``wheel unpack`` potentially altering the permissions of files outside of the
-  destination tree with maliciously crafted wheels
+  destination tree with maliciously crafted wheels (CVE-2026-24049)
 
 **0.46.1 (2025-04-08)**
 
