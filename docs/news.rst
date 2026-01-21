@@ -7,6 +7,8 @@ Release Notes
   v70.1
 - Importing ``wheel.bdist_wheel`` now emits a ``FutureWarning`` instead of a
   ``DeprecationWarning``
+- Fixed ``wheel unpack`` potentially altering the permissions of files outside of the
+  destination tree with maliciously crafted wheels
 
 **0.46.1 (2025-04-08)**
 
