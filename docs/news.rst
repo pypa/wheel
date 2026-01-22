@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.46.3 (2026-01-22)**
 
 - Fixed ``ImportError: cannot import name '_setuptools_logging' from 'wheel'`` when
   installed alongside an old version of setuptools and running the ``bdist_wheel``
