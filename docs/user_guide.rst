@@ -84,3 +84,31 @@ To install a wheel file, use pip_::
     $ pip install someproject-1.5.0-py2-py3-none.whl
 
 .. _pip: https://pypi.org/project/pip/
+
+
+Inspecting Wheels
+-----------------
+
+To inspect the metadata and contents of a wheel file without installing it,
+use the ``wheel info`` command::
+
+    $ wheel info someproject-1.5.0-py2-py3-none.whl
+
+This will display information about the wheel including:
+
+* Package name and version
+* Supported Python versions and platforms
+* Dependencies and other metadata
+* File count and total size
+
+For more detailed information including a complete file listing, use the
+``--verbose`` flag::
+
+    $ wheel info --verbose someproject-1.5.0-py2-py3-none.whl
+
+This is useful for:
+
+* Verifying wheel contents before installation
+* Debugging packaging issues
+* Understanding wheel structure and metadata
+* Checking supported platforms and Python versions
