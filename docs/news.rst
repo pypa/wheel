@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed ``ImportError: cannot import name '_setuptools_logging' from 'wheel'`` when
+  installed alongside an old version of setuptools and running the ``bdist_wheel``
+  command (`#676 <https://github.com/pypa/wheel/issues/676>`_)
+
 **0.46.2 (2026-01-22)**
 
 - Restored the ``bdist_wheel`` command for compatibility with ``setuptools`` older than
