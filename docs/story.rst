@@ -21,7 +21,7 @@ It was a lot of work. The package is worse off than before, and it can’t
 be built or installed without patching the Python source code itself.
 
 It was about that time that distutils-sig had a discussion about the
-need to include a generated ``setup.cfg`` from ``setup.cfg`` because
+need to include a generated ``setup.py`` from ``setup.cfg`` because
 ``setup.cfg`` wasn’t static enough. Wait, what?
 
 Of course there is a different way to massively simplify the install

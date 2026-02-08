@@ -15,7 +15,7 @@ can typically find the wheel package under one of the following package names:
 * python3-wheel
 
 .. _pip: https://pip.pypa.io/en/stable/
-.. _installation instructions: https://pip.pypa.io/en/stable/installing/
+.. _installation instructions: https://pip.pypa.io/en/stable/installation/
 
 Python and OS Compatibility
 ---------------------------
