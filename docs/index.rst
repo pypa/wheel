@@ -3,10 +3,11 @@ wheel
 
 `GitHub <https://github.com/pypa/wheel>`_ |
 `PyPI <https://pypi.org/pypi/wheel/>`_ |
-User IRC: #pypa |
-Dev IRC: #pypa-dev
+`PyPA Discord <https://discord.gg/python>`_
 
-This library primarily serves as a command line tool for working with wheel files.
+.. include:: ../README.rst
+  :start-line: 3
+  :end-before: Documentation
 
 .. toctree::
    :maxdepth: 2
