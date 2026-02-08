@@ -41,8 +41,9 @@ wheel = "wheel._commands:main"
 [project.entry-points."distutils.commands"]
 bdist_wheel = "wheel.bdist_wheel:bdist_wheel"
 
-[project.optional-dependencies]
+[dependency-groups]
 test = [
+    "packaging >= 26.0",
     "pytest >= 6.0.0",
     "setuptools >= 77",
 ]
@@ -126,7 +127,7 @@ skip_missing_interpreters = true
 depends = ["lint"]
 package = "wheel"
 commands = [["pytest", { replace = "posargs", extend = true }]]
-extras = ["test"]
+dependency_groups = ["test"]
 set_env = { PYTHONWARNDEFAULTENCODING = "1" }
 
 [tool.tox.env.lint]

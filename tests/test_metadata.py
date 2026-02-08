@@ -62,7 +62,7 @@ bar @ http://host/bar.zip
 
 [:sys_platform=="win32"]
 pywin32
-foo @http://host/foo.zip
+foo @ http://host/foo.zip
 
 [faster-signatures]
 ed25519ll

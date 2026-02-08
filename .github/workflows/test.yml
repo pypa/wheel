@@ -21,9 +21,9 @@ jobs:
         - os: windows-latest
           python-version: "3.9"
         - os: macos-latest
-          python-version: "3.13"
+          python-version: "3.14"
         - os: windows-latest
-          python-version: "3.13"
+          python-version: "3.14"
         - os: macos-latest
           python-version: "pypy-3.11"
     runs-on: ${{ matrix.os }}
@@ -36,10 +36,8 @@ jobs:
         allow-prereleases: true
         cache: pip
         cache-dependency-path: pyproject.toml
-    - name: Install the project
-      run: pip install --no-binary=wheel .
-    - name: Install test dependencies
-      run: pip install .[test] coverage[toml]
+    - name: Install the project and its test dependencies
+      run: pip install --group test coverage[toml] .
     - name: Include SDist check dependencies
       if: matrix.python-version == '3.13'
       run: pip install build flit
