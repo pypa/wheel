@@ -17,8 +17,8 @@ installers (``.exe``; made with ``bdist_wininst``) into wheels.
 
 Egg names must match the standard format:
 
-* ``<project>-<version>-pyX.Y`` for pure Python wheels
-* ``<project>-<version>-pyX.Y-<arch>`` for binary wheels
+* ``<project>-<version>-pyX.Y`` for pure Python eggs
+* ``<project>-<version>-pyX.Y-<arch>`` for binary eggs
 
 
 Options

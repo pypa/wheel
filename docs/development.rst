@@ -8,7 +8,7 @@ Pull Requests
 - Provide a good description of what you're doing and why.
 - Provide tests that cover your changes and try to run the tests locally first.
 
-**Example**. Assuming you set up GitHub account, forked wheel repository from
+**Example**. Assuming you set up a GitHub account, forked the wheel repository from
 https://github.com/pypa/wheel to your own page via web interface, and your
 fork is located at https://github.com/yourname/wheel
 
@@ -23,7 +23,7 @@ fork is located at https://github.com/yourname/wheel
   $ git commit
 
 You may reference relevant issues in commit messages (like #1259) to
-make GitHub link issues and commits together, and with phrase like
+make GitHub link issues and commits together, and with a phrase like
 "fixes #1259" you can even close relevant issues automatically. Now
 push the changes to your fork::
 
@@ -54,7 +54,7 @@ To run the tests via tox against all matching interpreters::
 
 To run the tests via tox against a specific environment::
 
-  $ tox -e py35
+  $ tox -e py39
 
 Alternatively, you can run the tests via pytest using your default interpreter::
 
@@ -92,5 +92,5 @@ To make a new release:
 #. Create a new git tag matching the version exactly
 #. Push the new tag to GitHub
 
-Pushing a new tag to GitHub will trigger the publish workflow which package the
+Pushing a new tag to GitHub will trigger the publish workflow which will package the
 project and publish the resulting artifacts to PyPI.

@@ -47,7 +47,7 @@ Release Notes
   ``setuptools.command.bdist_wheel.bdist_wheel`` to improve compatibility with
   ``setuptools``' latest fixes.
 
-  Projects are still advised to migrate away from the deprecated  module and import
+  Projects are still advised to migrate away from the deprecated module and import
   the ``setuptools``' implementation explicitly. (PR by @abravalheri)
 
 **0.44.0 (2024-08-04)**
@@ -127,7 +127,7 @@ Release Notes
 **0.38.1 (2022-11-04)**
 
 - Removed install dependency on setuptools
-- The future-proof fix in 0.36.0 for converting PyPy's SOABI into a abi tag was
+- The future-proof fix in 0.36.0 for converting PyPy's SOABI into an ABI tag was
   faulty. Fixed so that future changes in the SOABI will not change the tag.
 
 **0.38.0 (2022-10-21)**
@@ -175,7 +175,7 @@ Release Notes
 - Updated vendored ``packaging`` library to v20.7
 - Switched to always using LF as line separator when generating ``WHEEL`` files
   (on Windows, CRLF was being used instead)
-- The ABI tag is taken from  the sysconfig SOABI value. On PyPy the SOABI value
+- The ABI tag is taken from the sysconfig SOABI value. On PyPy the SOABI value
   is ``pypy37-pp73`` which is not compliant with PEP 3149, as it should have
   both the API tag and the platform tag. This change future-proofs any change
   in PyPy's SOABI tag to make sure only the ABI tag is used by wheel.
