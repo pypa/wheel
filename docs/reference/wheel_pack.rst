@@ -28,7 +28,7 @@ Options
 
 .. option:: --build-number <tag>
 
-    Override the build tag in the new wheel file name
+    Override the build tag in the new wheel file name.
 
 Examples
 --------

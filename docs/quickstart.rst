@@ -14,7 +14,7 @@ section to your ``setup.cfg``::
     [bdist_wheel]
     universal = 1
 
-To convert an ``.egg`` or file to a wheel::
+To convert an ``.egg`` file or directory to a wheel::
 
     wheel convert youreggfile.egg
 

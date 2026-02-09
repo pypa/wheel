@@ -46,4 +46,4 @@ Options
   -h, --help            show this help message and exit
 
 
-.. _`PEP 427`: https://www.python.org/dev/peps/pep-0427/
+.. _`PEP 427`: https://peps.python.org/pep-0427/

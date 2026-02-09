@@ -3,20 +3,11 @@ wheel
 
 `GitHub <https://github.com/pypa/wheel>`_ |
 `PyPI <https://pypi.org/pypi/wheel/>`_ |
-User IRC: #pypa |
-Dev IRC: #pypa-dev
+`PyPA Discord <https://discord.gg/python>`_
 
-This library is the reference implementation of the Python wheel packaging
-standard, as defined in `PEP 427`_.
-
-It has two different roles:
-
-#. A setuptools_ extension for building wheels that provides the
-   ``bdist_wheel`` setuptools command
-#. A command line tool for working with wheel files
-
-.. _PEP 427: https://www.python.org/dev/peps/pep-0427/
-.. _setuptools: https://pypi.org/project/setuptools/
+.. include:: ../README.rst
+  :start-line: 3
+  :end-before: Documentation
 
 .. toctree::
    :maxdepth: 2

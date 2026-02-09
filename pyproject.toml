@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3.8,<4"]
+requires = ["flit_core >=3.11,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -41,15 +41,15 @@ wheel = "wheel._commands:main"
 [project.entry-points."distutils.commands"]
 bdist_wheel = "wheel.bdist_wheel:bdist_wheel"
 
-[project.optional-dependencies]
+[dependency-groups]
 test = [
+    "packaging >= 26.0",
     "pytest >= 6.0.0",
     "setuptools >= 77",
 ]
 
 [tool.flit.sdist]
 include = [
-    "LICENSE*",
     "docs/**/*.py",
     "docs/**/*.rst",
     "docs/Makefile",
@@ -127,7 +127,7 @@ skip_missing_interpreters = true
 depends = ["lint"]
 package = "wheel"
 commands = [["pytest", { replace = "posargs", extend = true }]]
-extras = ["test"]
+dependency_groups = ["test"]
 set_env = { PYTHONWARNDEFAULTENCODING = "1" }
 
 [tool.tox.env.lint]

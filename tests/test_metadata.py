@@ -12,9 +12,9 @@ def test_pkginfo_to_metadata(tmp_path: Path) -> None:
         ("Metadata-Version", "2.1"),
         ("Name", "spam"),
         ("Version", "0.1"),
-        ("Requires-Dist", "pip@ https://github.com/pypa/pip/archive/1.3.1.zip"),
+        ("Requires-Dist", "pip @ https://github.com/pypa/pip/archive/1.3.1.zip"),
         ("Requires-Dist", 'pywin32; sys_platform == "win32"'),
-        ("Requires-Dist", 'foo@ http://host/foo.zip ; sys_platform == "win32"'),
+        ("Requires-Dist", 'foo @ http://host/foo.zip ; sys_platform == "win32"'),
         ("Provides-Extra", "signatures"),
         (
             "Requires-Dist",
@@ -22,7 +22,7 @@ def test_pkginfo_to_metadata(tmp_path: Path) -> None:
         ),
         ("Provides-Extra", "empty_extra"),
         ("Provides-Extra", "extra"),
-        ("Requires-Dist", 'bar@ http://host/bar.zip ; extra == "extra"'),
+        ("Requires-Dist", 'bar @ http://host/bar.zip ; extra == "extra"'),
         ("Provides-Extra", "faster-signatures"),
         ("Requires-Dist", 'ed25519ll; extra == "faster-signatures"'),
         ("Provides-Extra", "rest"),
@@ -62,7 +62,7 @@ bar @ http://host/bar.zip
 
 [:sys_platform=="win32"]
 pywin32
-foo @http://host/foo.zip
+foo @ http://host/foo.zip
 
 [faster-signatures]
 ed25519ll
