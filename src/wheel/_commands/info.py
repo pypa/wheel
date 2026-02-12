@@ -26,9 +26,6 @@ def info(path: str, verbose: bool = False) -> None:
         parsed = wf.parsed_filename
         name = parsed.group("name")
         version = parsed.group("ver")
-        python_tag = parsed.group("pyver")
-        abi_tag = parsed.group("abi")
-        platform_tag = parsed.group("plat")
         build_tag = parsed.group("build")
 
         print(f"Name: {name}")
