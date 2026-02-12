@@ -63,7 +63,9 @@ def test_info_nonexistent_file() -> None:
     """Test info command with non-existent wheel file."""
     from wheel._commands.info import info
 
-    with pytest.raises(FileNotFoundError, match="Wheel file not found: nonexistent.whl"):
+    with pytest.raises(
+        FileNotFoundError, match="Wheel file not found: nonexistent.whl"
+    ):
         info("nonexistent.whl")
 
 
