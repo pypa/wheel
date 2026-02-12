@@ -9,6 +9,8 @@ Release Notes
 
 **0.46.2 (2026-01-22)**
 
+- Added the ``wheel info`` subcommand to display metadata about wheel files without
+  unpacking them (`#639 <https://github.com/pypa/wheel/issues/639>`_)
 - Restored the ``bdist_wheel`` command for compatibility with ``setuptools`` older than
   v70.1
 - Importing ``wheel.bdist_wheel`` now emits a ``FutureWarning`` instead of a

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 
-from pytest import TempPathFactory
+import pytest
 
 from .util import run_command
 
@@ -11,7 +11,7 @@ TESTWHEEL_NAME = "test-1.0-py2.py3-none-any.whl"
 TESTWHEEL_PATH = os.path.join(THISDIR, "..", "testdata", TESTWHEEL_NAME)
 
 
-def test_info_basic(tmp_path_factory: TempPathFactory) -> None:
+def test_info_basic() -> None:
     """Test basic wheel info display."""
     output = run_command("info", TESTWHEEL_PATH)
 
@@ -38,7 +38,7 @@ def test_info_basic(tmp_path_factory: TempPathFactory) -> None:
     assert "Size: 8,114 bytes" in output
 
 
-def test_info_verbose(tmp_path_factory: TempPathFactory) -> None:
+def test_info_verbose() -> None:
     """Test verbose wheel info display with file listing."""
     output = run_command("info", "--verbose", TESTWHEEL_PATH)
 
@@ -61,19 +61,17 @@ def test_info_verbose(tmp_path_factory: TempPathFactory) -> None:
 
 def test_info_nonexistent_file() -> None:
     """Test info command with non-existent wheel file."""
-    try:
-        output = run_command("info", "nonexistent.whl", catch_systemexit=False)
-        assert False, "Expected an error for non-existent file"
-    except Exception:
-        # Expected to fail
-        pass
+    from wheel._commands.info import info
+
+    with pytest.raises(FileNotFoundError, match="Wheel file not found: nonexistent.whl"):
+        info("nonexistent.whl")
 
 
 def test_info_help() -> None:
     """Test info command help."""
     output = run_command("info", "--help")
 
-    assert "usage: wheel info" in output
+    assert "info" in output
     assert "Wheel file to show information for" in output
     assert "wheelfile" in output
     assert "--verbose" in output
