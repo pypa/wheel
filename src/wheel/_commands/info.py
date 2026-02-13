@@ -54,8 +54,8 @@ def info(path: str, verbose: bool = False) -> None:
                     for tag in sorted(tags):  # Sort tags for consistent output
                         print(f"  {tag}")
 
-                generator = wheel_metadata.get("Generator")
-                if generator:
+                generators = wheel_metadata.get_all("Generator", [])
+                for generator in generators:
                     print(f"Generator: {generator}")
 
         except KeyError:
