@@ -123,7 +123,9 @@ def test_info_multiple_generators(tmp_path: os.PathLike[str]) -> None:
         "Tag: py2-none-any\n"
         "Tag: py3-none-any\n"
     )
-    whl = _build_wheel_with_modified_metadata(TESTWHEEL_PATH, str(tmp_path), wheel_content)
+    whl = _build_wheel_with_modified_metadata(
+        TESTWHEEL_PATH, str(tmp_path), wheel_content
+    )
     output = _capture_info_output(whl)
 
     assert "Generator: bdist_wheel (0.30.0)" in output
@@ -140,7 +142,9 @@ def test_info_no_generator(tmp_path: os.PathLike[str]) -> None:
         "Tag: py2-none-any\n"
         "Tag: py3-none-any\n"
     )
-    whl = _build_wheel_with_modified_metadata(TESTWHEEL_PATH, str(tmp_path), wheel_content)
+    whl = _build_wheel_with_modified_metadata(
+        TESTWHEEL_PATH, str(tmp_path), wheel_content
+    )
     output = _capture_info_output(whl)
 
     assert "Generator" not in output
