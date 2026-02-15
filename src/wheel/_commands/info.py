@@ -5,6 +5,7 @@ Display information about wheel files.
 from __future__ import annotations
 
 import email.policy
+import sys
 from email.parser import BytesParser
 from pathlib import Path
 
@@ -57,9 +58,8 @@ def info(path: str, verbose: bool = False) -> None:
                 generators = wheel_metadata.get_all("Generator", [])
                 for generator in generators:
                     print(f"Generator: {generator}")
-
         except KeyError:
-            print("Warning: WHEEL metadata file not found")
+            print("Warning: WHEEL metadata file not found", file=sys.stderr)
 
         # Read package METADATA
         try:
@@ -96,6 +96,7 @@ def info(path: str, verbose: bool = False) -> None:
                         classifiers[:5]
                     ):  # Sort and limit to first 5
                         print(f"  {classifier}")
+
                     if len(classifiers) > 5:
                         print(f"  ... and {len(classifiers) - 5} more")
 
@@ -105,9 +106,8 @@ def info(path: str, verbose: bool = False) -> None:
                     print("Requires-Dist:")
                     for req in sorted(requires_dist):  # Sort dependencies
                         print(f"  {req}")
-
         except KeyError:
-            print("Warning: METADATA file not found")
+            print("Warning: METADATA file not found", file=sys.stderr)
 
         # File information
         file_count = len(wf.filelist)
