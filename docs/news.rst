@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Added the ``wheel info`` subcommand to display metadata about wheel files without
+  unpacking them (`#639 <https://github.com/pypa/wheel/issues/639>`_)
+
 **0.46.3 (2026-01-22)**
 
 - Fixed ``ImportError: cannot import name '_setuptools_logging' from 'wheel'`` when
