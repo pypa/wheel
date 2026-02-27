@@ -35,7 +35,7 @@ def test_python_tags(wheelpath: Path) -> None:
     assert newname == TESTWHEEL_NAME.replace("py2.py3", "py3")
     output_file = wheelpath.parent / newname
     with WheelFile(output_file) as f:
-        output = f.read(f.dist_info_path + "/WHEEL")
+        output = f.read(f"{f.dist_info_path}/WHEEL")
 
     assert (
         output == b"Wheel-Version: 1.0\nGenerator: bdist_wheel (0.30.0)"
@@ -161,7 +161,7 @@ def test_multi_tags(wheelpath: Path) -> None:
     output_file = wheelpath.parent / newname
     assert output_file.exists()
     with WheelFile(output_file) as f:
-        output = f.read(f.dist_info_path + "/WHEEL")
+        output = f.read(f"{f.dist_info_path}/WHEEL")
 
     assert output == (
         b"Wheel-Version: 1.0\n"
