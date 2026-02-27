@@ -482,5 +482,5 @@ def calculate_macosx_platform_tag(archive_root: StrPath, platform_tag: str) -> s
 
         sys.stderr.write(error_message)
 
-    platform_tag = prefix + "_" + fin_base_version + "_" + suffix
+    platform_tag = f"{prefix}_{fin_base_version}_{suffix}"
     return platform_tag

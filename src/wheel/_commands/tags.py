@@ -48,7 +48,7 @@ def tags(
     with WheelFile(wheel, "r") as f:
         assert f.filename, f"{f.filename} must be available"
 
-        wheel_info = f.read(f.dist_info_path + "/WHEEL")
+        wheel_info = f.read(f"{f.dist_info_path}/WHEEL")
         info = BytesParser(policy=email.policy.compat32).parsebytes(wheel_info)
 
         original_wheel_name = os.path.basename(f.filename)
@@ -127,9 +127,9 @@ def tags(
             for item in fin.infolist():
                 if item.is_dir():
                     continue
-                if item.filename == f.dist_info_path + "/RECORD":
+                if item.filename == f"{f.dist_info_path}/RECORD":
                     continue
-                if item.filename == f.dist_info_path + "/WHEEL":
+                if item.filename == f"{f.dist_info_path}/WHEEL":
                     fout.writestr(item, info.as_bytes())
                 else:
                     fout.writestr(item, fin.read(item))
