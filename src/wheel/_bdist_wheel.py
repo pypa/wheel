@@ -274,7 +274,7 @@ class bdist_wheel(Command):
         egg_info = self.distribution.get_command_obj("egg_info")
         egg_info.ensure_finalized()  # needed for correct `wheel_dist_name`
 
-        self.data_dir = self.wheel_dist_name + ".data"
+        self.data_dir = f"{self.wheel_dist_name}.data"
         self.plat_name_supplied = self.plat_name is not None
 
         try:
@@ -447,7 +447,7 @@ class bdist_wheel(Command):
         if not os.path.exists(self.dist_dir):
             os.makedirs(self.dist_dir)
 
-        wheel_path = os.path.join(self.dist_dir, archive_basename + ".whl")
+        wheel_path = os.path.join(self.dist_dir, f"{archive_basename}.whl")
         with WheelFile(wheel_path, "w", self.compression) as wf:
             wf.write_files(archive_root)
 

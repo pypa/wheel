@@ -78,14 +78,14 @@ class WheelFile(ZipFile):
         self.dist_info_path = "{}.dist-info".format(
             self.parsed_filename.group("namever")
         )
-        self.record_path = self.dist_info_path + "/RECORD"
+        self.record_path = f"{self.dist_info_path}/RECORD"
         self._file_hashes: dict[str, tuple[None, None] | tuple[int, bytes]] = {}
         self._file_sizes = {}
         if mode == "r":
             # Ignore RECORD and any embedded wheel signatures
             self._file_hashes[self.record_path] = None, None
-            self._file_hashes[self.record_path + ".jws"] = None, None
-            self._file_hashes[self.record_path + ".p7s"] = None, None
+            self._file_hashes[f"{self.record_path}.jws"] = None, None
+            self._file_hashes[f"{self.record_path}.p7s"] = None, None
 
             # Fill in the expected hashes by reading them from RECORD
             try:
@@ -231,7 +231,7 @@ class WheelFile(ZipFile):
             writer = csv.writer(data, delimiter=",", quotechar='"', lineterminator="\n")
             writer.writerows(
                 (
-                    (fname, algorithm + "=" + hash_, self._file_sizes[fname])
+                    (fname, f"{algorithm}={hash_}", self._file_sizes[fname])
                     for fname, (algorithm, hash_) in self._file_hashes.items()
                 )
             )
