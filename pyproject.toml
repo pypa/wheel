@@ -137,5 +137,5 @@ package = "skip"
 commands = [["pre-commit", "run", "-a"]]
 
 [tool.tox.env.pkg]
-deps = ["build", "flit >= 3.8"]
+deps = ["build", "flit >= 3.11"]
 commands = [["pytest", "tests/test_sdist.py", { replace = "posargs", extend = true }]]
