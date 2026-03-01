@@ -131,7 +131,6 @@ dependency_groups = ["test"]
 set_env = { PYTHONWARNDEFAULTENCODING = "1" }
 
 [tool.tox.env.lint]
-depends = []
 deps = ["pre-commit"]
 package = "skip"
 commands = [["pre-commit", "run", "-a"]]
