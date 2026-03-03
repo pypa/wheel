@@ -34,5 +34,13 @@ repos:
   - id: rst-directive-colons
   - id: rst-inline-touching-normal
 
+- repo: https://github.com/henryiii/check-sdist
+  rev: v1.4.0
+  hooks:
+  - id: check-sdist
+    args: [--inject-junk]
+    additional_dependencies:
+    - flit-core
+
 ci:
   autoupdate_schedule: quarterly
