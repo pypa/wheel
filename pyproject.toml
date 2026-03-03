@@ -134,8 +134,3 @@ set_env = { PYTHONWARNDEFAULTENCODING = "1" }
 deps = ["pre-commit"]
 package = "skip"
 commands = [["pre-commit", "run", "-a"]]
-
-[tool.tox.env.pkg]
-deps = ["build", "flit >= 3.11"]
-package = "skip"
-commands = [["pytest", "tests/test_sdist.py", { replace = "posargs", extend = true }]]
