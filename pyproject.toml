@@ -122,6 +122,7 @@ mypy-init-return = true
 [tool.tox]
 env_list = ["py39", "py310", "py311", "py312", "py313", "py314", "pypy3", "lint", "pkg"]
 skip_missing_interpreters = true
+requires = ["tox >= 4.22"]
 
 [tool.tox.env_run_base]
 depends = ["lint"]
