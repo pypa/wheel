@@ -38,9 +38,6 @@ jobs:
         cache-dependency-path: pyproject.toml
     - name: Install the project and its test dependencies
       run: pip install --group test coverage[toml] .
-    - name: Include SDist check dependencies
-      if: matrix.python-version == '3.13'
-      run: pip install build flit
     - name: Test with pytest
       run: coverage run -m pytest -v
       env:
