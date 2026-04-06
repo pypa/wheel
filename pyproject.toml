@@ -79,7 +79,7 @@ filterwarnings = [
     "error",
     "ignore::Warning:_pytest.*",
 ]
-log_cli_level = "info"
+log_level = "INFO"
 testpaths = ["test"]
 
 [tool.coverage.run]
