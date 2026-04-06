@@ -16,14 +16,14 @@ repos:
     exclude: "tests/commands/test_convert.py"
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.14.10
+  rev: v0.15.9
   hooks:
     - id: ruff-check
       args: [--fix, --show-fixes]
     - id: ruff-format
 
 - repo: https://github.com/codespell-project/codespell
-  rev: v2.4.1
+  rev: v2.4.2
   hooks:
   - id: codespell
 
