@@ -91,7 +91,7 @@ class WheelFile(ZipFile):
             # (lowercase) naming even when the filename does not. Resolve the
             # actual path case-insensitively.
             if self.record_path not in self.namelist():
-                lowered = self.dist_info_path.lower() + "/RECORD"
+                lowered = self.dist_info_path.lower() + "/record"
                 for name in self.namelist():
                     if name.lower() == lowered:
                         self.dist_info_path = name.rsplit("/RECORD", 1)[0]

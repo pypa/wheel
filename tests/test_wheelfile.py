@@ -54,6 +54,34 @@ def test_missing_record(wheel_path: Path) -> None:
     exc.match("^Missing test-1.0.dist-info/RECORD file$")
 
 
+def test_mixed_case_dist_info(tmp_path: Path) -> None:
+    """Regression test: wheel filename has uppercase but .dist-info dir is lowercase.
+
+    A wheel named ``Django-3.2.5.whl`` may contain ``django-3.2.5.dist-info/``
+    inside (normalized). WheelFile should find RECORD case-insensitively.
+    See `#411 <https://github.com/pypa/wheel/issues/411>`_.
+    """
+    wheel_path = tmp_path / "MixedCase-1.0-py3-none-any.whl"
+    with ZipFile(wheel_path, "w", ZIP_DEFLATED) as zf:
+        zf.writestr("mixedcase/__init__.py", "")
+        # Use lowercase dist-info (as pip/build tools produce)
+        zf.writestr("mixedcase-1.0.dist-info/WHEEL", "Wheel-Version: 1.0\n")
+        zf.writestr(
+            "mixedcase-1.0.dist-info/METADATA",
+            "Metadata-Version: 2.1\nName: MixedCase\nVersion: 1.0\n",
+        )
+        zf.writestr(
+            "mixedcase-1.0.dist-info/RECORD",
+            "mixedcase/__init__.py,,\n",
+        )
+
+    # Should not raise — this is the fix
+    wf = WheelFile(wheel_path)
+    assert wf.dist_info_path == "mixedcase-1.0.dist-info"
+    assert wf.record_path == "mixedcase-1.0.dist-info/RECORD"
+    wf.close()
+
+
 def test_unsupported_hash_algorithm(wheel_path: Path) -> None:
     with ZipFile(wheel_path, "w") as zf:
         zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
