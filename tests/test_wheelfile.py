@@ -76,10 +76,9 @@ def test_mixed_case_dist_info(tmp_path: Path) -> None:
         )
 
     # Should not raise — this is the fix
-    wf = WheelFile(wheel_path)
-    assert wf.dist_info_path == "mixedcase-1.0.dist-info"
-    assert wf.record_path == "mixedcase-1.0.dist-info/RECORD"
-    wf.close()
+    with WheelFile(wheel_path) as wf:
+        assert wf.dist_info_path == "mixedcase-1.0.dist-info"
+        assert wf.record_path == "mixedcase-1.0.dist-info/RECORD"
 
 
 def test_unsupported_hash_algorithm(wheel_path: Path) -> None:
