@@ -82,11 +82,6 @@ class WheelFile(ZipFile):
         self._file_hashes: dict[str, tuple[None, None] | tuple[int, bytes]] = {}
         self._file_sizes = {}
         if mode == "r":
-            # Ignore RECORD and any embedded wheel signatures
-            self._file_hashes[self.record_path] = None, None
-            self._file_hashes[self.record_path + ".jws"] = None, None
-            self._file_hashes[self.record_path + ".p7s"] = None, None
-
             # The .dist-info directory inside the wheel may use normalized
             # (lowercase) naming even when the filename does not. Resolve the
             # actual path case-insensitively.
@@ -96,11 +91,12 @@ class WheelFile(ZipFile):
                     if name.lower() == lowered:
                         self.dist_info_path = name.rsplit("/RECORD", 1)[0]
                         self.record_path = name
-                        # Update hash skip entries to use the resolved path
-                        self._file_hashes[name] = None, None
-                        self._file_hashes[name + ".jws"] = None, None
-                        self._file_hashes[name + ".p7s"] = None, None
                         break
+
+            # Ignore RECORD and any embedded wheel signatures
+            self._file_hashes[self.record_path] = None, None
+            self._file_hashes[self.record_path + ".jws"] = None, None
+            self._file_hashes[self.record_path + ".p7s"] = None, None
 
             # Fill in the expected hashes by reading them from RECORD
             try:
