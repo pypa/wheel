@@ -3,6 +3,10 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed ``WheelFile`` raising ``Missing RECORD file`` when the wheel filename
+  contains uppercase characters (e.g. ``Django-3.2.5.whl``) but the
+  ``.dist-info`` directory inside uses normalized lowercase naming
+  (`#411 <https://github.com/pypa/wheel/issues/411>`_)
 - Added the ``wheel info`` subcommand to display metadata about wheel files without
   unpacking them (`#639 <https://github.com/pypa/wheel/issues/639>`_)
 
