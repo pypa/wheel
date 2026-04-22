@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**UNRELEASED**
+**0.47.0 (2026-04-22)**
 
 - Added the ``wheel info`` subcommand to display metadata about wheel files without
   unpacking them (`#639 <https://github.com/pypa/wheel/issues/639>`_)
