@@ -200,7 +200,10 @@ class WheelFile(ZipFile):
         zinfo = ZipInfo(
             arcname or filename, date_time=get_zipinfo_datetime(st.st_mtime)
         )
-        zinfo.external_attr = (stat.S_IMODE(st.st_mode) | stat.S_IFMT(st.st_mode)) << 16
+        # Normalize permissions to 0o644 for regular files to ensure
+        # reproducible builds regardless of umask at build time.
+        # See: https://github.com/pypa/wheel/issues/362
+        zinfo.external_attr = (0o644 | stat.S_IFMT(st.st_mode)) << 16
         zinfo.compress_type = compress_type or self.compression
         self.writestr(zinfo, data, compress_type)
 
