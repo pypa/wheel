@@ -33,7 +33,9 @@ def unpack(path: str | Path, dest: str | Path = ".") -> None:
     _unpack(str(path), str(dest))
 
 
-def pack(directory: str | Path, dest_dir: str | Path = ".", build_number: str | None = None) -> None:
+def pack(
+    directory: str | Path, dest_dir: str | Path = ".", build_number: str | None = None
+) -> None:
     """Pack a wheel.
 
     .. deprecated:: 0.45.0
