@@ -44,6 +44,7 @@ serialization_policy = EmailPolicy(
     max_line_length=0,
 )
 GENERATOR = f"wheel {__version__}"
+LOWEST_CONVERTED_METADATA_VERSION = (1, 2)
 
 
 def convert_requires(requires: str, metadata: Message) -> None:
@@ -66,6 +67,7 @@ def convert_requires(requires: str, metadata: Message) -> None:
 
 def convert_pkg_info(pkginfo: str, metadata: Message) -> None:
     parsed_message = Parser().parsestr(pkginfo)
+    metadata_version = parsed_message.get("Metadata-Version", "1.0")
     for key, value in parsed_message.items():
         key_lower = key.lower()
         if value == "UNKNOWN":
@@ -92,7 +94,23 @@ def convert_pkg_info(pkginfo: str, metadata: Message) -> None:
         else:
             metadata.add_header(key, value)
 
-    metadata.replace_header("Metadata-Version", "2.4")
+    metadata.replace_header(
+        "Metadata-Version",
+        _compatible_metadata_version(metadata_version),
+    )
+
+
+def _compatible_metadata_version(metadata_version: str) -> str:
+    try:
+        major_str, minor_str = metadata_version.split(".", 1)
+        major_minor = (int(major_str), int(minor_str))
+    except ValueError:
+        return "1.2"
+
+    if major_minor < LOWEST_CONVERTED_METADATA_VERSION:
+        return "1.2"
+
+    return metadata_version
 
 
 def normalize(name: str) -> str:
