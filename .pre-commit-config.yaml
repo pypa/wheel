@@ -16,7 +16,7 @@ repos:
     exclude: "tests/commands/test_convert.py"
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.15.9
+  rev: v0.15.20
   hooks:
     - id: ruff-check
       args: [--fix, --show-fixes]
@@ -35,7 +35,7 @@ repos:
   - id: rst-inline-touching-normal
 
 - repo: https://github.com/henryiii/check-sdist
-  rev: v1.4.0
+  rev: v1.5.0
   hooks:
   - id: check-sdist
     args: [--inject-junk]
