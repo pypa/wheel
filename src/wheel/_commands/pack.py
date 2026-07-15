@@ -50,7 +50,9 @@ def pack(
     # Update the local version identifier if requested
     if local_version is not None:
         base_version = version.split("+", 1)[0]
-        new_version = base_version if local_version == "" else f"{base_version}+{local_version}"
+        new_version = (
+            base_version if local_version == "" else f"{base_version}+{local_version}"
+        )
         try:
             Version(new_version)
         except InvalidVersion as e:
