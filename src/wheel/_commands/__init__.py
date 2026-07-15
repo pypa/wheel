@@ -21,7 +21,7 @@ def unpack_f(args: argparse.Namespace) -> None:
 def pack_f(args: argparse.Namespace) -> None:
     from .pack import pack
 
-    pack(args.directory, args.dest_dir, args.build_number)
+    pack(args.directory, args.dest_dir, args.build_number, args.local_version)
 
 
 def convert_f(args: argparse.Namespace) -> None:
@@ -103,6 +103,9 @@ def parser() -> argparse.ArgumentParser:
     )
     repack_parser.add_argument(
         "--build-number", help="Build tag to use in the wheel name"
+    )
+    repack_parser.add_argument(
+        "--local-version", help="Local version identifier to add or replace"
     )
     repack_parser.set_defaults(func=pack_f)
 

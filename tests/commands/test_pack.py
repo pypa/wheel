@@ -2,12 +2,17 @@ from __future__ import annotations
 
 import email.policy
 import os
+import sys
+from email.generator import BytesGenerator
 from email.message import Message
 from email.parser import BytesParser
+from io import StringIO
 from zipfile import Path, ZipFile
 
 import pytest
 from pytest import TempPathFactory
+
+from wheel._commands import main
 
 from .util import run_command
 
@@ -90,3 +95,132 @@ def test_pack(
     assert sorted(new_wheel_file_content.items()) == sorted(
         expected_wheel_content.items()
     )
+
+
+@pytest.mark.parametrize(
+    "local_version_arg, existing_local_version, filename, expected_version",
+    [
+        pytest.param(
+            "local",
+            None,
+            "test-1.0+local-py2.py3-none-any.whl",
+            "1.0+local",
+            id="addlocal",
+        ),
+        pytest.param(
+            "new",
+            "old",
+            "test-1.0+new-py2.py3-none-any.whl",
+            "1.0+new",
+            id="replacelocal",
+        ),
+        pytest.param(
+            "",
+            "old",
+            "test-1.0-py2.py3-none-any.whl",
+            "1.0",
+            id="removelocal",
+        ),
+    ],
+)
+def test_pack_local_version(
+    tmp_path_factory: TempPathFactory,
+    tmp_path: Path,
+    local_version_arg: str,
+    existing_local_version: str | None,
+    filename: str,
+    expected_version: str,
+) -> None:
+    unpack_dir = tmp_path_factory.mktemp("wheeldir")
+    with ZipFile(TESTWHEEL_PATH) as zf:
+        zf.extractall(unpack_dir)
+
+    dist_info_dir = unpack_dir.joinpath("test-1.0.dist-info")
+    if existing_local_version:
+        existing_version = f"1.0+{existing_local_version}"
+        new_dist_info_dir = unpack_dir.joinpath(f"test-{existing_version}.dist-info")
+        dist_info_dir.rename(new_dist_info_dir)
+        dist_info_dir = new_dist_info_dir
+
+        wheel_file_path = dist_info_dir.joinpath("WHEEL")
+        wheel_file_content = wheel_file_path.read_bytes()
+        assert b"Build" not in wheel_file_content
+
+        metadata_path = dist_info_dir.joinpath("METADATA")
+        metadata = BytesParser(policy=email.policy.compat32).parsebytes(
+            metadata_path.read_bytes()
+        )
+        del metadata["Version"]
+        metadata["Version"] = existing_version
+        with open(metadata_path, "wb") as f:
+            BytesGenerator(f, maxheaderlen=0).flatten(metadata)
+
+    args = ["--dest", tmp_path, unpack_dir, "--local-version", local_version_arg]
+    run_command("pack", *args)
+    new_wheel_path = tmp_path.joinpath(filename)
+    assert new_wheel_path.is_file()
+
+    with ZipFile(new_wheel_path) as zf:
+        dist_info_prefix = f"test-{expected_version}.dist-info"
+        parser = BytesParser(policy=email.policy.compat32)
+        metadata = parser.parsebytes(zf.read(f"{dist_info_prefix}/METADATA"))
+        assert metadata["Version"] == expected_version
+
+        wheel_file_content = parser.parsebytes(zf.read(f"{dist_info_prefix}/WHEEL"))
+        assert wheel_file_content["Wheel-Version"] == "1.0"
+
+
+def test_pack_local_version_rejects_hyphen(
+    tmp_path_factory: TempPathFactory, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    unpack_dir = tmp_path_factory.mktemp("wheeldir")
+    with ZipFile(TESTWHEEL_PATH) as zf:
+        zf.extractall(unpack_dir)
+
+    argv = [
+        "wheel",
+        "pack",
+        "--dest",
+        str(tmp_path),
+        str(unpack_dir),
+        "--local-version",
+        "bad-local",
+    ]
+    stdout = StringIO()
+    stderr = StringIO()
+    with monkeypatch.context() as m:
+        m.setattr(sys, "argv", argv)
+        m.setattr(sys, "stdout", stdout)
+        m.setattr(sys, "stderr", stderr)
+        returncode = main()
+
+    assert returncode == 1
+    assert "bad-local" in stderr.getvalue()
+
+
+def test_pack_local_version_rejects_invalid(
+    tmp_path_factory: TempPathFactory, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    unpack_dir = tmp_path_factory.mktemp("wheeldir")
+    with ZipFile(TESTWHEEL_PATH) as zf:
+        zf.extractall(unpack_dir)
+
+    argv = [
+        "wheel",
+        "pack",
+        "--dest",
+        str(tmp_path),
+        str(unpack_dir),
+        "--local-version",
+        "!invalid",
+    ]
+    stdout = StringIO()
+    stderr = StringIO()
+    with monkeypatch.context() as m:
+        m.setattr(sys, "argv", argv)
+        m.setattr(sys, "stdout", stdout)
+        m.setattr(sys, "stderr", stderr)
+        returncode = main()
+
+    assert returncode == 1
+    assert "!invalid" in stderr.getvalue()
