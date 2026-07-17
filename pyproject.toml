@@ -67,6 +67,7 @@ exclude = [
     ".github/**",
     ".gitignore",
     ".pre-commit-config.yaml",
+    "**/*.egg-info/**",
     ".readthedocs.yml",
     "**/__pycache__",
 ]
