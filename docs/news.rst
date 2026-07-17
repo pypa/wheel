@@ -3,6 +3,8 @@ Release Notes
 
 **0.47.0 (2026-04-22)**
 
+- Fixed ``wheel convert`` unnecessarily upgrading compatible core metadata versions
+  (`#643 <https://github.com/pypa/wheel/issues/643>`_)
 - Added the ``wheel info`` subcommand to display metadata about wheel files without
   unpacking them (`#639 <https://github.com/pypa/wheel/issues/639>`_)
 - Fixed ``WheelFile`` raising ``Missing RECORD file`` when the wheel filename contains
