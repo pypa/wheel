@@ -6,6 +6,8 @@ Release Notes
 - Added a ``--local-version`` option to ``wheel pack`` to add, replace, or remove a
   PEP 440 local version identifier from a wheel
   (`#570 <https://github.com/pypa/wheel/issues/570>`_)
+- Fixed ``wheel convert`` unnecessarily upgrading compatible core metadata versions
+  (`#643 <https://github.com/pypa/wheel/issues/643>`_)
 
 **0.47.0 (2026-04-22)**
 

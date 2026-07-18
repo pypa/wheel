@@ -42,7 +42,7 @@ six
 """
 
 EXPECTED_METADATA = """\
-Metadata-Version: 2.4
+Metadata-Version: 2.1
 Name: Sampledist
 Version: 1.0.0
 Author: Alex Grönholm
@@ -289,3 +289,15 @@ Description:    My cool package"""
     convert_pkg_info(pkginfo, message)
     assert message.get_all("Name") == ["Sampledist"]
     assert message.get_payload() == "My cool package\n\n\n"
+
+
+def test_convert_pkg_info_uses_lowest_compatible_metadata_version() -> None:
+    pkginfo = """\
+Metadata-Version: 1.1
+Name: Sampledist
+Version: 1.0.0
+Home-page: https://example.com
+"""
+    message = Message()
+    convert_pkg_info(pkginfo, message)
+    assert message["Metadata-Version"] == "1.2"
