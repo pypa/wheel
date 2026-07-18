@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+**UNRELEASED**
+
+- Fixed ``wheel convert`` unnecessarily upgrading compatible core metadata versions
+  (`#643 <https://github.com/pypa/wheel/issues/643>`_)
+
 **0.47.0 (2026-04-22)**
 
 - Added the ``wheel info`` subcommand to display metadata about wheel files without
@@ -9,8 +14,6 @@ Release Notes
   uppercase characters (e.g. ``Django-3.2.5.whl``) but the ``.dist-info`` directory
   inside uses normalized lowercase naming
   (`#411 <https://github.com/pypa/wheel/issues/411>`_)
-- Fixed ``wheel convert`` unnecessarily upgrading compatible core metadata versions
-  (`#643 <https://github.com/pypa/wheel/issues/643>`_)
 
 **0.46.3 (2026-01-22)**
 
