@@ -44,7 +44,6 @@ serialization_policy = EmailPolicy(
     max_line_length=0,
 )
 GENERATOR = f"wheel {__version__}"
-LOWEST_CONVERTED_METADATA_VERSION = (1, 2)
 
 
 def convert_requires(requires: str, metadata: Message) -> None:
@@ -107,7 +106,7 @@ def _compatible_metadata_version(metadata_version: str) -> str:
     except ValueError:
         return "1.2"
 
-    if major_minor < LOWEST_CONVERTED_METADATA_VERSION:
+    if major_minor < (1, 2):
         return "1.2"
 
     return metadata_version

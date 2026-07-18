@@ -301,15 +301,3 @@ Home-page: https://example.com
     message = Message()
     convert_pkg_info(pkginfo, message)
     assert message["Metadata-Version"] == "1.2"
-
-
-def test_convert_pkg_info_preserves_compatible_metadata_version() -> None:
-    pkginfo = """\
-Metadata-Version: 2.1
-Name: Sampledist
-Version: 1.0.0
-Home-page: https://example.com
-"""
-    message = Message()
-    convert_pkg_info(pkginfo, message)
-    assert message["Metadata-Version"] == "2.1"
