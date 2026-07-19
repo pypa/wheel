@@ -101,10 +101,10 @@ def test_pack(
     "local_version_arg, existing_local_version, filename, expected_version",
     [
         pytest.param(
-            "local",
+            "l0.cal",
             None,
-            "test-1.0+local-py2.py3-none-any.whl",
-            "1.0+local",
+            "test-1.0+l0.cal-py2.py3-none-any.whl",
+            "1.0+l0.cal",
             id="addlocal",
         ),
         pytest.param(
