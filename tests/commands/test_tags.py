@@ -5,7 +5,7 @@ import struct
 import zipfile
 from pathlib import Path
 from subprocess import CalledProcessError
-from zipfile import ZIP_STORED, ZipFile
+from zipfile import ZIP_STORED, ZipFile, ZipInfo
 
 import pytest
 
@@ -244,11 +244,18 @@ def test_retag_does_not_leak_zip64_into_local_headers(
     # headers that strict parsers reject (#692). Force ZIP64 on small files.
     monkeypatch.setattr(zipfile, "ZIP64_LIMIT", 512)
 
+    # A non-ZIP64 extra field whose payload embeds the ZIP64 header id, to
+    # confirm the fix walks the extra-field structure rather than blindly
+    # stripping the 0x0001 byte pattern wherever it appears.
+    custom_extra = b"\xca\xfe\x05\x00\x01\x00\x99\x99\x99"
+    init_info = ZipInfo("test/__init__.py")
+    init_info.extra = custom_extra
+
     wheelpath = tmp_path / "test-1.0-py3-none-any.whl"
     with WheelFile(wheelpath, "w", compression=ZIP_STORED) as wheel_file:
         wheel_file.writestr("test/padding1", b"x" * 400)
         wheel_file.writestr("test/padding2", b"x" * 400)
-        wheel_file.writestr("test/__init__.py", b"")
+        wheel_file.writestr(init_info, b"")
         wheel_file.writestr(
             "test-1.0.dist-info/WHEEL",
             "Wheel-Version: 1.0\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
@@ -260,9 +267,7 @@ def test_retag_does_not_leak_zip64_into_local_headers(
 
     # Sanity check: the source really has ZIP64 entries.
     with ZipFile(wheelpath) as source:
-        assert any(
-            item.extra[:2] == b"\x01\x00" for item in source.infolist()
-        )
+        assert any(item.extra[:2] == b"\x01\x00" for item in source.infolist())
 
     newname = tags(str(wheelpath), platform_tags="linux_x86_64")
     output_file = wheelpath.parent / newname
@@ -276,5 +281,9 @@ def test_retag_does_not_leak_zip64_into_local_headers(
             assert extra[:2] != b"\x01\x00", (
                 f"{item.filename} local header carries a ZIP64 extra field"
             )
+            if item.filename == "test/__init__.py":
+                assert extra == custom_extra, (
+                    "non-ZIP64 extra field was not preserved on retag"
+                )
 
     output_file.unlink()
