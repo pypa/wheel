@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import shutil
+import struct
+import zipfile
 from pathlib import Path
 from subprocess import CalledProcessError
-from zipfile import ZipFile
+from zipfile import ZIP_STORED, ZipFile
 
 import pytest
 
+from wheel._commands.tags import tags
 from wheel.wheelfile import WheelFile
 
 from .util import run_command
@@ -227,6 +230,51 @@ def test_permission_bits(wheelpath: Path) -> None:
             inf_attr = member_info.external_attr
             assert out_attr == inf_attr, (
                 f"{member} 0x{out_attr:012o} != 0x{inf_attr:012o}"
+            )
+
+    output_file.unlink()
+
+
+def test_retag_does_not_leak_zip64_into_local_headers(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # A ZIP64 extra field (id 0x0001) stores the central-directory-only
+    # header offset; it is invalid in a local file header. Retagging copied
+    # each source ZipInfo verbatim, so ZIP64 entries produced corrupt local
+    # headers that strict parsers reject (#692). Force ZIP64 on small files.
+    monkeypatch.setattr(zipfile, "ZIP64_LIMIT", 512)
+
+    wheelpath = tmp_path / "test-1.0-py3-none-any.whl"
+    with WheelFile(wheelpath, "w", compression=ZIP_STORED) as wheel_file:
+        wheel_file.writestr("test/padding1", b"x" * 400)
+        wheel_file.writestr("test/padding2", b"x" * 400)
+        wheel_file.writestr("test/__init__.py", b"")
+        wheel_file.writestr(
+            "test-1.0.dist-info/WHEEL",
+            "Wheel-Version: 1.0\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
+        )
+        wheel_file.writestr(
+            "test-1.0.dist-info/METADATA",
+            "Metadata-Version: 2.1\nName: test\nVersion: 1.0\n",
+        )
+
+    # Sanity check: the source really has ZIP64 entries.
+    with ZipFile(wheelpath) as source:
+        assert any(
+            item.extra[:2] == b"\x01\x00" for item in source.infolist()
+        )
+
+    newname = tags(str(wheelpath), platform_tags="linux_x86_64")
+    output_file = wheelpath.parent / newname
+
+    with ZipFile(output_file) as retagged, output_file.open("rb") as raw:
+        for item in retagged.infolist():
+            raw.seek(item.header_offset + 26)
+            name_size, extra_size = struct.unpack("<HH", raw.read(4))
+            raw.seek(name_size, 1)
+            extra = raw.read(extra_size)
+            assert extra[:2] != b"\x01\x00", (
+                f"{item.filename} local header carries a ZIP64 extra field"
             )
 
     output_file.unlink()
