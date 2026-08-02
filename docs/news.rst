@@ -12,6 +12,10 @@ Release Notes
   entries use ZIP64, by dropping the central-directory ZIP64 extra field that is
   not valid in a local file header
   (`#692 <https://github.com/pypa/wheel/issues/692>`_)
+- Fixed ``wheel convert`` writing the converted wheel outside the destination
+  directory when the input archive contained a maliciously crafted project name
+  or version with path separators (arbitrary file write / path traversal)
+  (`GHSA-vgq5-9859-3mmw <https://github.com/pypa/wheel/security/advisories/GHSA-vgq5-9859-3mmw>`_)
 
 **0.47.0 (2026-04-22)**
 
