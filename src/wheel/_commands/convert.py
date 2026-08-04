@@ -17,7 +17,7 @@ from packaging.tags import parse_tag
 
 from .. import __version__
 from .._metadata import generate_requirements
-from ..wheelfile import WheelFile
+from ..wheelfile import WheelError, WheelFile
 
 egg_filename_re = re.compile(
     r"""
@@ -320,6 +320,11 @@ def convert(files: list[str], dest_dir: str, verbose: bool) -> None:
                 f"{source.name}-{source.version}-{source.pyver}-{source.abi}"
                 f"-{source.platform}.whl"
             )
+            if dest_path.parent != Path(dest_dir):
+                # name/version come from the input archive and may contain path
+                # separators; never write outside the destination directory
+                raise WheelError(f"Invalid distribution name or version in {archive!r}")
+
             with WheelFile(dest_path, "w") as wheelfile:
                 for name_or_zinfo, contents in source.generate_contents():
                     wheelfile.writestr(name_or_zinfo, contents)
