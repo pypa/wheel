@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies
       run: pip install flit
     - name: Create packages
-      run: flit build --setup-py
+      run: flit build
     - name: Store package artifacts
       uses: actions/upload-artifact@v4
       with:
