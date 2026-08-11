@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-**0.48.0** (2026-08-12)
+**0.48.0 (2026-08-12)**
 
 - Added a ``--local-version`` option to ``wheel pack`` to add, replace, or remove a
   PEP 440 local version identifier from a wheel
