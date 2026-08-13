@@ -24,6 +24,7 @@ def test_calculate_macosx_platform_tag_files_form(
 ) -> None:
     for index in range(dylib_count):
         tmp_path.joinpath(f"lib{index}.dylib").touch()
+
     monkeypatch.setattr(
         macosx_libfile,
         "extract_macosx_min_system_version",
