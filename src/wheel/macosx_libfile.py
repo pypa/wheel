@@ -456,11 +456,11 @@ def calculate_macosx_platform_tag(archive_root: StrPath, platform_tag: str) -> s
     fin_base_version = "_".join([str(x) for x in base_version])
     if start_version < base_version:
         problematic_files = [k for k, v in versions_dict.items() if v > start_version]
-        problematic_files = "\n".join(problematic_files)
         if len(problematic_files) == 1:
             files_form = "this file"
         else:
             files_form = "these files"
+        problematic_files_text = "\n".join(problematic_files)
         error_message = (
             "[WARNING] This wheel needs a higher macOS version than {}  "
             "To silence this warning, set MACOSX_DEPLOYMENT_TARGET to at least "
@@ -468,7 +468,7 @@ def calculate_macosx_platform_tag(archive_root: StrPath, platform_tag: str) -> s
             + " or recreate "
             + files_form
             + " with lower "
-            "MACOSX_DEPLOYMENT_TARGET:  \n" + problematic_files
+            "MACOSX_DEPLOYMENT_TARGET:  \n" + problematic_files_text
         )
 
         if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
