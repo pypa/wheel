@@ -3,6 +3,9 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed ``wheel pack --build-number`` accepting build tags that are invalid in a
+  wheel file name (not starting with a digit, or containing ``-``), the same
+  validation ``wheel tags --build`` already performs
 - Fixed the macOS platform-tag warning always using the plural "these files"
   wording, even when only a single library required a higher deployment target
   (`#697 <https://github.com/pypa/wheel/pull/697>`_)

@@ -102,7 +102,9 @@ def parser() -> argparse.ArgumentParser:
         help="Directory to store the wheel (default %(default)s)",
     )
     repack_parser.add_argument(
-        "--build-number", help="Build tag to use in the wheel name"
+        "--build-number",
+        type=parse_build_tag,
+        help="Build tag to use in the wheel name",
     )
     repack_parser.add_argument(
         "--local-version", help="Local version identifier to add or replace"

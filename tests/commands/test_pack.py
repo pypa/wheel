@@ -7,6 +7,7 @@ from email.generator import BytesGenerator
 from email.message import Message
 from email.parser import BytesParser
 from io import StringIO
+from subprocess import CalledProcessError
 from zipfile import Path, ZipFile
 
 import pytest
@@ -224,3 +225,33 @@ def test_pack_local_version_rejects_invalid(
 
     assert returncode == 1
     assert "!invalid" in stderr.getvalue()
+
+
+@pytest.mark.parametrize(
+    "build_tag, error",
+    [
+        pytest.param("foo", "build tag must begin with a digit", id="digitstart"),
+        pytest.param("1-f", "invalid character ('-') in build tag", id="hyphen"),
+    ],
+)
+def test_pack_invalid_build_tag(
+    tmp_path_factory: TempPathFactory, tmp_path: Path, build_tag: str, error: str
+) -> None:
+    unpack_dir = tmp_path_factory.mktemp("wheeldir")
+    with ZipFile(TESTWHEEL_PATH) as zf:
+        zf.extractall(unpack_dir)
+
+    with pytest.raises(CalledProcessError) as exc_info:
+        run_command(
+            "pack",
+            "--dest",
+            tmp_path,
+            unpack_dir,
+            "--build-number",
+            build_tag,
+            catch_systemexit=False,
+        )
+
+    exc = exc_info.value
+    assert exc.returncode == 2
+    assert f"error: argument --build-number: {error}" in exc.stderr
