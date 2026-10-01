@@ -3,6 +3,10 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed ``wheel unpack`` taking the mode of the unpack directory itself from the
+  archive when a wheel contains a member whose name is made up entirely of empty,
+  ``.`` or ``..`` path components (such as ``../``), which let a malicious wheel
+  leave the unpacked tree world-writable
 - Fixed ``wheel pack --build-number`` accepting build tags that are invalid in a
   wheel file name (not starting with a digit, or containing ``-``), the same
   validation ``wheel tags --build`` already performs
