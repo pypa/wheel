@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os.path
 from pathlib import Path
 
 from ..wheelfile import WheelFile
@@ -18,15 +17,12 @@ def unpack(path: str, dest: str = ".") -> None:
     with WheelFile(path) as wf:
         namever = wf.parsed_filename.group("namever")
         destination = Path(dest) / namever
-        unpack_root = Path(os.path.normpath(destination))
+        unpack_root = destination.resolve()
         print(f"Unpacking to: {destination}...", end="", flush=True)
         for zinfo in wf.filelist:
             target_path = Path(wf.extract(zinfo, destination))
-            if target_path == unpack_root:
-                # ZipFile.extract() drops empty, "." and ".." components from the
-                # member name, so a member named "../" extracts to the unpack
-                # directory itself instead of to a path of its own; its mode must
-                # not be taken from the archive
+            if target_path.resolve() == unpack_root:
+                # Security: don't change the permissions of the unpack root
                 continue
 
             # Set permissions to the same values as they were set in the archive
