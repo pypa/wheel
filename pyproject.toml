@@ -19,6 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
 ]
 authors = [{name = "Daniel Holth", email = "dholth@fastmail.fm"}]
 maintainers = [{name = "Alex Grönholm", email = "alex.gronholm@nextday.fi"}]
@@ -121,7 +122,7 @@ mypy-init-return = true
 # directory.
 
 [tool.tox]
-env_list = ["py39", "py310", "py311", "py312", "py313", "py314", "pypy3", "lint", "pkg"]
+env_list = ["py39", "py310", "py311", "py312", "py313", "py314", "py315", "pypy3", "lint", "pkg"]
 skip_missing_interpreters = true
 requires = ["tox >= 4.22"]
 
