@@ -17,9 +17,13 @@ def unpack(path: str, dest: str = ".") -> None:
     with WheelFile(path) as wf:
         namever = wf.parsed_filename.group("namever")
         destination = Path(dest) / namever
+        unpack_root = destination.resolve()
         print(f"Unpacking to: {destination}...", end="", flush=True)
         for zinfo in wf.filelist:
             target_path = Path(wf.extract(zinfo, destination))
+            if target_path.resolve() == unpack_root:
+                # Security: don't change the permissions of the unpack root
+                continue
 
             # Set permissions to the same values as they were set in the archive
             # We have to do this manually due to

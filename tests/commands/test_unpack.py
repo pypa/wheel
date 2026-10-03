@@ -3,6 +3,7 @@ from __future__ import annotations
 import platform
 import stat
 from pathlib import Path
+from zipfile import ZipInfo
 
 import pytest
 from pytest import TempPathFactory
@@ -77,3 +78,28 @@ def test_chmod_outside_unpack_tree(tmp_path_factory: TempPathFactory) -> None:
 
     assert system_file.read_bytes() == b"important data"
     assert stat.S_IMODE(system_file.stat().st_mode) == 0o755
+
+
+@pytest.mark.skipif(
+    platform.system() == "Windows", reason="Windows does not support chmod()"
+)
+def test_chmod_unpack_tree_root(tmp_path_factory: TempPathFactory) -> None:
+    wheel_path = tmp_path_factory.mktemp("build") / "test-1.0-py3-none-any.whl"
+    with WheelFile(wheel_path, "w") as wf:
+        wf.writestr(
+            "test-1.0.dist-info/METADATA",
+            "Metadata-Version: 2.4\nName: test\nVersion: 1.0\n",
+        )
+        # Every component of this member name is dropped by ZipFile.extract(),
+        # leaving the unpack directory itself as the extraction target
+        zinfo = ZipInfo("../")
+        zinfo.external_attr = (0o777 | stat.S_IFDIR) << 16
+        wf.writestr(zinfo, b"")
+
+    extract_root_path = tmp_path_factory.mktemp("extract")
+    unpack_path = extract_root_path / "test-1.0"
+    unpack_path.mkdir()
+    unpack_path.chmod(0o755)
+    run_command("unpack", "--dest", extract_root_path, wheel_path)
+
+    assert stat.S_IMODE(unpack_path.stat().st_mode) == 0o755
