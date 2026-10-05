@@ -116,7 +116,13 @@ def pack(
     tagline = compute_tagline(tags)
 
     # Repack the wheel
-    wheel_path = os.path.join(dest_dir, f"{name_version}-{tagline}.whl")
+    wheel_name = f"{name_version}-{tagline}.whl"
+    if os.path.basename(wheel_name) != wheel_name:
+        # the build number and tags come from the WHEEL file and may contain path
+        # separators; never write outside the destination directory
+        raise WheelError(f"Invalid build number or tags in {dist_info_dir}/WHEEL")
+
+    wheel_path = os.path.join(dest_dir, wheel_name)
     with WheelFile(wheel_path, "w") as wf:
         print(f"Repacking wheel as {wheel_path}...", end="", flush=True)
         wf.write_files(directory)
