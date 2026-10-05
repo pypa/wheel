@@ -229,3 +229,17 @@ def test_attributes(tmp_path_factory: TempPathFactory, wheel_path: Path) -> None
 
         info = zf.getinfo("test-1.0.dist-info/RECORD")
         assert info.external_attr == (0o664 | stat.S_IFREG) << 16
+
+
+def test_write_normalizes_umask(tmp_path: Path, wheel_path: Path) -> None:
+    source = tmp_path / "plain.txt"
+    source.write_text("plain\n", encoding="utf-8")
+    if sys.platform != "win32":
+        source.chmod(0o666)
+
+    with WheelFile(wheel_path, "w") as wf:
+        wf.write(str(source), "plain.txt")
+
+    with ZipFile(wheel_path, "r") as zf:
+        stored = zf.getinfo("plain.txt").external_attr >> 16 & 0o777
+        assert stored == 0o644
