@@ -30,6 +30,11 @@ Options
 
     Override the build tag in the new wheel file name.
 
+.. option:: --local-version <version>
+
+    Add or replace the :pep:`440` local version identifier in the new wheel file
+    name. Pass an empty string to remove an existing one.
+
 Examples
 --------
 
