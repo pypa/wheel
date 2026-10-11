@@ -3,6 +3,8 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed files with an epoch-zero modification time being stored with the current
+  build time instead of the earliest ZIP timestamp (1980-01-01)
 - Fixed ``wheel unpack`` taking the mode of the unpack directory itself from the
   archive when a wheel contains a member whose name is made up entirely of empty,
   ``.`` or ``..`` path components (such as ``../``), which let a malicious wheel

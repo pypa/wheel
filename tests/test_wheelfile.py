@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import stat
 import sys
 from pathlib import Path
@@ -8,7 +9,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 import pytest
 from pytest import MonkeyPatch, TempPathFactory
 
-from wheel.wheelfile import WheelError, WheelFile
+from wheel.wheelfile import WheelError, WheelFile, get_zipinfo_datetime
 
 
 @pytest.fixture
@@ -182,6 +183,46 @@ def test_write_str(wheel_path: Path) -> None:
             '"hello/h,ll,.py",sha256=bv-QV3RciQC2v3zL8Uvhd_arp40J5A9xmyubN34OVwo,25\n'
             "test-1.0.dist-info/RECORD,,\n"
         )
+
+
+@pytest.mark.parametrize(
+    "timestamp, expected",
+    [
+        (None, (1980, 1, 2, 0, 0, 0)),
+        (0, (1980, 1, 1, 0, 0, 0)),
+        (-1, (1980, 1, 1, 0, 0, 0)),
+        (315532800, (1980, 1, 1, 0, 0, 0)),
+        (315619200, (1980, 1, 2, 0, 0, 0)),
+    ],
+)
+def test_zipinfo_timestamp(
+    timestamp: float | None, expected: tuple[int, ...], monkeypatch: MonkeyPatch
+) -> None:
+    monkeypatch.delenv("SOURCE_DATE_EPOCH", raising=False)
+    monkeypatch.setattr("wheel.wheelfile.time.time", lambda: 315619200)
+    assert get_zipinfo_datetime(timestamp) == expected
+
+
+@pytest.mark.parametrize("epoch", ["0", "315619200"])
+def test_zipinfo_timestamp_environment(epoch: str, monkeypatch: MonkeyPatch) -> None:
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", epoch)
+    expected = (1980, 1, 1, 0, 0, 0) if epoch == "0" else (1980, 1, 2, 0, 0, 0)
+    assert get_zipinfo_datetime(0) == expected
+
+
+def test_file_timestamp_zero(
+    tmp_path: Path, wheel_path: Path, monkeypatch: MonkeyPatch
+) -> None:
+    monkeypatch.delenv("SOURCE_DATE_EPOCH", raising=False)
+    monkeypatch.setattr("wheel.wheelfile.time.time", lambda: 315619200)
+    source = tmp_path / "payload.txt"
+    source.write_text("payload", encoding="utf-8")
+    os.utime(source, (0, 0))
+    assert source.stat().st_mtime == 0
+    with WheelFile(wheel_path, "w") as wf:
+        wf.write(str(source), "payload.txt")
+    with ZipFile(wheel_path) as zf:
+        assert zf.getinfo("payload.txt").date_time == (1980, 1, 1, 0, 0, 0)
 
 
 def test_timestamp(
