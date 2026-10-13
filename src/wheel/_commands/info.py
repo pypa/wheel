@@ -10,6 +10,7 @@ from email.parser import BytesParser
 from pathlib import Path
 
 from ..wheelfile import WheelFile
+from . import escape_control_characters
 
 
 def info(path: str, verbose: bool = False) -> None:
@@ -25,9 +26,9 @@ def info(path: str, verbose: bool = False) -> None:
     with WheelFile(path) as wf:
         # Extract basic wheel information from filename
         parsed = wf.parsed_filename
-        name = parsed.group("name")
-        version = parsed.group("ver")
-        build_tag = parsed.group("build")
+        name = escape_control_characters(parsed.group("name"))
+        version = escape_control_characters(parsed.group("ver"))
+        build_tag = escape_control_characters(parsed.group("build") or "")
 
         print(f"Name: {name}")
         print(f"Version: {version}")
@@ -41,23 +42,25 @@ def info(path: str, verbose: bool = False) -> None:
                     wheel_file
                 )
 
-                print(
-                    f"Wheel-Version: {wheel_metadata.get('Wheel-Version', 'Unknown')}"
+                wheel_version = escape_control_characters(
+                    wheel_metadata.get("Wheel-Version", "Unknown")
                 )
-                print(
-                    f"Root-Is-Purelib: {wheel_metadata.get('Root-Is-Purelib', 'Unknown')}"
+                print(f"Wheel-Version: {wheel_version}")
+                root_is_purelib = escape_control_characters(
+                    wheel_metadata.get("Root-Is-Purelib", "Unknown")
                 )
+                print(f"Root-Is-Purelib: {root_is_purelib}")
 
                 # Get all tags
                 tags = wheel_metadata.get_all("Tag", [])
                 if tags:
                     print("Tags:")
                     for tag in sorted(tags):  # Sort tags for consistent output
-                        print(f"  {tag}")
+                        print(f"  {escape_control_characters(tag)}")
 
                 generators = wheel_metadata.get_all("Generator", [])
                 for generator in generators:
-                    print(f"Generator: {generator}")
+                    print(f"Generator: {escape_control_characters(generator)}")
         except KeyError:
             print("Warning: WHEEL metadata file not found", file=sys.stderr)
 
@@ -70,23 +73,23 @@ def info(path: str, verbose: bool = False) -> None:
 
                 summary = pkg_metadata.get("Summary", "")
                 if summary and summary != "UNKNOWN":
-                    print(f"Summary: {summary}")
+                    print(f"Summary: {escape_control_characters(summary)}")
 
                 author = pkg_metadata.get("Author", "")
                 if author and author != "UNKNOWN":
-                    print(f"Author: {author}")
+                    print(f"Author: {escape_control_characters(author)}")
 
                 author_email = pkg_metadata.get("Author-email")
                 if author_email and author_email != "UNKNOWN":
-                    print(f"Author-email: {author_email}")
+                    print(f"Author-email: {escape_control_characters(author_email)}")
 
                 homepage = pkg_metadata.get("Home-page")
                 if homepage and homepage != "UNKNOWN":
-                    print(f"Home-page: {homepage}")
+                    print(f"Home-page: {escape_control_characters(homepage)}")
 
                 license_info = pkg_metadata.get("License")
                 if license_info and license_info != "UNKNOWN":
-                    print(f"License: {license_info}")
+                    print(f"License: {escape_control_characters(license_info)}")
 
                 # Show classifiers
                 classifiers = pkg_metadata.get_all("Classifier", [])
@@ -95,7 +98,7 @@ def info(path: str, verbose: bool = False) -> None:
                     for classifier in sorted(
                         classifiers[:5]
                     ):  # Sort and limit to first 5
-                        print(f"  {classifier}")
+                        print(f"  {escape_control_characters(classifier)}")
 
                     if len(classifiers) > 5:
                         print(f"  ... and {len(classifiers) - 5} more")
@@ -105,7 +108,7 @@ def info(path: str, verbose: bool = False) -> None:
                 if requires_dist:
                     print("Requires-Dist:")
                     for req in sorted(requires_dist):  # Sort dependencies
-                        print(f"  {req}")
+                        print(f"  {escape_control_characters(req)}")
         except KeyError:
             print("Warning: METADATA file not found", file=sys.stderr)
 
@@ -121,4 +124,5 @@ def info(path: str, verbose: bool = False) -> None:
             print("\nFile listing:")
             for zinfo in wf.filelist:
                 size_str = f"{zinfo.file_size:,}" if zinfo.file_size > 0 else "0"
-                print(f"  {zinfo.filename:60} {size_str:>10} bytes")
+                filename = escape_control_characters(zinfo.filename)
+                print(f"  {filename:60} {size_str:>10} bytes")
