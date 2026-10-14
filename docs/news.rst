@@ -3,6 +3,10 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed ``wheel convert`` copying member names from the input archive into the
+  converted wheel verbatim, which let a maliciously crafted egg or wininst
+  archive produce a wheel whose members (and ``RECORD`` entries) point outside
+  the directory the wheel is unpacked or installed into (path traversal)
 - Fixed ``wheel unpack`` taking the mode of the unpack directory itself from the
   archive when a wheel contains a member whose name is made up entirely of empty,
   ``.`` or ``..`` path components (such as ``../``), which let a malicious wheel

@@ -204,7 +204,7 @@ class EggDirectorySource(EggFileSource):
                     continue
 
                 # For any other file, just pass it through
-                yield str(path.relative_to(self.path)), path.read_bytes()
+                yield path.relative_to(self.path).as_posix(), path.read_bytes()
 
 
 class WininstFileSource(ConvertSource):
@@ -327,6 +327,18 @@ def convert(files: list[str], dest_dir: str, verbose: bool) -> None:
 
             with WheelFile(dest_path, "w") as wheelfile:
                 for name_or_zinfo, contents in source.generate_contents():
+                    # Security: refuse member names that could escape the
+                    # directory the wheel is unpacked or installed into
+                    if (
+                        name_or_zinfo.startswith("/")
+                        or "\\" in name_or_zinfo
+                        or ":" in name_or_zinfo
+                        or ".." in name_or_zinfo.split("/")
+                    ):
+                        raise WheelError(
+                            f"Unsafe member name {name_or_zinfo!r} in {archive!r}"
+                        )
+
                     wheelfile.writestr(name_or_zinfo, contents)
 
                 # Write the METADATA file
