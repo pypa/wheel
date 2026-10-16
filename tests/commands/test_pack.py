@@ -135,10 +135,14 @@ def test_pack_local_version(
     unpack_dir = tmp_path_factory.mktemp("wheeldir")
     with ZipFile(TESTWHEEL_PATH) as zf:
         zf.extractall(unpack_dir)
+        expected_script = zf.read("test-1.0.data/scripts/hello.sh")
 
     dist_info_dir = unpack_dir.joinpath("test-1.0.dist-info")
     if existing_local_version:
         existing_version = f"1.0+{existing_local_version}"
+        unpack_dir.joinpath("test-1.0.data").rename(
+            unpack_dir / f"test-{existing_version}.data"
+        )
         new_dist_info_dir = unpack_dir.joinpath(f"test-{existing_version}.dist-info")
         dist_info_dir.rename(new_dist_info_dir)
         dist_info_dir = new_dist_info_dir
@@ -162,6 +166,9 @@ def test_pack_local_version(
     assert new_wheel_path.is_file()
 
     with ZipFile(new_wheel_path) as zf:
+        assert (
+            zf.read(f"test-{expected_version}.data/scripts/hello.sh") == expected_script
+        )
         dist_info_prefix = f"test-{expected_version}.dist-info"
         parser = BytesParser(policy=email.policy.compat32)
         metadata = parser.parsebytes(zf.read(f"{dist_info_prefix}/METADATA"))

@@ -3,6 +3,8 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed ``wheel pack --local-version`` leaving the ``.data`` directory under the
+  original version, preventing installers from placing its files correctly
 - Fixed ``wheel unpack`` taking the mode of the unpack directory itself from the
   archive when a wheel contains a member whose name is made up entirely of empty,
   ``.`` or ``..`` path components (such as ``../``), which let a malicious wheel

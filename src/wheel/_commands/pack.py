@@ -71,6 +71,10 @@ def pack(
             os.path.join(directory, dist_info_dir),
             os.path.join(directory, new_dist_info_dir),
         )
+        data_dir = os.path.join(directory, f"{name_version}.data")
+        if os.path.isdir(data_dir):
+            os.rename(data_dir, os.path.join(directory, f"{new_namever}.data"))
+
         dist_info_dir = new_dist_info_dir
         name_version = new_namever
 
