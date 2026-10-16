@@ -147,6 +147,8 @@ def tags(
             WheelFile(original_wheel_path, "r") as fin,
             WheelFile(final_wheel_path, "w") as fout,
         ):
+            fout.dist_info_path = fin.dist_info_path
+            fout.record_path = fin.record_path
             fout.comment = fin.comment  # preserve the comment
             for item in fin.infolist():
                 if item.is_dir():

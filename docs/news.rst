@@ -3,6 +3,8 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed ``wheel tags`` writing ``RECORD`` to a separate metadata directory when the
+  wheel filename and the internal ``.dist-info`` directory differ in case
 - Fixed ``wheel unpack`` taking the mode of the unpack directory itself from the
   archive when a wheel contains a member whose name is made up entirely of empty,
   ``.`` or ``..`` path components (such as ``../``), which let a malicious wheel
