@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import platform
 import stat
 from pathlib import Path
@@ -103,3 +104,28 @@ def test_chmod_unpack_tree_root(tmp_path_factory: TempPathFactory) -> None:
     run_command("unpack", "--dest", extract_root_path, wheel_path)
 
     assert stat.S_IMODE(unpack_path.stat().st_mode) == 0o755
+
+
+@pytest.mark.skipif(
+    platform.system() == "Windows", reason="Windows does not support chmod()"
+)
+def test_unpack_applies_umask(tmp_path_factory: TempPathFactory) -> None:
+    wheel_path = tmp_path_factory.mktemp("build") / "test-1.0-py3-none-any.whl"
+    with WheelFile(wheel_path, "w") as wf:
+        zinfo = ZipInfo("test-1.0/package/")
+        zinfo.external_attr = (0o777 | stat.S_IFDIR) << 16
+        wf.writestr(zinfo, b"")
+        zinfo = ZipInfo("test-1.0/package/__init__.py")
+        zinfo.external_attr = (0o777 | stat.S_IFREG) << 16
+        wf.writestr(zinfo, b"")
+
+    extract_path = tmp_path_factory.mktemp("extract")
+    old_umask = os.umask(0o022)
+    try:
+        run_command("unpack", "--dest", extract_path, wheel_path)
+    finally:
+        os.umask(old_umask)
+
+    package_path = extract_path / "test-1.0" / "test-1.0" / "package"
+    assert stat.S_IMODE(package_path.stat().st_mode) == 0o755
+    assert stat.S_IMODE(package_path.joinpath("__init__.py").stat().st_mode) == 0o755

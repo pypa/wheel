@@ -3,6 +3,9 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed ``wheel unpack`` ignoring the umask when restoring file modes from the
+  archive, which let a malicious wheel make the unpacked files and directories
+  writable by other users
 - Fixed ``wheel unpack`` taking the mode of the unpack directory itself from the
   archive when a wheel contains a member whose name is made up entirely of empty,
   ``.`` or ``..`` path components (such as ``../``), which let a malicious wheel
