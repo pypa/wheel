@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import email.policy
 import sys
-from email.parser import BytesParser
+from email.parser import Parser
 from pathlib import Path
 
 from ..wheelfile import WheelFile
@@ -37,8 +37,8 @@ def info(path: str, verbose: bool = False) -> None:
         # Read WHEEL metadata
         try:
             with wf.open(f"{wf.dist_info_path}/WHEEL") as wheel_file:
-                wheel_metadata = BytesParser(policy=email.policy.compat32).parse(
-                    wheel_file
+                wheel_metadata = Parser(policy=email.policy.compat32).parsestr(
+                    wheel_file.read().decode("utf-8", "replace")
                 )
 
                 print(
@@ -64,8 +64,8 @@ def info(path: str, verbose: bool = False) -> None:
         # Read package METADATA
         try:
             with wf.open(f"{wf.dist_info_path}/METADATA") as metadata_file:
-                pkg_metadata = BytesParser(policy=email.policy.compat32).parse(
-                    metadata_file
+                pkg_metadata = Parser(policy=email.policy.compat32).parsestr(
+                    metadata_file.read().decode("utf-8", "replace")
                 )
 
                 summary = pkg_metadata.get("Summary", "")
