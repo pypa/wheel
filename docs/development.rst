@@ -58,7 +58,8 @@ To run the tests via tox against a specific environment::
 
 Alternatively, you can run the tests via pytest using your default interpreter::
 
-  $ pip install -e .[test]  # Installs the test dependencies
+  $ pip install --upgrade pip
+  $ pip install -e . --group test  # Installs the test dependencies
   $ pytest                  # Runs the tests with the current interpreter
 
 The above pip install command will replace the current interpreter's installed
