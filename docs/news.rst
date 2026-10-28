@@ -3,6 +3,8 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed ``wheel info`` replacing non-ASCII characters in UTF-8 metadata with
+  replacement characters
 - Fixed ``wheel unpack`` taking the mode of the unpack directory itself from the
   archive when a wheel contains a member whose name is made up entirely of empty,
   ``.`` or ``..`` path components (such as ``../``), which let a malicious wheel

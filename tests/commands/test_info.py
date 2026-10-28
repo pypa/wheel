@@ -12,6 +12,7 @@ from unittest.mock import patch
 import pytest
 
 from wheel._commands.info import info
+from wheel.wheelfile import WheelFile
 
 from .util import run_command
 
@@ -111,6 +112,28 @@ def test_info_generator() -> None:
     """Test that a single Generator value is displayed."""
     output = run_command("info", TESTWHEEL_PATH)
     assert "Generator: bdist_wheel (0.30.0)" in output
+
+
+@pytest.mark.parametrize("verbose", [False, True])
+def test_info_utf8_metadata(tmp_path: os.PathLike[str], verbose: bool) -> None:
+    wheel_path = os.path.join(tmp_path, "demo-1.0-py3-none-any.whl")
+    with WheelFile(wheel_path, "w") as wf:
+        wf.writestr(
+            "demo-1.0.dist-info/WHEEL",
+            "Wheel-Version: 1.0\nGenerator: générateur\n"
+            "Root-Is-Purelib: true\nTag: py3-none-any\n",
+        )
+        wf.writestr(
+            "demo-1.0.dist-info/METADATA",
+            "Metadata-Version: 2.1\nName: demo\nVersion: 1.0\n"
+            "Summary: café 日本語\nAuthor: José\n",
+        )
+
+    output = run_command("info", *(["--verbose"] if verbose else []), wheel_path)
+
+    assert "Generator: générateur" in output
+    assert "Summary: café 日本語" in output
+    assert "Author: José" in output
 
 
 def test_info_multiple_generators(tmp_path: os.PathLike[str]) -> None:
