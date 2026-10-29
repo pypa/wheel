@@ -67,20 +67,27 @@ def pack(
 
         new_namever = f"{name}-{new_version}"
         new_dist_info_dir = f"{new_namever}.dist-info"
-        os.rename(
-            os.path.join(directory, dist_info_dir),
-            os.path.join(directory, new_dist_info_dir),
-        )
-        dist_info_dir = new_dist_info_dir
-        name_version = new_namever
 
-        # Update the Version field in .dist-info/METADATA
+        # Read and update the METADATA file before renaming the .dist-info
+        # directory so a failure doesn't leave the directory half-renamed.
         metadata_path = os.path.join(directory, dist_info_dir, "METADATA")
         try:
             with open(metadata_path, "rb") as f:
                 metadata = BytesParser(policy=email.policy.compat32).parse(f)
         except FileNotFoundError:
             raise WheelError(f"Missing {dist_info_dir}/METADATA file") from None
+
+        wheel_file_path = os.path.join(directory, dist_info_dir, "WHEEL")
+        if not os.path.isfile(wheel_file_path):
+            raise WheelError(f"Missing {dist_info_dir}/WHEEL file")
+
+        os.rename(
+            os.path.join(directory, dist_info_dir),
+            os.path.join(directory, new_dist_info_dir),
+        )
+        dist_info_dir = new_dist_info_dir
+        name_version = new_namever
+        metadata_path = os.path.join(directory, dist_info_dir, "METADATA")
 
         del metadata["Version"]
         metadata["Version"] = new_version
@@ -89,16 +96,19 @@ def pack(
 
     # Read the tags and the existing build number from .dist-info/WHEEL
     wheel_file_path = os.path.join(directory, dist_info_dir, "WHEEL")
-    with open(wheel_file_path, "rb") as f:
-        info = BytesParser(policy=email.policy.compat32).parse(f)
-        tags: list[str] = info.get_all("Tag", [])
-        existing_build_number = info.get("Build")
+    try:
+        with open(wheel_file_path, "rb") as f:
+            info = BytesParser(policy=email.policy.compat32).parse(f)
+            tags: list[str] = info.get_all("Tag", [])
+            existing_build_number = info.get("Build")
 
-        if not tags:
-            raise WheelError(
-                f"No tags present in {dist_info_dir}/WHEEL; cannot determine target "
-                f"wheel filename"
-            )
+            if not tags:
+                raise WheelError(
+                    f"No tags present in {dist_info_dir}/WHEEL; cannot determine "
+                    "target wheel filename"
+                )
+    except FileNotFoundError:
+        raise WheelError(f"Missing {dist_info_dir}/WHEEL file") from None
 
     # Set the wheel file name and add/replace/remove the Build tag in .dist-info/WHEEL
     build_number = build_number if build_number is not None else existing_build_number
