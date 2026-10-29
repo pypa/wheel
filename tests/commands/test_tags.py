@@ -287,3 +287,26 @@ def test_retag_does_not_leak_zip64_into_local_headers(
                 )
 
     output_file.unlink()
+
+
+def test_retag_preserves_normalized_dist_info(tmp_path: Path) -> None:
+    path = tmp_path / "mixedcase-1.0-py3-none-any.whl"
+    with WheelFile(path, "w") as wf:
+        wf.writestr("mixedcase/__init__.py", "")
+        wf.writestr(
+            "mixedcase-1.0.dist-info/WHEEL",
+            "Wheel-Version: 1.0\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
+        )
+        wf.writestr(
+            "mixedcase-1.0.dist-info/METADATA",
+            "Metadata-Version: 2.1\nName: MixedCase\nVersion: 1.0\n",
+        )
+    path = path.rename(tmp_path / "MixedCase-1.0-py3-none-any.whl")
+    output = path.parent / tags(str(path), build_tag="1")
+    with WheelFile(output) as wf:
+        assert wf.dist_info_path == "mixedcase-1.0.dist-info"
+        assert b"Build: 1" in wf.read(wf.dist_info_path + "/WHEEL")
+        assert wf.testzip() is None
+        assert {n.split("/")[0] for n in wf.namelist() if ".dist-info/" in n} == {
+            "mixedcase-1.0.dist-info"
+        }
