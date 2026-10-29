@@ -14,6 +14,8 @@ import pytest
 from pytest import TempPathFactory
 
 from wheel._commands import main
+from wheel._commands.pack import pack
+from wheel.wheelfile import WheelError
 
 from .util import run_command
 
@@ -255,3 +257,29 @@ def test_pack_invalid_build_tag(
     exc = exc_info.value
     assert exc.returncode == 2
     assert f"error: argument --build-number: {error}" in exc.stderr
+
+
+def test_pack_rejects_build_number_path_traversal(
+    tmp_path_factory: TempPathFactory, tmp_path: Path
+) -> None:
+    # A build number in the WHEEL file that contains path separators must not get
+    # the wheel written outside the destination directory.
+    unpack_dir = tmp_path_factory.mktemp("wheeldir")
+    with ZipFile(TESTWHEEL_PATH) as zf:
+        zf.extractall(unpack_dir)
+
+    wheel_file_path = unpack_dir.joinpath("test-1.0.dist-info").joinpath("WHEEL")
+    wheel_file_content = wheel_file_path.read_bytes()
+    assert b"Build" not in wheel_file_content
+    wheel_file_content += b"Build: 1/../../outside/pwned-1.0\r\n"
+    wheel_file_path.write_bytes(wheel_file_content)
+
+    outside = tmp_path.joinpath("outside")
+    outside.mkdir()
+    dest_dir = tmp_path.joinpath("dest")
+    dest_dir.joinpath("test-1.0-1").mkdir(parents=True)
+
+    with pytest.raises(WheelError):
+        pack(str(unpack_dir), str(dest_dir), None)
+
+    assert not any(outside.iterdir())

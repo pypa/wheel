@@ -3,6 +3,9 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed ``wheel pack`` writing the new wheel outside the destination directory when
+  the ``Build`` header in the ``WHEEL`` file of the directory being packed contained
+  path separators (path traversal)
 - Fixed ``wheel unpack`` taking the mode of the unpack directory itself from the
   archive when a wheel contains a member whose name is made up entirely of empty,
   ``.`` or ``..`` path components (such as ``../``), which let a malicious wheel
