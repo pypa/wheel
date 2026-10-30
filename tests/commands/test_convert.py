@@ -303,6 +303,33 @@ Home-page: https://example.com
     assert message["Metadata-Version"] == "1.2"
 
 
+@pytest.mark.parametrize(
+    "member",
+    [
+        "../../escape.py",
+        "/abs/escape.py",
+        "..\\..\\escape.py",
+        "C:/windows/escape.py",
+    ],
+)
+def test_convert_rejects_unsafe_member_names(tmp_path: Path, member: str) -> None:
+    # Member names from the input archive are copied into the converted wheel
+    # verbatim; names that escape the directory the wheel is unpacked or
+    # installed into must be refused.
+    evil = tmp_path / "evil-1.0-py3.9.egg"
+    with zipfile.ZipFile(evil, "w") as zf:
+        zf.writestr(
+            "EGG-INFO/PKG-INFO", b"Metadata-Version: 1.0\nName: evil\nVersion: 1.0\n"
+        )
+        zf.writestr(member, b"")
+
+    dest_dir = tmp_path / "dest"
+    dest_dir.mkdir()
+
+    with pytest.raises(WheelError, match="Unsafe member name"):
+        convert([str(evil)], str(dest_dir), verbose=False)
+
+
 def test_convert_rejects_egginfo_path_traversal(tmp_path: Path) -> None:
     # A malicious installer whose egg-info name is an absolute path must not be
     # written as a wheel outside the destination directory.
