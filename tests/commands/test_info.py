@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 import pytest
 
+from wheel._commands import main
 from wheel._commands.info import info
 
 from .util import run_command
@@ -21,9 +22,9 @@ TESTWHEEL_PATH = os.path.join(THISDIR, "..", "testdata", TESTWHEEL_NAME)
 
 
 def _build_wheel_with_modified_metadata(
-    src_whl: str, dest_dir: os.PathLike[str], wheel_content: str
+    src_whl: str, dest_dir: os.PathLike[str], wheel_content: str, member: str = "WHEEL"
 ) -> str:
-    """Copy a wheel and replace its WHEEL metadata, updating the RECORD hash.
+    """Copy a wheel and replace a .dist-info metadata file, updating the RECORD hash.
 
     Returns the path to the new wheel file.
     """
@@ -33,7 +34,7 @@ def _build_wheel_with_modified_metadata(
     with zipfile.ZipFile(dest_whl, "r") as zr:
         wheel_path = record_path = None
         for name in zr.namelist():
-            if name.endswith("/WHEEL"):
+            if name.endswith(f"/{member}"):
                 wheel_path = name
             elif name.endswith("/RECORD"):
                 record_path = name
@@ -198,3 +199,71 @@ def test_info_short_verbose_flag() -> None:
     # Should include file listing like --verbose
     assert "File listing:" in output
     assert "hello/hello.py" in output
+
+
+def test_info_escapes_control_characters(tmp_path: os.PathLike[str]) -> None:
+    """Control characters in wheel contents must not reach the terminal raw."""
+    metadata_content = (
+        "Metadata-Version: 2.1\n"
+        "Name: test\n"
+        "Version: 1.0\n"
+        "Summary: innocent\x1b]52;c;aGFja2Vk\x07\x1b[8m\n"
+        "Author: evil\x1b[2K\x1b[1A\n"
+    )
+    whl = _build_wheel_with_modified_metadata(
+        TESTWHEEL_PATH, str(tmp_path), metadata_content, member="METADATA"
+    )
+    with zipfile.ZipFile(whl, "a") as zf:
+        zf.writestr("hello/\x1b]0;pwned\x07.py", b"")
+
+    output = _capture_info_output(whl, verbose=True)
+
+    assert "\x1b" not in output
+    assert "\x07" not in output
+    assert "Summary: innocent\\x1b]52;c;aGFja2Vk\\x07\\x1b[8m" in output
+    assert "Author: evil\\x1b[2K\\x1b[1A" in output
+    assert "hello/\\x1b]0;pwned\\x07.py" in output
+
+
+def test_info_escapes_control_characters_in_errors(
+    tmp_path: os.PathLike[str],
+) -> None:
+    """WheelError messages printed by the CLI must not contain raw escapes."""
+    dest_whl = os.path.join(str(tmp_path), TESTWHEEL_NAME)
+    shutil.copy2(TESTWHEEL_PATH, dest_whl)
+    with zipfile.ZipFile(dest_whl, "r") as zr:
+        record_path = next(n for n in zr.namelist() if n.endswith("/RECORD"))
+        record = zr.read(record_path).decode()
+
+    # Rename the hash algorithm of the first hashed entry in RECORD so that it
+    # carries an escape sequence
+    lines = record.splitlines()
+    for index, line in enumerate(lines):
+        path, _, rest = line.partition(",")
+        hash_sum, _, size = rest.partition(",")
+        if hash_sum:
+            digest = hash_sum.partition("=")[2]
+            lines[index] = f"{path},ev\x1bil={digest},{size}"
+            break
+    modified_record = "\n".join(lines) + "\n"
+
+    tmp_whl = os.path.join(str(tmp_path), "tmp.whl")
+    with zipfile.ZipFile(dest_whl, "r") as zr, zipfile.ZipFile(tmp_whl, "w") as zw:
+        for item in zr.infolist():
+            if item.filename == record_path:
+                zw.writestr(item, modified_record.encode())
+            else:
+                zw.writestr(item, zr.read(item.filename))
+    os.replace(tmp_whl, dest_whl)
+
+    stderr = StringIO()
+    with (
+        patch.object(sys, "argv", ["wheel", "info", dest_whl]),
+        patch.object(sys, "stdout", StringIO()),
+        patch.object(sys, "stderr", stderr),
+    ):
+        assert main() == 1
+
+    error_output = stderr.getvalue()
+    assert "\x1b" not in error_output
+    assert "Unsupported hash algorithm: ev\\x1bil" in error_output

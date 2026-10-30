@@ -64,6 +64,12 @@ def version_f(args: argparse.Namespace) -> None:
     print(f"wheel {__version__}")
 
 
+def escape_control_characters(value: str) -> str:
+    """Replace control characters with printable escapes so that data read from
+    a wheel cannot inject terminal escape sequences into the output."""
+    return "".join(ch if ch.isprintable() else repr(ch)[1:-1] for ch in value)
+
+
 def parse_build_tag(build_tag: str) -> str:
     if build_tag and not build_tag[0].isdigit():
         raise ArgumentTypeError("build tag must begin with a digit")
@@ -169,6 +175,6 @@ def main() -> int:
             args.func(args)
             return 0
         except WheelError as e:
-            print(e, file=sys.stderr)
+            print(escape_control_characters(str(e)), file=sys.stderr)
 
     return 1

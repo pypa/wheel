@@ -9,6 +9,7 @@ from email.parser import BytesParser
 from packaging.version import InvalidVersion, Version
 
 from ..wheelfile import WheelError, WheelFile
+from . import escape_control_characters
 
 DIST_INFO_RE = re.compile(r"^(?P<namever>(?P<name>.+?)-(?P<ver>\d.*?))\.dist-info$")
 
@@ -118,7 +119,8 @@ def pack(
     # Repack the wheel
     wheel_path = os.path.join(dest_dir, f"{name_version}-{tagline}.whl")
     with WheelFile(wheel_path, "w") as wf:
-        print(f"Repacking wheel as {wheel_path}...", end="", flush=True)
+        printable_path = escape_control_characters(wheel_path)
+        print(f"Repacking wheel as {printable_path}...", end="", flush=True)
         wf.write_files(directory)
 
     print("OK")

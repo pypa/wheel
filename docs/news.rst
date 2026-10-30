@@ -3,6 +3,10 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed ``wheel info`` output, the ``wheel pack`` progress message and printed
+  error messages passing strings taken from the wheel (metadata fields, archive
+  member names, RECORD contents) to the terminal with control characters intact,
+  which let a crafted wheel inject terminal escape sequences
 - Fixed ``wheel unpack`` taking the mode of the unpack directory itself from the
   archive when a wheel contains a member whose name is made up entirely of empty,
   ``.`` or ``..`` path components (such as ``../``), which let a malicious wheel
