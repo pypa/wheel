@@ -287,3 +287,11 @@ def test_retag_does_not_leak_zip64_into_local_headers(
                 )
 
     output_file.unlink()
+
+
+def test_compute_tags_rejects_empty_components() -> None:
+    from wheel._commands.tags import _compute_tags
+
+    for bad in ("", "py3..py2", "+", "+py2.", "-", "py3."):
+        with pytest.raises(ValueError, match="empty tag"):
+            _compute_tags(["py3"], bad)

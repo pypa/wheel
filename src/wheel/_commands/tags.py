@@ -19,12 +19,25 @@ def _compute_tags(original_tags: Iterable[str], new_tags: str | None) -> set[str
         return set(original_tags)
 
     if new_tags.startswith("+"):
-        return {*original_tags, *new_tags[1:].split(".")}
+        parts = new_tags[1:].split(".")
+        _reject_empty_tag_components(new_tags, parts)
+        return {*original_tags, *parts}
 
     if new_tags.startswith("-"):
-        return set(original_tags) - set(new_tags[1:].split("."))
+        parts = new_tags[1:].split(".")
+        _reject_empty_tag_components(new_tags, parts)
+        return set(original_tags) - set(parts)
 
-    return set(new_tags.split("."))
+    parts = new_tags.split(".")
+    _reject_empty_tag_components(new_tags, parts)
+    return set(parts)
+
+
+def _reject_empty_tag_components(new_tags: str, parts: list[str]) -> None:
+    if not parts or any(part == "" for part in parts):
+        raise ValueError(
+            f"Invalid tags value {new_tags!r}: empty tag components are not allowed"
+        )
 
 
 def _strip_zip64_extra(extra: bytes) -> bytes:
