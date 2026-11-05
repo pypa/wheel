@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-__all__ = ["WHEEL_INFO_RE", "WheelFile", "WheelError"]
+__all__ = ["WHEEL_INFO_RE", "WheelError", "WheelFile"]
 
 import base64
 import csv
