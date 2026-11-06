@@ -3,6 +3,10 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed ``wheel pack --local-version`` renaming the ``.dist-info`` directory even when the pack
+  failed, which left the unpacked directory under its new name when the ``METADATA`` or ``WHEEL``
+  file was missing, the ``WHEEL`` file carried no tags, or any later write failed
+  (`#713 <https://github.com/pypa/wheel/issues/713>`_)
 - Fixed ``wheel unpack`` taking the mode of the unpack directory itself from the
   archive when a wheel contains a member whose name is made up entirely of empty,
   ``.`` or ``..`` path components (such as ``../``), which let a malicious wheel

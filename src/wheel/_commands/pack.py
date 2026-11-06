@@ -3,6 +3,7 @@ from __future__ import annotations
 import email.policy
 import os.path
 import re
+from contextlib import suppress
 from email.generator import BytesGenerator
 from email.parser import BytesParser
 
@@ -47,7 +48,22 @@ def pack(
     name = match.group("name")
     version = match.group("ver")
 
-    # Update the local version identifier if requested
+    # Read the tags and the existing build number from .dist-info/WHEEL before
+    # touching anything, so a failure leaves the unpacked directory as it was
+    wheel_file_path = os.path.join(directory, dist_info_dir, "WHEEL")
+    with open(wheel_file_path, "rb") as f:
+        info = BytesParser(policy=email.policy.compat32).parse(f)
+        tags: list[str] = info.get_all("Tag", [])
+        existing_build_number = info.get("Build")
+
+        if not tags:
+            raise WheelError(
+                f"No tags present in {dist_info_dir}/WHEEL; cannot determine target "
+                f"wheel filename"
+            )
+
+    new_version = None
+    metadata = None
     if local_version is not None:
         base_version = version.split("+", 1)[0]
         new_version = (
@@ -65,16 +81,6 @@ def pack(
                 "use '_' instead of '-'"
             )
 
-        new_namever = f"{name}-{new_version}"
-        new_dist_info_dir = f"{new_namever}.dist-info"
-        os.rename(
-            os.path.join(directory, dist_info_dir),
-            os.path.join(directory, new_dist_info_dir),
-        )
-        dist_info_dir = new_dist_info_dir
-        name_version = new_namever
-
-        # Update the Version field in .dist-info/METADATA
         metadata_path = os.path.join(directory, dist_info_dir, "METADATA")
         try:
             with open(metadata_path, "rb") as f:
@@ -82,44 +88,57 @@ def pack(
         except FileNotFoundError:
             raise WheelError(f"Missing {dist_info_dir}/METADATA file") from None
 
-        del metadata["Version"]
-        metadata["Version"] = new_version
-        with open(metadata_path, "wb") as f:
-            BytesGenerator(f, maxheaderlen=0).flatten(metadata)
-
-    # Read the tags and the existing build number from .dist-info/WHEEL
-    wheel_file_path = os.path.join(directory, dist_info_dir, "WHEEL")
-    with open(wheel_file_path, "rb") as f:
-        info = BytesParser(policy=email.policy.compat32).parse(f)
-        tags: list[str] = info.get_all("Tag", [])
-        existing_build_number = info.get("Build")
-
-        if not tags:
-            raise WheelError(
-                f"No tags present in {dist_info_dir}/WHEEL; cannot determine target "
-                f"wheel filename"
+    try:
+        # Update the local version identifier if requested
+        if local_version is not None:
+            new_namever = f"{name}-{new_version}"
+            new_dist_info_dir = f"{new_namever}.dist-info"
+            os.rename(
+                os.path.join(directory, dist_info_dir),
+                os.path.join(directory, new_dist_info_dir),
             )
+            dist_info_dir = new_dist_info_dir
+            name_version = new_namever
 
-    # Set the wheel file name and add/replace/remove the Build tag in .dist-info/WHEEL
-    build_number = build_number if build_number is not None else existing_build_number
-    if build_number is not None:
-        del info["Build"]
-        if build_number:
-            info["Build"] = build_number
-            name_version += "-" + build_number
+            # Update the Version field in .dist-info/METADATA
+            metadata_path = os.path.join(directory, dist_info_dir, "METADATA")
+            del metadata["Version"]
+            metadata["Version"] = new_version
+            with open(metadata_path, "wb") as f:
+                BytesGenerator(f, maxheaderlen=0).flatten(metadata)
 
-        if build_number != existing_build_number:
-            with open(wheel_file_path, "wb") as f:
-                BytesGenerator(f, maxheaderlen=0).flatten(info)
+        # Set the wheel file name and add/replace/remove the Build tag in .dist-info/WHEEL
+        wheel_file_path = os.path.join(directory, dist_info_dir, "WHEEL")
+        build_number = (
+            build_number if build_number is not None else existing_build_number
+        )
+        if build_number is not None:
+            del info["Build"]
+            if build_number:
+                info["Build"] = build_number
+                name_version += "-" + build_number
 
-    # Reassemble the tags for the wheel file
-    tagline = compute_tagline(tags)
+            if build_number != existing_build_number:
+                with open(wheel_file_path, "wb") as f:
+                    BytesGenerator(f, maxheaderlen=0).flatten(info)
 
-    # Repack the wheel
-    wheel_path = os.path.join(dest_dir, f"{name_version}-{tagline}.whl")
-    with WheelFile(wheel_path, "w") as wf:
-        print(f"Repacking wheel as {wheel_path}...", end="", flush=True)
-        wf.write_files(directory)
+        # Reassemble the tags for the wheel file
+        tagline = compute_tagline(tags)
+
+        # Repack the wheel
+        wheel_path = os.path.join(dest_dir, f"{name_version}-{tagline}.whl")
+        with WheelFile(wheel_path, "w") as wf:
+            print(f"Repacking wheel as {wheel_path}...", end="", flush=True)
+            wf.write_files(directory)
+    except BaseException:
+        # A failure after the rename must not leave the directory under its new name
+        if local_version is not None:
+            with suppress(OSError):
+                os.rename(
+                    os.path.join(directory, dist_info_dir),
+                    os.path.join(directory, f"{name}-{version}.dist-info"),
+                )
+        raise
 
     print("OK")
 

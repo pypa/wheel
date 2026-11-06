@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import email.policy
 import os
+import pathlib
 import sys
 from email.generator import BytesGenerator
 from email.message import Message
@@ -225,6 +226,145 @@ def test_pack_local_version_rejects_invalid(
 
     assert returncode == 1
     assert "!invalid" in stderr.getvalue()
+
+
+def assert_only_original_dist_info(unpack_dir: pathlib.Path) -> None:
+    dist_info_dirs = sorted(
+        p.name for p in unpack_dir.iterdir() if p.name.endswith(".dist-info")
+    )
+    assert dist_info_dirs == ["test-1.0.dist-info"]
+
+
+def test_pack_local_version_missing_metadata_leaves_directory(
+    tmp_path_factory: TempPathFactory, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    unpack_dir = tmp_path_factory.mktemp("wheeldir")
+    with ZipFile(TESTWHEEL_PATH) as zf:
+        zf.extractall(unpack_dir)
+
+    (unpack_dir / "test-1.0.dist-info" / "METADATA").unlink()
+
+    argv = [
+        "wheel",
+        "pack",
+        "--dest",
+        str(tmp_path),
+        str(unpack_dir),
+        "--local-version",
+        "l0.cal",
+    ]
+    stdout = StringIO()
+    stderr = StringIO()
+    with monkeypatch.context() as m:
+        m.setattr(sys, "argv", argv)
+        m.setattr(sys, "stdout", stdout)
+        m.setattr(sys, "stderr", stderr)
+        returncode = main()
+
+    assert returncode == 1
+    assert "Missing test-1.0.dist-info/METADATA file" in stderr.getvalue()
+    assert_only_original_dist_info(unpack_dir)
+
+
+def test_pack_local_version_missing_wheel_leaves_directory(
+    tmp_path_factory: TempPathFactory, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    unpack_dir = tmp_path_factory.mktemp("wheeldir")
+    with ZipFile(TESTWHEEL_PATH) as zf:
+        zf.extractall(unpack_dir)
+
+    (unpack_dir / "test-1.0.dist-info" / "WHEEL").unlink()
+
+    argv = [
+        "wheel",
+        "pack",
+        "--dest",
+        str(tmp_path),
+        str(unpack_dir),
+        "--local-version",
+        "l0.cal",
+    ]
+    stdout = StringIO()
+    stderr = StringIO()
+    with monkeypatch.context() as m:
+        m.setattr(sys, "argv", argv)
+        m.setattr(sys, "stdout", stdout)
+        m.setattr(sys, "stderr", stderr)
+        with pytest.raises(FileNotFoundError):
+            main()
+
+    assert_only_original_dist_info(unpack_dir)
+
+
+def test_pack_local_version_no_tags_leaves_directory(
+    tmp_path_factory: TempPathFactory, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    unpack_dir = tmp_path_factory.mktemp("wheeldir")
+    with ZipFile(TESTWHEEL_PATH) as zf:
+        zf.extractall(unpack_dir)
+
+    wheel_file_path = unpack_dir / "test-1.0.dist-info" / "WHEEL"
+    wheel_file_path.write_bytes(
+        b"".join(
+            line
+            for line in wheel_file_path.read_bytes().splitlines(keepends=True)
+            if not line.startswith(b"Tag:")
+        )
+    )
+
+    argv = [
+        "wheel",
+        "pack",
+        "--dest",
+        str(tmp_path),
+        str(unpack_dir),
+        "--local-version",
+        "l0.cal",
+    ]
+    stdout = StringIO()
+    stderr = StringIO()
+    with monkeypatch.context() as m:
+        m.setattr(sys, "argv", argv)
+        m.setattr(sys, "stdout", stdout)
+        m.setattr(sys, "stderr", stderr)
+        returncode = main()
+
+    assert returncode == 1
+    assert "No tags present" in stderr.getvalue()
+    assert_only_original_dist_info(unpack_dir)
+
+
+def test_pack_local_version_pack_failure_leaves_directory(
+    tmp_path_factory: TempPathFactory, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    unpack_dir = tmp_path_factory.mktemp("wheeldir")
+    with ZipFile(TESTWHEEL_PATH) as zf:
+        zf.extractall(unpack_dir)
+
+    # a destination whose parent is a file fails the write after the rename; Windows reports it as
+    # FileNotFoundError where POSIX raises NotADirectoryError, so match OSError
+    dest_file = tmp_path / "destfile"
+    dest_file.write_text("not a directory")
+
+    argv = [
+        "wheel",
+        "pack",
+        "--dest",
+        str(dest_file / "out"),
+        str(unpack_dir),
+        "--local-version",
+        "l0.cal",
+    ]
+    stdout = StringIO()
+    stderr = StringIO()
+    with monkeypatch.context() as m:
+        m.setattr(sys, "argv", argv)
+        m.setattr(sys, "stdout", stdout)
+        m.setattr(sys, "stderr", stderr)
+        with pytest.raises(OSError):
+            main()
+
+    assert_only_original_dist_info(unpack_dir)
 
 
 @pytest.mark.parametrize(
