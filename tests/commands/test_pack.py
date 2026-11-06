@@ -344,7 +344,7 @@ def test_pack_local_version_pack_failure_leaves_directory(
     # a destination whose parent is a file fails the write after the rename; Windows reports it as
     # FileNotFoundError where POSIX raises NotADirectoryError, so match OSError
     dest_file = tmp_path / "destfile"
-    dest_file.write_text("not a directory")
+    dest_file.write_bytes(b"not a directory")
 
     argv = [
         "wheel",
