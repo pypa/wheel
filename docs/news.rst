@@ -13,6 +13,9 @@ Release Notes
 - Fixed the macOS platform-tag warning always using the plural "these files"
   wording, even when only a single library required a higher deployment target
   (`#697 <https://github.com/pypa/wheel/pull/697>`_)
+- Fixed files with an epoch-zero modification time being stored with the current
+  build time instead of the earliest ZIP timestamp (1980-01-01)
+  (`#707 <https://github.com/pypa/wheel/pull/707>`_)
 
 **0.48.0 (2026-08-12)**
 
