@@ -200,7 +200,9 @@ class WheelFile(ZipFile):
         zinfo = ZipInfo(
             arcname or filename, date_time=get_zipinfo_datetime(st.st_mtime)
         )
-        zinfo.external_attr = (stat.S_IMODE(st.st_mode) | stat.S_IFMT(st.st_mode)) << 16
+        # Keep executable vs non-executable, but do not store the umask.
+        mode = 0o755 if stat.S_IMODE(st.st_mode) & 0o111 else 0o644
+        zinfo.external_attr = (mode | stat.S_IFMT(st.st_mode)) << 16
         zinfo.compress_type = compress_type or self.compression
         self.writestr(zinfo, data, compress_type)
 
