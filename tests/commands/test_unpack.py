@@ -13,6 +13,22 @@ from wheel.wheelfile import WheelFile
 from .util import run_command
 
 
+def test_unpack_nonexistent_file(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+    """Unpacking a missing wheel must fail cleanly, without a traceback."""
+    import sys
+    from unittest.mock import patch
+
+    from wheel._commands import main
+
+    missing = str(tmp_path / "nonexistent-1.0-py3-none-any.whl")
+    with patch.object(sys, "argv", ["wheel", "unpack", missing]):
+        assert main() == 1
+
+    captured = capsys.readouterr()
+    assert "nonexistent-1.0-py3-none-any.whl" in captured.err
+    assert "Traceback" not in captured.err
+
+
 def test_unpack(tmp_path_factory: TempPathFactory) -> None:
     wheel_path = tmp_path_factory.mktemp("build") / "test-1.0-py3-none-any.whl"
     with WheelFile(wheel_path, "w") as wf:
