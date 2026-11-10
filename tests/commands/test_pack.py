@@ -257,7 +257,9 @@ def test_pack_invalid_build_tag(
     assert f"error: argument --build-number: {error}" in exc.stderr
 
 
-def test_pack_nonexistent_directory(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+def test_pack_nonexistent_directory(
+    tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
     """Packing a missing directory must fail cleanly, without a traceback."""
     from unittest.mock import patch
 
