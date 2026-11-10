@@ -3,6 +3,9 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed ``wheel pack --local-version`` leaving the ``.dist-info`` directory renamed when anything failed
+  after the rename — the ``METADATA`` write, a ``WHEEL`` file without tags, the build-tag write, or the
+  pack itself; the directory now goes back under its original name before the error propagates
 - Fixed ``wheel unpack`` taking the mode of the unpack directory itself from the
   archive when a wheel contains a member whose name is made up entirely of empty,
   ``.`` or ``..`` path components (such as ``../``), which let a malicious wheel
