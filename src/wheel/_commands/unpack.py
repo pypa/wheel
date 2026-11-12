@@ -29,6 +29,10 @@ def unpack(path: str, dest: str = ".") -> None:
             # We have to do this manually due to
             # https://github.com/python/cpython/issues/59999
             permissions = zinfo.external_attr >> 16 & 0o777
-            target_path.chmod(permissions)
+            if permissions:
+                target_path.chmod(permissions)
+            # An entry with no Unix mode bits states no opinion about
+            # permissions: leave the default permissions the extraction gave
+            # the file, instead of forcing mode 0 on it.
 
     print("OK")
