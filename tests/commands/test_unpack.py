@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import platform
 import stat
 from pathlib import Path
@@ -103,3 +104,36 @@ def test_chmod_unpack_tree_root(tmp_path_factory: TempPathFactory) -> None:
     run_command("unpack", "--dest", extract_root_path, wheel_path)
 
     assert stat.S_IMODE(unpack_path.stat().st_mode) == 0o755
+
+
+def test_unpack_member_without_mode_bits(tmp_path: Path) -> None:
+    # Entries zipped without Unix permission bits (DOS-only external_attr,
+    # typical of some Windows zip tools) must keep the readable default
+    # permissions of the extraction instead of being chmod'ed to 0 (#721).
+    wheel_path = tmp_path / "test-1.0-py3-none-any.whl"
+    with WheelFile(wheel_path, "w") as wf:
+        wf.writestr(
+            "test-1.0.dist-info/METADATA",
+            "Metadata-Version: 2.4\nName: test\nVersion: 1.0\n",
+        )
+        wf.writestr("test-1.0/payload.txt", "hello")
+    # rewrite the payload entry with no Unix mode bits
+    import zipfile
+
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(wheel_path) as src, zipfile.ZipFile(buffer, "w") as dst:
+        for info in src.infolist():
+            data = src.read(info.filename)
+            if info.filename == "test-1.0/payload.txt":
+                info.external_attr = 0x20  # DOS archive bit only
+            info.compress_type = zipfile.ZIP_DEFLATED
+            dst.writestr(info, data)
+    wheel_path.write_bytes(buffer.getvalue())
+
+    extract_path = tmp_path / "extract"
+    run_command("unpack", "--dest", extract_path, wheel_path)
+
+    payload = extract_path / "test-1.0" / "test-1.0" / "payload.txt"
+    assert payload.read_text("utf-8") == "hello"
+    mode = stat.S_IMODE(payload.stat().st_mode)
+    assert mode != 0
