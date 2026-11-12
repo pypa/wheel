@@ -94,6 +94,23 @@ def test_unsupported_hash_algorithm(wheel_path: Path) -> None:
 
 
 @pytest.mark.parametrize(
+    "record",
+    [
+        pytest.param("hello/héllö.py,", id="two_columns"),
+        pytest.param("hello/héllö.py,sha256=abc,25,extra", id="four_columns"),
+        pytest.param("hello/héllö.py", id="one_column"),
+    ],
+)
+def test_malformed_record_row(wheel_path: Path, record: str) -> None:
+    with ZipFile(wheel_path, "w") as zf:
+        zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
+        zf.writestr("test-1.0.dist-info/RECORD", record)
+
+    exc = pytest.raises(WheelError, WheelFile, wheel_path)
+    exc.match(r"^Malformed RECORD row: expected 3 columns, got \d+$")
+
+
+@pytest.mark.parametrize(
     "algorithm, digest",
     [
         pytest.param("md5", "4J-scNa2qvSgy07rS4at-Q", id="md5"),
@@ -108,6 +125,15 @@ def test_weak_hash_algorithm(wheel_path: Path, algorithm: str, digest: str) -> N
 
     exc = pytest.raises(WheelError, WheelFile, wheel_path)
     exc.match(rf"^Weak hash algorithm \({algorithm}\) is not permitted by PEP 427$")
+
+
+def test_hash_without_equals(wheel_path: Path) -> None:
+    with ZipFile(wheel_path, "w") as zf:
+        zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
+        zf.writestr("test-1.0.dist-info/RECORD", "hello/héllö.py,sha256abc,25")
+
+    exc = pytest.raises(WheelError, WheelFile, wheel_path)
+    exc.match(r"^Invalid hash 'sha256abc' in RECORD$")
 
 
 @pytest.mark.parametrize(
