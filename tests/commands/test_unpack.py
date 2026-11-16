@@ -141,6 +141,9 @@ def test_unpack_member_without_mode_bits(tmp_path: Path) -> None:
     assert mode != 0
 
 
+@pytest.mark.skipif(
+    platform.system() == "Windows", reason="Windows cannot represent mode 0000"
+)
 def test_unpack_unix_member_with_mode_0000(tmp_path: Path) -> None:
     # A Unix-created entry (create_system 3) with an explicit mode of 0000
     # must keep that mode: create_system, not a nonzero permission value,
