@@ -140,9 +140,7 @@ class WheelFile(ZipFile):
                         hash_sum = urlsafe_b64decode(hash_sum.encode("ascii"))
                     except (binascii.Error, UnicodeEncodeError) as e:
                         # Invalid base64 payload or non-ASCII hash value
-                        raise WheelError(
-                            f"Invalid hash {hash_sum!r} in RECORD"
-                        ) from e
+                        raise WheelError(f"Invalid hash {hash_sum!r} in RECORD") from e
 
                     self._file_hashes[path] = (algorithm, hash_sum)
 
