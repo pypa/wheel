@@ -29,10 +29,12 @@ def unpack(path: str, dest: str = ".") -> None:
             # We have to do this manually due to
             # https://github.com/python/cpython/issues/59999
             permissions = zinfo.external_attr >> 16 & 0o777
-            if permissions:
+            # Only entries created on Unix (create_system == 3) carry a real
+            # Unix file mode, which we honor even if it is 0000. Entries
+            # created by other systems (e.g. DOS/Windows zip tools) state no
+            # opinion about permissions: keep the default permissions of the
+            # extraction instead of forcing mode 0 on them.
+            if zinfo.create_system == 3:
                 target_path.chmod(permissions)
-            # An entry with no Unix mode bits states no opinion about
-            # permissions: leave the default permissions the extraction gave
-            # the file, instead of forcing mode 0 on it.
 
     print("OK")

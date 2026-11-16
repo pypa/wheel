@@ -107,9 +107,10 @@ def test_chmod_unpack_tree_root(tmp_path_factory: TempPathFactory) -> None:
 
 
 def test_unpack_member_without_mode_bits(tmp_path: Path) -> None:
-    # Entries zipped without Unix permission bits (DOS-only external_attr,
-    # typical of some Windows zip tools) must keep the readable default
-    # permissions of the extraction instead of being chmod'ed to 0 (#721).
+    # Entries created by non-Unix systems (DOS-only external_attr with
+    # create_system 0, typical of some Windows zip tools) must keep the
+    # readable default permissions of the extraction instead of being
+    # chmod'ed to 0 (#721).
     wheel_path = tmp_path / "test-1.0-py3-none-any.whl"
     with WheelFile(wheel_path, "w") as wf:
         wf.writestr(
@@ -126,6 +127,7 @@ def test_unpack_member_without_mode_bits(tmp_path: Path) -> None:
             data = src.read(info.filename)
             if info.filename == "test-1.0/payload.txt":
                 info.external_attr = 0x20  # DOS archive bit only
+                info.create_system = 0  # DOS
             info.compress_type = zipfile.ZIP_DEFLATED
             dst.writestr(info, data)
     wheel_path.write_bytes(buffer.getvalue())
@@ -137,3 +139,39 @@ def test_unpack_member_without_mode_bits(tmp_path: Path) -> None:
     assert payload.read_text("utf-8") == "hello"
     mode = stat.S_IMODE(payload.stat().st_mode)
     assert mode != 0
+
+
+def test_unpack_unix_member_with_mode_0000(tmp_path: Path) -> None:
+    # A Unix-created entry (create_system 3) with an explicit mode of 0000
+    # must keep that mode: create_system, not a nonzero permission value,
+    # is what marks the archived mode bits as meaningful.
+    wheel_path = tmp_path / "test-1.0-py3-none-any.whl"
+    with WheelFile(wheel_path, "w") as wf:
+        wf.writestr(
+            "test-1.0.dist-info/METADATA",
+            "Metadata-Version: 2.4\nName: test\nVersion: 1.0\n",
+        )
+        wf.writestr("test-1.0/payload.txt", "hello")
+    # rewrite the payload entry with an explicit Unix mode of 0000
+    import zipfile
+
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(wheel_path) as src, zipfile.ZipFile(buffer, "w") as dst:
+        for info in src.infolist():
+            data = src.read(info.filename)
+            if info.filename == "test-1.0/payload.txt":
+                # A regular file with an explicit Unix mode of 0000; the
+                # IFREG type bits keep external_attr nonzero, which a real
+                # Unix zip always has (zipfile rewrites a zero external_attr
+                # to 0o600 << 16 on write)
+                info.external_attr = (stat.S_IFREG | 0o000) << 16
+                info.create_system = 3  # Unix
+            info.compress_type = zipfile.ZIP_DEFLATED
+            dst.writestr(info, data)
+    wheel_path.write_bytes(buffer.getvalue())
+
+    extract_path = tmp_path / "extract"
+    run_command("unpack", "--dest", extract_path, wheel_path)
+
+    payload = extract_path / "test-1.0" / "test-1.0" / "payload.txt"
+    assert stat.S_IMODE(payload.stat().st_mode) == 0o000
