@@ -3,6 +3,11 @@ Release Notes
 
 **UNRELEASED**
 
+- Fixed ``WheelFile`` crashing with a raw ``ValueError`` when the ``RECORD`` file
+  contains a row with the wrong number of columns or a hash without an ``=``
+  separator (as produced by a truncated or hand-edited wheel); this input error
+  now raises ``WheelError`` like the other malformed-wheel conditions
+  (`#723 <https://github.com/pypa/wheel/issues/723>`_)
 - Fixed ``wheel unpack`` taking the mode of the unpack directory itself from the
   archive when a wheel contains a member whose name is made up entirely of empty,
   ``.`` or ``..`` path components (such as ``../``), which let a malicious wheel

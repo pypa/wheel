@@ -3,6 +3,7 @@ from __future__ import annotations
 __all__ = ["WHEEL_INFO_RE", "WheelFile", "WheelError"]
 
 import base64
+import binascii
 import csv
 import hashlib
 import logging
@@ -105,14 +106,23 @@ class WheelFile(ZipFile):
                 raise WheelError(f"Missing {self.record_path} file") from None
 
             with record:
-                for line in csv.reader(
+                for row in csv.reader(
                     TextIOWrapper(record, newline="", encoding="utf-8")
                 ):
-                    path, hash_sum, size = line
+                    if len(row) != 3:
+                        raise WheelError(
+                            f"Malformed RECORD row: expected 3 columns, got {len(row)}"
+                        ) from None
+                    path, hash_sum, size = row
                     if not hash_sum:
                         continue
 
-                    algorithm, hash_sum = hash_sum.split("=")
+                    try:
+                        algorithm, hash_sum = hash_sum.split("=")
+                    except ValueError:
+                        raise WheelError(
+                            f"Invalid hash {hash_sum!r} in RECORD"
+                        ) from None
                     try:
                         hashlib.new(algorithm)
                     except ValueError:
@@ -126,10 +136,13 @@ class WheelFile(ZipFile):
                             f"PEP 427"
                         )
 
-                    self._file_hashes[path] = (
-                        algorithm,
-                        urlsafe_b64decode(hash_sum.encode("ascii")),
-                    )
+                    try:
+                        hash_sum = urlsafe_b64decode(hash_sum.encode("ascii"))
+                    except (binascii.Error, UnicodeEncodeError) as e:
+                        # Invalid base64 payload or non-ASCII hash value
+                        raise WheelError(f"Invalid hash {hash_sum!r} in RECORD") from e
+
+                    self._file_hashes[path] = (algorithm, hash_sum)
 
     def open(
         self,
