@@ -3,6 +3,7 @@ from __future__ import annotations
 __all__ = ["WHEEL_INFO_RE", "WheelFile", "WheelError"]
 
 import base64
+import binascii
 import csv
 import hashlib
 import logging
@@ -135,10 +136,15 @@ class WheelFile(ZipFile):
                             f"PEP 427"
                         )
 
-                    self._file_hashes[path] = (
-                        algorithm,
-                        urlsafe_b64decode(hash_sum.encode("ascii")),
-                    )
+                    try:
+                        hash_sum = urlsafe_b64decode(hash_sum.encode("ascii"))
+                    except (binascii.Error, UnicodeEncodeError) as e:
+                        # Invalid base64 payload or non-ASCII hash value
+                        raise WheelError(
+                            f"Invalid hash {hash_sum!r} in RECORD"
+                        ) from e
+
+                    self._file_hashes[path] = (algorithm, hash_sum)
 
     def open(
         self,

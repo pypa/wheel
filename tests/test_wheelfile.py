@@ -137,6 +137,27 @@ def test_hash_without_equals(wheel_path: Path) -> None:
 
 
 @pytest.mark.parametrize(
+    "hash_sum",
+    [
+        pytest.param("a", id="invalid_base64"),
+        pytest.param("ünïcödé", id="non_ascii"),
+    ],
+)
+def test_invalid_hash_value(wheel_path: Path, hash_sum: str) -> None:
+    # A hash that is not valid base64 (binascii.Error) or not ASCII
+    # (UnicodeEncodeError) must also surface as a WheelError, per the
+    # changelog's promise about malformed RECORD data
+    with ZipFile(wheel_path, "w") as zf:
+        zf.writestr("hello/héllö.py", 'print("Héllö, w0rld!")\n')
+        zf.writestr(
+            "test-1.0.dist-info/RECORD", f"hello/héllö.py,sha256={hash_sum},25"
+        )
+
+    exc = pytest.raises(WheelError, WheelFile, wheel_path)
+    exc.match(rf"^Invalid hash '{hash_sum}' in RECORD$")
+
+
+@pytest.mark.parametrize(
     "algorithm, digest",
     [
         pytest.param(
