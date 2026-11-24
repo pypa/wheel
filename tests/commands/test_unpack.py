@@ -2,15 +2,32 @@ from __future__ import annotations
 
 import platform
 import stat
+import sys
+from io import StringIO
 from pathlib import Path
 from zipfile import ZipInfo
 
 import pytest
 from pytest import TempPathFactory
 
+from wheel._commands import main
 from wheel.wheelfile import WheelFile
 
 from .util import run_command
+
+
+def test_unpack_missing_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    argv = ["wheel", "unpack", str(tmp_path / "missing-1.0-py3-none-any.whl")]
+    stdout = StringIO()
+    stderr = StringIO()
+    with monkeypatch.context() as m:
+        m.setattr(sys, "argv", argv)
+        m.setattr(sys, "stdout", stdout)
+        m.setattr(sys, "stderr", stderr)
+        returncode = main()
+
+    assert returncode == 1
+    assert "No such file or directory" in stderr.getvalue()
 
 
 def test_unpack(tmp_path_factory: TempPathFactory) -> None:

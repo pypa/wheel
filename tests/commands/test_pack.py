@@ -227,6 +227,22 @@ def test_pack_local_version_rejects_invalid(
     assert "!invalid" in stderr.getvalue()
 
 
+def test_pack_missing_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    argv = ["wheel", "pack", str(tmp_path / "does-not-exist")]
+    stdout = StringIO()
+    stderr = StringIO()
+    with monkeypatch.context() as m:
+        m.setattr(sys, "argv", argv)
+        m.setattr(sys, "stdout", stdout)
+        m.setattr(sys, "stderr", stderr)
+        returncode = main()
+
+    assert returncode == 1
+    assert "No such file or directory" in stderr.getvalue()
+
+
 @pytest.mark.parametrize(
     "build_tag, error",
     [
