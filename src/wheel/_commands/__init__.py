@@ -15,13 +15,19 @@ from ..wheelfile import WheelError
 def unpack_f(args: argparse.Namespace) -> None:
     from .unpack import unpack
 
-    unpack(args.wheelfile, args.dest)
+    try:
+        unpack(args.wheelfile, args.dest)
+    except FileNotFoundError as e:
+        raise WheelError(str(e)) from e
 
 
 def pack_f(args: argparse.Namespace) -> None:
     from .pack import pack
 
-    pack(args.directory, args.dest_dir, args.build_number, args.local_version)
+    try:
+        pack(args.directory, args.dest_dir, args.build_number, args.local_version)
+    except FileNotFoundError as e:
+        raise WheelError(str(e)) from e
 
 
 def convert_f(args: argparse.Namespace) -> None:
