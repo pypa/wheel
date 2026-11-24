@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import platform
 import stat
-from pathlib import Path
-from zipfile import ZipInfo
-
 import sys
 from io import StringIO
+from pathlib import Path
+from zipfile import ZipInfo
 
 import pytest
 from pytest import TempPathFactory
