@@ -262,6 +262,16 @@ def test_convert_bdist_wininst(
     assert output == f"{bdist_wininst_path}...OK\n"
 
 
+def test_convert_missing_file(tmp_path: Path) -> None:
+    with pytest.raises(WheelError, match="does not exist"):
+        convert(["does-not-exist.egg"], str(tmp_path), False)
+
+
+def test_convert_globs_that_match_nothing_are_fine(tmp_path: Path) -> None:
+    convert(["does-not-exist/*.egg"], str(tmp_path), False)
+    assert list(tmp_path.iterdir()) == []
+
+
 def test_convert_pkg_info_with_empty_description() -> None:
     # Regression test for https://github.com/pypa/wheel/issues/645
     pkginfo = """\
