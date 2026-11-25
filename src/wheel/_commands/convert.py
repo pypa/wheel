@@ -303,7 +303,11 @@ class WininstFileSource(ConvertSource):
 
 def convert(files: list[str], dest_dir: str, verbose: bool) -> None:
     for pat in files:
-        for archive in iglob(pat):
+        archives = sorted(iglob(pat))
+        if not archives and not any(char in pat for char in "*?["):
+            # a plain path that matched nothing is a mistake, not an empty glob
+            raise WheelError(f"{pat!r} does not exist")
+        for archive in archives:
             path = Path(archive)
             if path.suffix == ".egg":
                 if path.is_dir():
